@@ -1,10 +1,16 @@
 [project]
-name = "v3"
+name = "holmes"
 version = "0.1.0"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.13"
+dependencies = [
+    "plotly>=6.3.0",
+    "polars>=1.33.1",
+    "python-dotenv>=1.1.1",
+    "starlette>=0.48.0",
+    "uvicorn>=0.36.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.8.4"]
@@ -12,7 +18,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
-module-name = "holmes"
+module-name = "src"
 
 [project.scripts]
 holmes = "holmes.main:main"
@@ -66,3 +72,14 @@ exclude_lines = [
 ]
 precision = 2
 show_missing = true
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "isort>=6.0.1",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.13.1",
+    "ty>=0.0.1a21",
+]
