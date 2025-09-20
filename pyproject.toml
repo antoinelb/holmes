@@ -1,0 +1,68 @@
+[project]
+name = "v3"
+version = "0.1.0"
+description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.8.4"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "holmes"
+
+[project.scripts]
+holmes = "holmes.main:main"
+h = "holmes.main:main"
+
+[tool.black]
+line_length = 79
+target-version = ['py313']
+
+[tool.isort]
+profile = "black"
+src_paths = ["holmes", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "--cov",
+    "--cov-report=term-missing",
+]
+qt_api = "pyqt6"
+qt_default_raising = true
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "gui: GUI-related tests",
+]
+env = [
+    "QT_QPA_PLATFORM=offscreen",
+]
+
+[tool.coverage.run]
+source = ["holmes"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+    "except ImportError:",
+    "if TYPE_CHECKING:",
+]
+precision = 2
+show_missing = true
