@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada." />
+
+  <title>HOLMES</title>
+  <link rel="icon" href="/static/assets/favicon.svg" />
+
+  <link rel="preload" as="style" href="/static/styles/index.css" media="screen" />
+  <link rel="modulepreload" href="/static/scripts/index.js" />
+
+  <link rel="stylesheet" href="/static/styles/index.css" media="screen" />
+  <script type="module" src="/static/scripts/index.js" defer></script>
+</head>
+
+<body>
+  <header>
+    <h1>HOLMES</h1>
+    <div id="nav">
+      <button title="Toggle navigation (N)">
+        <svg class="icon">
+          <use href="/static/assets/sprite.svg#grid" />
+        </svg>
+      </button>
+      <nav>
+        <button>Calibration</button>
+        <button>Simulation</button>
+        <button>Projection</button>
+      </nav>
+    </div>
+    <div id="settings">
+      <button title="Toggle settings (S)">
+        <svg class="icon">
+          <use href="/static/assets/sprite.svg#menu" />
+        </svg>
+      </button>
+      <div>
+        <button id="theme">
+          <svg id="theme__moon" class="icon">
+            <use href="/static/assets/sprite.svg#moon" />
+          </svg>
+          <svg id="theme__sun" class="icon">
+            <use href="/static/assets/sprite.svg#sun" />
+          </svg>
+          <span>Toggle theme</span>
+          <span class="hotkey">T</span>
+        </button>
+        <div id="version">
+          <span>Version: </span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section id="calibration">
+      <h2>Calibration</h2>
+    </section>
+    <section id="simulation" hidden>
+      <h2>Simulation</h2>
+    </section>
+    <section id="projection" hidden>
+      <h2>Projection</h2>
+    </section>
+  </main>
+</body>
+
+</html>

@@ -21,8 +21,8 @@ module-root = ""
 module-name = "src"
 
 [project.scripts]
-holmes = "holmes.main:main"
-h = "holmes.main:main"
+holmes = "src.app:run_server"
+h = "src.app:run_server"
 
 [tool.black]
 line_length = 79
