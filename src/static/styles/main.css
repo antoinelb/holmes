@@ -1,5 +1,16 @@
+section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
 h2 {
   text-align: center;
   width: 100%;
   margin: 0;
+  flex: 0 0 100%;
 }

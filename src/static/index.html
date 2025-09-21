@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-CA">
 
 <head>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description"
@@ -59,6 +60,30 @@
   <main>
     <section id="calibration">
       <h2>Calibration</h2>
+      <div class="config">
+        <form id="calibration__general-config">
+          <h3>General settings</h3>
+          <label for="calibration__hydrological-model">Hydrological model</label>
+          <select id="calibration__hydrological-model"></select>
+          <label for="calibration__catchment">Catchment</label>
+          <select id="calibration__catchment"></select>
+          <label for="calibration__snow-model">Snow model (optional)</label>
+          <select id="calibration__snow-model"></select>
+          <span>Objective function</span>
+          <label for="calibration__objective-criteria" class="label-indent">Criteria</label>
+          <select id="calibration__objective-criteria"></select>
+          <label for="calibration__objective-streamflow" class="label-indent">Streamflow transformation</label>
+          <select id="calibration__objective-streamflow"></select>
+          <span>Calibration period</span>
+          <label for="calibration__period-start">Start <button>Set to period start</button></label>
+          <input id="calibration__period-start" type="date" />
+          <label for="calibration__period-end">End <button>Set to period end</button></label>
+          <input id="calibration__period-end" type="date" />
+          <label for="calibration__algorithm">Calibration algorithm</label>
+          <select id="calibration__algorithm"></select>
+        </form>
+      </div>
+      <div class="results"></div>
     </section>
     <section id="simulation" hidden>
       <h2>Simulation</h2>

@@ -1,0 +1,64 @@
+#calibration {
+  & .config {
+    display: grid;
+
+    & #calibration__general-config {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      grid-column-gap: 1em;
+      grid-row-gap: 0.5em;
+      align-items: center;
+
+      & h3 {
+        grid-column: 1 / -1;
+        text-align: center;
+      }
+
+      & span {
+        grid-column: 1 / -1;
+      }
+
+      & label {
+        grid-column: 1;
+
+        &.label-indent {
+          padding-left: 1em;
+        }
+
+        &.label-disabled {
+          color: oklch(var(--fg) / 0.5);
+        }
+      }
+
+      & input {
+        grid-column: 2;
+      }
+
+      & select {
+        grid-column: 2;
+
+        &[disabled] {
+          color: oklch(var(--fg) / 0.5);
+          border: none;
+        }
+      }
+
+      & label[for='calibration__period-start'],
+      & label[for='calibration__period-end'] {
+        display: flex;
+        justify-content: flex-start;
+        gap: 0.25em;
+        align-items: center;
+
+        & button {
+          background: oklch(var(--fg) / 0.1);
+          box-shadow: none;
+          font-size: 0.75rem;
+          padding: 0.25em 0.5em;
+          height: auto;
+          width: auto;
+        }
+      }
+    }
+  }
+}

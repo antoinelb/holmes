@@ -1,5 +1,6 @@
 @import "./header.css";
 @import "./main.css";
+@import "./calibration.css";
 
 :root {
   --theme: 0.4 0.2 300;
@@ -142,19 +143,21 @@ input {
 }
 
 select {
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  appearance: none;
-  background: oklch(var(--theme));
-  border: none;
-  border-radius: 0.5em;
-  box-shadow: 0 0.5em 1em 0.25em oklch(var(--theme) / 0.4);
-  color: oklch(var(--fg-dark));
+  background: none;
   cursor: pointer;
+  border: none;
+  border: 0.05em solid oklch(var(--theme) / 0.5);
+  border-radius: 0.25em;
+  color: inherit;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 1.2rem;
   padding: 0.25em 0.5em;
   text-align: center;
+  transition: border 300ms;
+  width: 100%;
 
   &:focus {
     outline: 0.05em solid oklch(var(--fg) / 0.5);

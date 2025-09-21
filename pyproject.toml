@@ -30,7 +30,7 @@ target-version = ['py313']
 
 [tool.isort]
 profile = "black"
-src_paths = ["holmes", "tests"]
+src_paths = ["src", "tests"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -52,7 +52,7 @@ env = [
 ]
 
 [tool.coverage.run]
-source = ["holmes"]
+source = ["src"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",

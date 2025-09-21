@@ -1,18 +1,20 @@
 import tomllib
-from pathlib import Path
 
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, PlainTextResponse, Response
 from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
+from src.utils.paths import root_dir
+
+from . import calibration
 
 #########
 # types #
 #########
 
-pyproject_path = Path(__file__).parent / ".." / ".." / "pyproject.toml"
-static_dir = Path(__file__).parent / ".." / "static"
+pyproject_path = root_dir / "pyproject.toml"
+static_dir = root_dir / "src" / "static"
 
 ##########
 # public #
@@ -28,6 +30,7 @@ def get_routes() -> list[BaseRoute]:
             "/static",
             app=StaticFiles(directory=str(static_dir.absolute())),
         ),
+        Mount("/calibration", routes=calibration.get_routes()),
     ]
 
 
