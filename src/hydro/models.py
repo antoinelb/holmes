@@ -197,7 +197,7 @@ def plot_simulation(
     )
 
 
-def calibrate_model(
+async def calibrate_model(
     data: pl.DataFrame,
     hydrological_model: str,
     criteria: Literal["rmse", "nse", "kge"],
@@ -210,11 +210,12 @@ def calibrate_model(
     kstop: int,
     pcento: float,
     peps: float,
+    progress_callback = None,
 ) -> Results:
     if hydrological_model.lower() == "gr4j":
         model = gr4j.run_model
         params = gr4j.possible_params
-        return sce.run_sce_calibration(
+        return await sce.run_sce_calibration(
             model,
             data,
             params,
@@ -228,6 +229,7 @@ def calibrate_model(
             kstop,
             pcento,
             peps,
+            progress_callback,
         )
     else:
         raise ValueError(

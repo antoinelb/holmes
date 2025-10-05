@@ -8,7 +8,7 @@ import numpy as np
 
 
 class Results(TypedDict):
-    params: dict[str, float]
+    params: dict[str, list[float]]
     objective: list[float]
 
 
@@ -34,7 +34,7 @@ def evaluate_simulation(
         return float(np.sqrt(np.mean((flow - simulation) ** 2)))
     elif criteria == "nse":
         return float(
-            1 - np.sum((flow - simulation) ** 2 / (np.mean(flow) - flow) ** 2)
+            1 - np.sum((flow - simulation) ** 2) / np.sum((flow - np.mean(flow)) ** 2)
         )
     elif criteria == "kge":
         r = float(np.corrcoef(flow, simulation)[0, 1])

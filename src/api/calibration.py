@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 import polars as pl
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import BaseRoute, Route
+from starlette.routing import BaseRoute, Route, WebSocketRoute
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from src import data, hydro
 
@@ -30,6 +31,10 @@ def get_routes() -> list[BaseRoute]:
             "/run_automatic",
             endpoint=_run_automatic,
             methods=["POST"],
+        ),
+        WebSocketRoute(
+            "/run_automatic_ws",
+            endpoint=_run_automatic_ws,
         ),
     ]
 
@@ -167,7 +172,7 @@ async def _run_automatic(
     data_ = _read_data(
         catchment, calibration_start, calibration_end, snow_model
     )
-    results = hydro.models.calibrate_model(
+    results = await hydro.models.calibrate_model(
         data_,
         hydrological_model,
         objective_criteria.lower(),  # type: ignore
@@ -181,7 +186,156 @@ async def _run_automatic(
         float(pcento),
         float(peps),
     )
-    return JSONResponse({})
+
+    # Generate final plot
+    params = {
+        param: values[-1] for param, values in results["params"].items()
+    }
+    simulation = hydro.models.run_model(data_, hydrological_model, params)
+    optimal = hydro.utils.get_optimal_for_criteria(
+        objective_criteria.lower(),  # type: ignore
+    )
+    fig = hydro.models.plot_simulation(
+        simulation, results, objective_criteria.lower(), optimal
+    )
+
+    return JSONResponse(
+        {
+            "fig": fig.to_json(),
+            "results": results,
+        }
+    )
+
+
+async def _run_automatic_ws(websocket: WebSocket) -> None:
+    """
+    WebSocket endpoint for automatic calibration with real-time progress.
+
+    Protocol:
+    1. Accept connection
+    2. Receive calibration config (JSON)
+    3. Run SCE with progress callback
+    4. Stream progress updates
+    5. Send final results
+    6. Close connection
+    """
+    await websocket.accept()
+
+    try:
+        # Receive configuration
+        config = await websocket.receive_json()
+
+        # Extract parameters
+        hydrological_model = config["hydrological_model"]
+        catchment = config["catchment"]
+        snow_model = config["snow_model"]
+        objective_criteria = config["objective_criteria"]
+        streamflow_transformation = config["streamflow_transformation"]
+        calibration_start = config["calibration_start"]
+        calibration_end = config["calibration_end"]
+        ngs = int(config["ngs"])
+        npg = int(config["npg"])
+        mings = int(config["mings"])
+        nspl = int(config["nspl"])
+        maxn = int(config["maxn"])
+        kstop = int(config["kstop"])
+        pcento = float(config["pcento"])
+        peps = float(config["peps"])
+
+        # Read data
+        data_ = _read_data(
+            catchment, calibration_start, calibration_end, snow_model
+        )
+
+        # Get optimal value for plotting
+        optimal = hydro.utils.get_optimal_for_criteria(
+            objective_criteria.lower(),  # type: ignore
+        )
+
+        # Define progress callback that generates and sends plots
+        async def send_progress(update: dict):
+            # Extract current results from progress update
+            current_results = {
+                "params": update.pop("params_history"),
+                "objective": update.pop("objective_history"),
+            }
+
+            # Generate current best simulation
+            params = {
+                param: values[-1]
+                for param, values in current_results["params"].items()
+            }
+            simulation = hydro.models.run_model(data_, hydrological_model, params)
+
+            # Generate plot
+            fig = hydro.models.plot_simulation(
+                simulation,
+                current_results,
+                objective_criteria.lower(),
+                optimal
+            )
+
+            # Send progress with plot
+            await websocket.send_json({
+                **update,
+                "fig": fig.to_json(),
+                "results": current_results,
+            })
+
+        # Run calibration
+        results = await hydro.models.calibrate_model(
+            data_,
+            hydrological_model,
+            objective_criteria.lower(),  # type: ignore
+            streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
+            ngs,
+            npg,
+            mings,
+            nspl,
+            maxn,
+            kstop,
+            pcento,
+            peps,
+            send_progress,
+        )
+
+        # Generate final plot
+        params = {
+            param: values[-1] for param, values in results["params"].items()
+        }
+        simulation = hydro.models.run_model(data_, hydrological_model, params)
+        optimal = hydro.utils.get_optimal_for_criteria(
+            objective_criteria.lower(),  # type: ignore
+        )
+        fig = hydro.models.plot_simulation(
+            simulation, results, objective_criteria.lower(), optimal
+        )
+
+        # Send final results
+        await websocket.send_json(
+            {
+                "type": "complete",
+                "fig": fig.to_json(),
+                "results": results,
+            }
+        )
+
+    except WebSocketDisconnect:
+        # Client disconnected - could add cancellation logic here
+        pass
+    except Exception as e:
+        # Send error to client
+        try:
+            await websocket.send_json(
+                {"type": "error", "message": str(e)}
+            )
+        except:
+            pass
+    finally:
+        try:
+            await websocket.close()
+        except:
+            pass
 
 
 def _read_data(

@@ -283,13 +283,22 @@ async function runManual(event) {
     ],
   });
 
-  fig.scrollIntoView({ behavior: "smooth", block: "start" });
+  fig.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
 async function runAutomatic(event) {
   event.preventDefault();
 
-  const fig = document.getElementById("results__fig");
+  const fig = document.querySelector("#calibration .results__fig");
+  const runButton = document.querySelector("#calibration__automatic-config input[type='submit']");
+  const loadingSpinner = document.querySelector("#calibration__automatic-config .loading");
+  const statusMessage = document.querySelector("#calibration__automatic-config .status-message");
+
+  // Hide Run button, show loading and status
+  runButton.setAttribute("hidden", true);
+  loadingSpinner.removeAttribute("hidden");
+  statusMessage.removeAttribute("hidden");
+  statusMessage.textContent = "Calibration started...";
 
   const config = {
     hydrological_model: document.getElementById(
@@ -306,13 +315,6 @@ async function runAutomatic(event) {
     calibration_start: document.getElementById("calibration__period-start")
       .value,
     calibration_end: document.getElementById("calibration__period-end").value,
-    params: Object.fromEntries(
-      [
-        ...document.querySelectorAll(
-          "#calibration__manual-config input[type='range']",
-        ),
-      ].map((input) => [input.name, parseFloat(input.value)]),
-    ),
     ngs: document.getElementById("calibration__ngs").value,
     npg: document.getElementById("calibration__npg").value,
     mings: document.getElementById("calibration__mings").value,
@@ -323,31 +325,109 @@ async function runAutomatic(event) {
     peps: document.getElementById("calibration__peps").value,
   };
 
-  const resp = await fetch("/calibration/run_automatic", {
-    method: "POST",
-    body: JSON.stringify(config),
-    headers: {
-      "Content-type": "application/json",
-    },
-  });
-  const data = await resp.json();
-  const figData = JSON.parse(data.fig);
-  model.results = data.results;
+  // Create WebSocket connection
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const ws = new WebSocket(
+    `${protocol}//${window.location.host}/calibration/run_automatic_ws`,
+  );
 
-  clear(fig);
-  Plotly.newPlot(fig, figData.data, figData.layout, {
-    displayLogo: false,
-    modeBarButtonsToRemove: [
-      "zoom",
-      "pan",
-      "select",
-      "lasso",
-      "zoomIn",
-      "zoomOut",
-      "autoScale",
-      "resetScale",
-    ],
-  });
+  const start = performance.now();
 
-  fig.scrollIntoView({ behavior: "smooth", block: "start" });
+  ws.onopen = () => {
+    // Send configuration
+    ws.send(JSON.stringify(config));
+    statusMessage.textContent = "Calibration in progress...";
+  };
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "progress") {
+      // Update progress display
+      updateProgress(data);
+
+      // Render plot with current progress
+      const figData = JSON.parse(data.fig);
+      model.results = data.results;
+
+      clear(fig);
+      Plotly.newPlot(fig, figData.data, figData.layout, {
+        displayLogo: false,
+        modeBarButtonsToRemove: [
+          "zoom",
+          "pan",
+          "select",
+          "lasso",
+          "zoomIn",
+          "zoomOut",
+          "autoScale",
+          "resetScale",
+        ],
+      });
+      fig.scrollIntoView({ behavior: "smooth", block: "end" });
+
+    } else if (data.type === "complete") {
+      // Render final plot
+      const figData = JSON.parse(data.fig);
+      model.results = data.results;
+
+      const duration = (performance.now() - start) / 1000;
+      document.querySelector("#calibration .results__time span:last-child").textContent = `${duration} s`;
+
+      clear(fig);
+      Plotly.newPlot(fig, figData.data, figData.layout, {
+        displayLogo: false,
+        modeBarButtonsToRemove: [
+          "zoom",
+          "pan",
+          "select",
+          "lasso",
+          "zoomIn",
+          "zoomOut",
+          "autoScale",
+          "resetScale",
+        ],
+      });
+
+      // Update UI state - calibration completed
+      loadingSpinner.setAttribute("hidden", true);
+      statusMessage.textContent = `Calibration completed in ${duration.toFixed(1)} s`;
+      runButton.removeAttribute("hidden");
+
+      fig.scrollIntoView({ behavior: "smooth", block: "end" });
+      ws.close();
+    } else if (data.type === "error") {
+      console.error("Calibration error:", data.message);
+
+      // Update UI state - error occurred
+      loadingSpinner.setAttribute("hidden", true);
+      statusMessage.textContent = `Error: ${data.message}`;
+      runButton.removeAttribute("hidden");
+
+      ws.close();
+    }
+  };
+
+  ws.onerror = (error) => {
+    console.error("WebSocket error:", error);
+
+    // Update UI state - connection error
+    loadingSpinner.setAttribute("hidden", true);
+    statusMessage.textContent = "Connection error occurred";
+    runButton.removeAttribute("hidden");
+  };
+
+  ws.onclose = () => {
+    console.log("WebSocket connection closed");
+  };
+}
+
+function updateProgress(data) {
+  // Display progress in console (could be updated to show in UI)
+  console.log(
+    `Iteration ${data.iteration}: evaluations=${data.evaluations}, ` +
+    `best_objective=${data.best_objective.toFixed(4)}, ` +
+    `gnrng=${data.gnrng.toFixed(6)}, ` +
+    `percent_change=${data.percent_change.toFixed(6)}`,
+  );
 }
