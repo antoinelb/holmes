@@ -451,21 +451,25 @@ function exportCalibrationResults() {
   const algorithm = document.getElementById("calibration__algorithm").value;
   const dateStart = document.getElementById("calibration__period-start").value;
   const dateEnd = document.getElementById("calibration__period-end").value;
+  const params = Object.entries(model.results.params).map(([key, vals]) => ({
+    name: key,
+    value: vals[vals.length - 1]
+  }));
+
 
   // Create export data matching the format from the screenshot
   const exportData = {
-    HM: hydroModel,
-    Ctch: catchment,
-    Crit: criteria,
-    QTrans: streamflowTransform,
-    Algo: algorithm,
-    DateSta: dateStart,
-    DateEnd: dateEnd,
-    WarmUp: 1, // Default warm-up period
-    ModelSnow: snowModel && snowModel !== "" ? 1 : 0,
-    SnowName: snowModel || "",
-    DataType: "Observations",
-    Param: model.results.parameters || []
+    "hydrological model": hydroModel,
+    "catchment": catchment,
+    "criteria": criteria,
+    "streamflow transformation": streamflowTransform,
+    "algorithm": algorithm,
+    "date start": dateStart,
+    "date end": dateEnd,
+    "warmup": true, // Default warm-up period
+    "snow model": snowModel || "",
+    "data type": "Observations",
+    "parameters": params,
   };
 
   // Convert to JSON and download
