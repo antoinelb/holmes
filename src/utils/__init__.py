@@ -1,5 +1,6 @@
 __all__ = [
     "paths",
+    "plotting",
 ]
 
-from . import paths
+from . import paths, plotting

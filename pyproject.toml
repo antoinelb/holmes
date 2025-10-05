@@ -5,10 +5,14 @@ description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a softwar
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "numba>=0.62.1",
+    "numpy>=2.3.3",
     "plotly>=6.3.0",
     "polars>=1.33.1",
     "python-dotenv>=1.1.1",
+    "scipy>=1.16.2",
     "starlette>=0.48.0",
+    "tqdm>=4.67.1",
     "uvicorn>=0.36.0",
 ]
 

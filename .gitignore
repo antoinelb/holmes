@@ -9,7 +9,9 @@ wheels/
 .venv
 .env
 screenshots/
+v2
 
 CLAUDE.md
 .claude
 .playwright-mcp/
+.specify

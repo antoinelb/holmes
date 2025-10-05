@@ -41,6 +41,12 @@ def get_available_catchments() -> list[tuple[str, bool, tuple[str, str]]]:
     )
 
 
+def read_catchment_data(catchment: str) -> pl.LazyFrame:
+    return pl.scan_csv(
+        data_dir / f"{catchment}_Observations.csv"
+    ).with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
+
+
 ###########
 # private #
 ###########

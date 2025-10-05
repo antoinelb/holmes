@@ -1,0 +1,41 @@
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+
+  & .slider__value {
+    top: 0;
+    left: 50%;
+    transform: translateX(-100%);
+    text-align: center;
+    position: absolute;
+  }
+
+  & input[type="range"] {
+    margin: 1.5em 0 0 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  & .slider__range {
+    position: relative;
+    width: 100%;
+    height: 1.5em;
+    padding: 0;
+    margin: 0;
+  }
+
+}
+
+.icon.loading {
+  animation: spin 4s linear infinite;
+  height: 3em;
+  stroke: oklch(var(--theme-most));
+  width: 3em;
+
+  &[hidden] {
+    display: none;
+  }
+}

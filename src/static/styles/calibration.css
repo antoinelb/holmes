@@ -1,6 +1,14 @@
 #calibration {
+  display: flex;
+  flex-direction: column;
+  gap: 3em;
+
   & .config {
     display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-size: 0.9rem;
+    grid-column-gap: 1em;
+    padding: 0 1em;
 
     & #calibration__general-config {
       display: grid;
@@ -59,6 +67,72 @@
           width: auto;
         }
       }
+    }
+
+    & #calibration__manual-config {
+      display: flex;
+      flex-direction: column;
+
+      &[hidden] {
+        display: none;
+      }
+
+      & .slider {
+        margin-bottom: 2em;
+      }
+
+      & .icon {
+        align-self: center;
+        margin: 1em 0;
+      }
+
+      & input[type='submit'] {
+        width: 100%;
+      }
+    }
+
+    & #calibration__automatic-config {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-column-gap: 1em;
+      grid-row-gap: 0.5em;
+      align-items: center;
+
+      &[hidden] {
+        display: none;
+      }
+
+      & h3 {
+        grid-column: 1 / -1;
+        text-align: center;
+      }
+
+      & span {
+        grid-column: 2;
+        text-align: center;
+      }
+
+      & label {
+        grid-column: 1;
+
+        &.label-indent {
+          padding-left: 1em;
+        }
+
+        &.label-disabled {
+          color: oklch(var(--fg) / 0.5);
+        }
+      }
+
+      & input {
+        grid-column: 2;
+      }
+
+      & input[type='submit'] {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
     }
   }
 }
