@@ -61,6 +61,9 @@ function addEventListeners() {
     .addEventListener("change", (event) =>
       updateShownConfig(event.target.value),
     );
+  document
+    .querySelector(".results__export")
+    .addEventListener("click", exportCalibrationResults);
 }
 
 async function initAvailableConfig() {
@@ -264,10 +267,6 @@ async function runManual(event) {
   const figData = JSON.parse(data.fig);
   model.results = data.results;
 
-  document.querySelector("#calibration .results__time span:last-child").textContent = `${(performance.now() - start) /
-    1000}
-  s`;
-
   clear(fig);
   Plotly.newPlot(fig, figData.data, figData.layout, {
     displayLogo: false,
@@ -282,6 +281,9 @@ async function runManual(event) {
       "resetScale",
     ],
   });
+
+  // Show export button
+  document.querySelector(".results__export").removeAttribute("hidden");
 
   fig.scrollIntoView({ behavior: "smooth", block: "end" });
 }
@@ -372,7 +374,6 @@ async function runAutomatic(event) {
       model.results = data.results;
 
       const duration = (performance.now() - start) / 1000;
-      document.querySelector("#calibration .results__time span:last-child").textContent = `${duration} s`;
 
       clear(fig);
       Plotly.newPlot(fig, figData.data, figData.layout, {
@@ -393,6 +394,9 @@ async function runAutomatic(event) {
       loadingSpinner.setAttribute("hidden", true);
       statusMessage.textContent = `Calibration completed in ${duration.toFixed(1)} s`;
       runButton.removeAttribute("hidden");
+
+      // Show export button
+      document.querySelector(".results__export").removeAttribute("hidden");
 
       fig.scrollIntoView({ behavior: "smooth", block: "end" });
       ws.close();
@@ -430,4 +434,49 @@ function updateProgress(data) {
     `gnrng=${data.gnrng.toFixed(6)}, ` +
     `percent_change=${data.percent_change.toFixed(6)}`,
   );
+}
+
+function exportCalibrationResults() {
+  if (!model.results) {
+    alert("No calibration results to export. Please run a calibration first.");
+    return;
+  }
+
+  // Gather all calibration settings and results
+  const hydroModel = document.getElementById("calibration__hydrological-model").value;
+  const catchment = document.getElementById("calibration__catchment").value;
+  const snowModel = document.getElementById("calibration__snow-model").value;
+  const criteria = document.getElementById("calibration__objective-criteria").value;
+  const streamflowTransform = document.getElementById("calibration__streamflow-transformation").value;
+  const algorithm = document.getElementById("calibration__algorithm").value;
+  const dateStart = document.getElementById("calibration__period-start").value;
+  const dateEnd = document.getElementById("calibration__period-end").value;
+
+  // Create export data matching the format from the screenshot
+  const exportData = {
+    HM: hydroModel,
+    Ctch: catchment,
+    Crit: criteria,
+    QTrans: streamflowTransform,
+    Algo: algorithm,
+    DateSta: dateStart,
+    DateEnd: dateEnd,
+    WarmUp: 1, // Default warm-up period
+    ModelSnow: snowModel && snowModel !== "" ? 1 : 0,
+    SnowName: snowModel || "",
+    DataType: "Observations",
+    Param: model.results.parameters || []
+  };
+
+  // Convert to JSON and download
+  const jsonStr = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `calibration_${catchment}_${hydroModel}_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

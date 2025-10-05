@@ -134,4 +134,21 @@
 
     }
   }
+
+  & .results {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    align-items: center;
+
+    & .results__export {
+      width: auto;
+      padding: 0.5em 1em;
+      font-size: 0.9rem;
+    }
+
+    & .results__fig {
+      width: 100%;
+    }
+  }
 }

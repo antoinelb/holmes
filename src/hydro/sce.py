@@ -149,28 +149,22 @@ async def run_sce_calibration(
                 s = cx[simplex_indices, :]
                 sf = cf[simplex_indices]
 
-                # Competitive Complex Evolution
-                snew = _competitive_complex_evolution(
-                    s, sf, lower_bounds, upper_bounds
-                )
-
-                # Evaluate new point
-                simulation = model(
+                # Competitive Complex Evolution (with evaluation)
+                snew, fnew, icall = _competitive_complex_evolution(
+                    s,
+                    sf,
+                    lower_bounds,
+                    upper_bounds,
+                    model,
                     precipitation,
                     evapotranspiration,
-                    **{
-                        param: (
-                            int(val)
-                            if params[param]["is_integer"]
-                            else float(val)
-                        )
-                        for param, val in zip(param_names, snew)
-                    },
+                    params,
+                    param_names,
+                    flow,
+                    criteria,
+                    transformation,
+                    icall,
                 )
-                fnew = evaluate_simulation(
-                    flow, simulation, criteria, transformation
-                )
-                icall += 1
 
                 # Replace worst point in simplex
                 s[-1, :] = snew
@@ -211,9 +205,9 @@ async def run_sce_calibration(
 
         if iteration >= kstop:
             criter_change = (
-                abs(criter[-1] - criter[-kstop]) * 100 / np.mean(
-                    np.abs(criter[-kstop:])
-                )
+                abs(criter[-1] - criter[-kstop])
+                * 100
+                / np.mean(np.abs(criter[-kstop:]))
             )
 
         iteration += 1
@@ -365,34 +359,53 @@ def _select_simplex_indices(
     return np.sort(indices)
 
 
-@numba.jit(nopython=True)
 def _competitive_complex_evolution(
     simplex: np.ndarray,
     simplex_objectives: np.ndarray,
     lower_bounds: np.ndarray,
     upper_bounds: np.ndarray,
+    model: Callable,
+    precipitation: np.ndarray,
+    evapotranspiration: np.ndarray,
+    params: dict,
+    param_names: list[str],
+    flow: np.ndarray,
+    criteria: Literal["rmse", "nse", "kge"],
+    transformation: Literal["log", "sqrt", "none"],
+    icall: int,
     alpha: float = 1.0,
     beta: float = 0.5,
-) -> np.ndarray:
+) -> tuple[np.ndarray, float, int]:
     """
     Competitive Complex Evolution - evolve simplex using Nelder-Mead operations.
 
     Steps:
     1. Reflection: snew = centroid + alpha * (centroid - worst)
     2. If out of bounds: random point
-    3. If worse than worst: Contraction
-    4. If still worse: random point
+    3. Evaluate reflection
+    4. If worse than worst: Contraction
+    5. If contraction worse: random point
 
-    Returns new point (objective evaluated outside, not Numba-compatible).
+    Returns new point, its objective value, and updated call count.
     """
-    # Worst point
+    # Worst point and objective
     sw = simplex[-1, :]
+    fw = simplex_objectives[-1]
 
-    # Centroid (excluding worst) - compute manually for Numba compatibility
-    n_params = simplex.shape[1]
-    ce = np.empty(n_params)
-    for i in range(n_params):
-        ce[i] = np.mean(simplex[:-1, i])
+    # Centroid (excluding worst)
+    ce = np.mean(simplex[:-1, :], axis=0)
+
+    # Helper function to evaluate a point
+    def evaluate_point(point: np.ndarray) -> float:
+        simulation = model(
+            precipitation,
+            evapotranspiration,
+            **{
+                param: int(val) if params[param]["is_integer"] else float(val)
+                for param, val in zip(param_names, point)
+            },
+        )
+        return evaluate_simulation(flow, simulation, criteria, transformation)
 
     # Reflection
     snew = ce + alpha * (ce - sw)
@@ -404,7 +417,25 @@ def _competitive_complex_evolution(
             upper_bounds - lower_bounds
         )
 
-    return snew
+    # Evaluate reflection point
+    fnew = evaluate_point(snew)
+    icall += 1
+
+    # If reflection failed (worse than worst), try contraction
+    if fnew > fw:
+        snew = sw + beta * (ce - sw)
+        fnew = evaluate_point(snew)
+        icall += 1
+
+        # If contraction also failed, use random point
+        if fnew > fw:
+            snew = lower_bounds + np.random.random(lower_bounds.shape[0]) * (
+                upper_bounds - lower_bounds
+            )
+            fnew = evaluate_point(snew)
+            icall += 1
+
+    return snew, fnew, icall
 
 
 @numba.jit(nopython=True)

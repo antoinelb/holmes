@@ -137,9 +137,11 @@ def _update_production(
     store: float, precipitation: float, evapotranspiration: float, x1: float
 ) -> tuple[float, float]:
     if precipitation > evapotranspiration:
+        # Calculate net precipitation
+        net_precipitation = precipitation - evapotranspiration
         # only calculate terms once
         tmp_term_1 = store / x1
-        tmp_term_2 = math.tanh(precipitation / x1)
+        tmp_term_2 = math.tanh(net_precipitation / x1)
 
         store_precipitation = (
             x1
@@ -149,9 +151,11 @@ def _update_production(
         )
         store = store + store_precipitation
     elif precipitation < evapotranspiration:
+        # Calculate net evapotranspiration
+        net_evapotranspiration = evapotranspiration - precipitation
         tmp_term_1 = store / x1
         # only calculate terms once
-        tmp_term_2 = math.tanh(evapotranspiration / x1)
+        tmp_term_2 = math.tanh(net_evapotranspiration / x1)
         evapotranspiration = (
             store
             * (2 - tmp_term_1)
@@ -160,8 +164,10 @@ def _update_production(
         )
         store = store - evapotranspiration
         store_precipitation = 0
+        net_precipitation = 0.0
     else:
         store_precipitation = 0
+        net_precipitation = 0.0
 
     if x1 / store > 1e-3:
         percolation = store * (
@@ -171,7 +177,9 @@ def _update_production(
     else:
         percolation = 0
 
-    routing_precipitation = precipitation - store_precipitation + percolation
+    routing_precipitation = (
+        net_precipitation - store_precipitation + percolation
+    )
 
     return store, routing_precipitation
 

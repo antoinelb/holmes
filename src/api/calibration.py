@@ -41,6 +41,7 @@ def get_routes() -> list[BaseRoute]:
 
 async def precompile_functions() -> None:
     await hydro.models.precompile()
+    await hydro.snow.precompile_cemaneige()
 
 
 ###########
@@ -188,9 +189,7 @@ async def _run_automatic(
     )
 
     # Generate final plot
-    params = {
-        param: values[-1] for param, values in results["params"].items()
-    }
+    params = {param: values[-1] for param, values in results["params"].items()}
     simulation = hydro.models.run_model(data_, hydrological_model, params)
     optimal = hydro.utils.get_optimal_for_criteria(
         objective_criteria.lower(),  # type: ignore
@@ -265,22 +264,26 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
                 param: values[-1]
                 for param, values in current_results["params"].items()
             }
-            simulation = hydro.models.run_model(data_, hydrological_model, params)
+            simulation = hydro.models.run_model(
+                data_, hydrological_model, params
+            )
 
             # Generate plot
             fig = hydro.models.plot_simulation(
                 simulation,
                 current_results,
                 objective_criteria.lower(),
-                optimal
+                optimal,
             )
 
             # Send progress with plot
-            await websocket.send_json({
-                **update,
-                "fig": fig.to_json(),
-                "results": current_results,
-            })
+            await websocket.send_json(
+                {
+                    **update,
+                    "fig": fig.to_json(),
+                    "results": current_results,
+                }
+            )
 
         # Run calibration
         results = await hydro.models.calibrate_model(
@@ -326,9 +329,7 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
     except Exception as e:
         # Send error to client
         try:
-            await websocket.send_json(
-                {"type": "error", "message": str(e)}
-            )
+            await websocket.send_json({"type": "error", "message": str(e)})
         except:
             pass
     finally:
@@ -362,10 +363,42 @@ def _read_data(
         )
     )
 
+    data_ = data_.collect()
+
     # handle snow
     if snow_model == "none":
         pass
-    else:
-        raise NotImplementedError()
+    elif snow_model.lower() == "cemaneige":
+        # Read CemaNeige configuration
+        cemaneige_info = data.read_cemaneige_info(catchment)
 
-    return data_.collect()
+        # Extract day of year from date
+        day_of_year = (
+            data_["date"].dt.ordinal_day().to_numpy().squeeze().astype(int)
+        )
+
+        # Run CemaNeige to get effective precipitation
+        effective_precip = hydro.snow.run_cemaneige(
+            data_["precipitation"].to_numpy().squeeze(),
+            data_["temperature"].to_numpy().squeeze(),
+            day_of_year,
+            cemaneige_info["altitude_layers"],
+            cemaneige_info["median_altitude"],
+            cemaneige_info["n_altitude_layers"],
+            0.25,  # ctg - Default parameter
+            3.74,  # kf - Default parameter
+            0.0,  # beta
+            0.1,  # vmin
+            0.0,  # tf
+            cemaneige_info["qnbv"],
+            cemaneige_info["qnbv"] * 0.9,  # gthreshold
+        )
+
+        # Replace precipitation with effective precipitation
+        data_ = data_.with_columns(
+            pl.Series("precipitation", effective_precip)
+        )
+    else:
+        raise ValueError(f"Unknown snow model: {snow_model}")
+
+    return data_

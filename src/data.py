@@ -1,3 +1,6 @@
+import csv
+
+import numpy as np
 import polars as pl
 
 from src.utils.paths import root_dir
@@ -45,6 +48,36 @@ def read_catchment_data(catchment: str) -> pl.LazyFrame:
     return pl.scan_csv(
         data_dir / f"{catchment}_Observations.csv"
     ).with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
+
+
+def read_cemaneige_info(catchment: str) -> dict:
+    """
+    Read CemaNeige configuration parameters for a catchment.
+
+    Parameters
+    ----------
+    catchment : str
+        Catchment name
+
+    Returns
+    -------
+    dict
+        Dictionary with keys: qnbv, altitude_layers, median_altitude, latitude
+    """
+    path = data_dir / f"{catchment}_CemaNeigeInfo.csv"
+    with open(path, "r") as csv_file:
+        reader = csv.reader(csv_file)
+        info = dict(reader)
+
+    altitude_layers = np.array([float(x) for x in info["AltiBand"].split(";")])
+
+    return {
+        "qnbv": float(info["QNBV"]),
+        "altitude_layers": altitude_layers,
+        "median_altitude": float(info["Z50"]),
+        "latitude": float(info["Lat"]),
+        "n_altitude_layers": len(altitude_layers),
+    }
 
 
 ###########
