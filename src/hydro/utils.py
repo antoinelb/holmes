@@ -28,7 +28,9 @@ class Results(TypedDict):
 def evaluate_simulation(
     flow: np.ndarray,
     simulation: np.ndarray,
-    criteria: Literal["rmse", "nse", "kge"],
+    criteria: Literal[
+        "rmse", "nse", "kge", "mean_bias", "deviation_bias", "correlation"
+    ],
     transformation: Literal["log", "sqrt", "none"],
 ) -> float:
     if transformation == "log":
@@ -47,13 +49,31 @@ def evaluate_simulation(
             / np.sum((flow - np.mean(flow)) ** 2)
         )
     elif criteria == "kge":
-        r = float(np.corrcoef(flow, simulation)[0, 1])
-        bm = float(np.mean(simulation) / np.mean(flow))
-        bv = float(
+        correlation = evaluate_simulation(
+            flow, simulation, "correlation", "none"
+        )
+        mean_bias = evaluate_simulation(flow, simulation, "mean_bias", "none")
+        deviation_bias = evaluate_simulation(
+            flow, simulation, "deviation_bias", "none"
+        )
+        return (
+            1
+            - (
+                (1 - correlation) ** 2
+                + (1 - mean_bias) ** 2
+                + (1 - deviation_bias) ** 2
+            )
+            ** 0.5
+        )
+    elif criteria == "mean_bias":
+        return float(np.mean(simulation) / np.mean(flow))
+    elif criteria == "deviation_bias":
+        return float(
             (np.std(simulation) / np.mean(simulation))
             / (np.std(flow) / np.mean(flow))
         )
-        return 1 - ((1 - r) ** 2 + (1 - bm) ** 2 + (1 - bv) ** 2) ** 0.5
+    elif criteria == "correlation":
+        return float(np.corrcoef(flow, simulation)[0, 1])
     else:
         assert_never(criteria)
 
@@ -62,3 +82,22 @@ def get_optimal_for_criteria(
     criteria: Literal["rmse", "nse", "kge"],
 ) -> float:
     return {"rmse": 0, "nse": 1, "kge": 1}[criteria]
+
+
+def evaluate_simulation_on_multiple_criteria(
+    flow: np.ndarray, simulation: np.ndarray
+) -> dict[str, float]:
+    return {
+        "nse_high": evaluate_simulation(flow, simulation, "nse", "none"),
+        "nse_medium": evaluate_simulation(flow, simulation, "nse", "sqrt"),
+        "nse_low": evaluate_simulation(flow, simulation, "nse", "log"),
+        "water_balance": evaluate_simulation(
+            flow, simulation, "mean_bias", "none"
+        ),
+        "flow_variability": evaluate_simulation(
+            flow, simulation, "deviation_bias", "none"
+        ),
+        "correlation": evaluate_simulation(
+            flow, simulation, "correlation", "none"
+        ),
+    }

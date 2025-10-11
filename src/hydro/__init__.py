@@ -1,6 +1,7 @@
 __all__ = [
     "calibration",
     "evaluate_simulation",
+    "evaluate_simulation_on_multiple_criteria",
     "get_optimal_for_criteria",
     "hydrological_models",
     "precompile",
@@ -12,6 +13,7 @@ from . import calibration, snow
 from .hydro import precompile, run_model
 from .utils import (
     evaluate_simulation,
+    evaluate_simulation_on_multiple_criteria,
     get_optimal_for_criteria,
     hydrological_models,
 )
