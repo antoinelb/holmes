@@ -1,0 +1,106 @@
+#simulation {
+  & .config {
+    display: grid;
+    grid-template-columns: 1fr max-content;
+    font-size: 0.9rem;
+    grid-column-gap: 2em;
+    padding: 0 1em;
+    align-items: start;
+
+    & #simulation__calibration {
+      display: flex;
+      flex-direction: column;
+      row-gap: 0.5em;
+      align-items: center;
+
+      & h3 {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+      }
+
+      & #simulation__calibration-table {
+        --n-columns: 1;
+        display: grid;
+        grid-template-columns: repeat(var(--n-columns), 1fr);
+        grid-template-rows: repeat(11, max-content);
+        grid-auto-flow: column;
+        grid-column-gap: 1em;
+        grid-row-gap: 0.5em;
+        width: 100%;
+
+        & div {
+          display: contents;
+
+          & span {
+            padding: 0.25em 0;
+          }
+        }
+      }
+
+
+
+    }
+
+    & #simulation__period {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      grid-column-gap: 1em;
+      grid-row-gap: 0.5em;
+      align-items: center;
+
+      & h3 {
+        grid-column: 1 / -1;
+        text-align: center;
+        margin: 0;
+      }
+
+      & label {
+        grid-column: 1;
+
+        &.label-indent {
+          padding-left: 1em;
+        }
+
+        &.label-disabled {
+          color: oklch(var(--fg) / 0.5);
+        }
+      }
+
+      & input {
+        grid-column: 2;
+      }
+
+      & select {
+        grid-column: 2;
+
+        &[disabled] {
+          color: oklch(var(--fg) / 0.5);
+          border: none;
+        }
+      }
+
+      & label[for='simulation__period-start'],
+      & label[for='simulation__period-end'] {
+        display: flex;
+        justify-content: flex-start;
+        gap: 0.25em;
+        align-items: center;
+
+        & button {
+          background: oklch(var(--fg) / 0.1);
+          box-shadow: none;
+          font-size: 0.75rem;
+          padding: 0.25em 0.5em;
+          height: auto;
+          width: auto;
+        }
+      }
+
+      & input[type='submit'] {
+        grid-column: 1 / -1;
+      }
+    }
+
+  }
+}

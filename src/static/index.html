@@ -58,7 +58,7 @@
     </div>
   </header>
   <main>
-    <section id="calibration">
+    <section id="calibration" hidden>
       <h2>Calibration</h2>
       <div class="config">
         <form id="calibration__general-config">
@@ -115,8 +115,42 @@
         <div class="results__fig"></div>
       </div>
     </section>
-    <section id="simulation" hidden>
+    <section id="simulation">
       <h2>Simulation</h2>
+      <div class="config">
+        <form id="simulation__calibration">
+          <h3>Calibration results</h3>
+          <div class="file-upload">
+            <label for="simulation__import">Import model(s) parameters</label>
+            <input id="simulation__import" type="file" accept="application/json" multiple />
+          </div>
+          <div id="simulation__calibration-table">
+            <div>
+              <span>hydrological model</span>
+              <span>catchment</span>
+              <span>criteria</span>
+              <span>streamflow transformation</span>
+              <span>algorithm</span>
+              <span>date start</span>
+              <span>date end</span>
+              <span>warmup</span>
+              <span>snow model</span>
+              <span>data type</span>
+              <span>parameters</span>
+            </div>
+          </div>
+        </form>
+        <form id="simulation__period">
+          <h3>Simulation period</h3>
+          <label for="simulation__period-start">Start <button>Set to period start</button></label>
+          <input id="simulation__period-start" type="date" />
+          <label for="simulation__period-end">End <button>Set to period end</button></label>
+          <input id="simulation__period-end" type="date" />
+          <input type="submit" value="Run" />
+        </form>
+      </div>
+      <div class="results">
+      </div>
     </section>
     <section id="projection" hidden>
       <h2>Projection</h2>

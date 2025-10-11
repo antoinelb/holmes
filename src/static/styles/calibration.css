@@ -149,6 +149,7 @@
 
     & .results__fig {
       width: 100%;
+      min-height: 30em;
     }
   }
 }

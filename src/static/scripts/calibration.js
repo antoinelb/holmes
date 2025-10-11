@@ -352,6 +352,7 @@ async function runAutomatic(event) {
       const figData = JSON.parse(data.fig);
       model.results = data.results;
 
+
       clear(fig);
       Plotly.newPlot(fig, figData.data, figData.layout, {
         displayLogo: false,
@@ -366,7 +367,10 @@ async function runAutomatic(event) {
           "resetScale",
         ],
       });
-      fig.scrollIntoView({ behavior: "smooth", block: "end" });
+
+      if (data.iteration === 1) {
+        fig.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
 
     } else if (data.type === "complete") {
       // Render final plot
@@ -398,7 +402,6 @@ async function runAutomatic(event) {
       // Show export button
       document.querySelector(".results__export").removeAttribute("hidden");
 
-      fig.scrollIntoView({ behavior: "smooth", block: "end" });
       ws.close();
     } else if (data.type === "error") {
       console.error("Calibration error:", data.message);

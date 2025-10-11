@@ -74,7 +74,7 @@ def run_model(
     return np.array(flows)
 
 
-async def precompile_model() -> None:
+async def precompile() -> None:
     run_model(
         np.array([1.0]),
         np.array([1.0]),

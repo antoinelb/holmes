@@ -40,8 +40,7 @@ def get_routes() -> list[BaseRoute]:
 
 
 async def precompile_functions() -> None:
-    await hydro.models.precompile()
-    await hydro.snow.precompile_cemaneige()
+    await hydro.precompile()
 
 
 ###########
@@ -52,7 +51,7 @@ async def precompile_functions() -> None:
 async def _get_available_config(_: Request) -> Response:
     catchments = data.get_available_catchments()
     config = {
-        "hydrological_model": hydro.models.hydrological_models,
+        "hydrological_model": hydro.hydrological_models,
         "catchment": catchments,
         "snow_model": {"none": {}, **hydro.snow.snow_models},
         "objective_criteria": ["RMSE", "NSE", "KGE"],
@@ -94,14 +93,14 @@ async def _run_manual(
     data_ = _read_data(
         catchment, calibration_start, calibration_end, snow_model
     )
-    simulation = hydro.models.run_model(data_, hydrological_model, params)
-    objective = hydro.utils.evaluate_simulation(
+    simulation = hydro.run_model(data_, hydrological_model, params)
+    objective = hydro.evaluate_simulation(
         simulation["flow"].to_numpy().squeeze(),
         simulation["simulation"].to_numpy().squeeze(),
         objective_criteria.lower(),  # type: ignore
         streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
     )
-    optimal = hydro.utils.get_optimal_for_criteria(
+    optimal = hydro.get_optimal_for_criteria(
         objective_criteria.lower(),  # type: ignore
     )
 
@@ -121,7 +120,7 @@ async def _run_manual(
         ),
     }
 
-    fig = hydro.models.plot_simulation(
+    fig = hydro.calibration.plot_calibration(
         simulation, results, objective_criteria.lower(), optimal
     )
 
@@ -173,7 +172,7 @@ async def _run_automatic(
     data_ = _read_data(
         catchment, calibration_start, calibration_end, snow_model
     )
-    results = await hydro.models.calibrate_model(
+    results = await hydro.calibration.calibrate_model(
         data_,
         hydrological_model,
         objective_criteria.lower(),  # type: ignore
@@ -190,11 +189,11 @@ async def _run_automatic(
 
     # Generate final plot
     params = {param: values[-1] for param, values in results["params"].items()}
-    simulation = hydro.models.run_model(data_, hydrological_model, params)
-    optimal = hydro.utils.get_optimal_for_criteria(
+    simulation = hydro.run_model(data_, hydrological_model, params)
+    optimal = hydro.get_optimal_for_criteria(
         objective_criteria.lower(),  # type: ignore
     )
-    fig = hydro.models.plot_simulation(
+    fig = hydro.calibration.plot_calibration(
         simulation, results, objective_criteria.lower(), optimal
     )
 
@@ -247,7 +246,7 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
         )
 
         # Get optimal value for plotting
-        optimal = hydro.utils.get_optimal_for_criteria(
+        optimal = hydro.get_optimal_for_criteria(
             objective_criteria.lower(),  # type: ignore
         )
 
@@ -264,12 +263,10 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
                 param: values[-1]
                 for param, values in current_results["params"].items()
             }
-            simulation = hydro.models.run_model(
-                data_, hydrological_model, params
-            )
+            simulation = hydro.run_model(data_, hydrological_model, params)
 
             # Generate plot
-            fig = hydro.models.plot_simulation(
+            fig = hydro.calibration.plot_calibration(
                 simulation,
                 current_results,
                 objective_criteria.lower(),
@@ -286,7 +283,7 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
             )
 
         # Run calibration
-        results = await hydro.models.calibrate_model(
+        results = await hydro.calibration.calibrate_model(
             data_,
             hydrological_model,
             objective_criteria.lower(),  # type: ignore
@@ -306,11 +303,11 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
         params = {
             param: values[-1] for param, values in results["params"].items()
         }
-        simulation = hydro.models.run_model(data_, hydrological_model, params)
-        optimal = hydro.utils.get_optimal_for_criteria(
+        simulation = hydro.run_model(data_, hydrological_model, params)
+        optimal = hydro.get_optimal_for_criteria(
             objective_criteria.lower(),  # type: ignore
         )
-        fig = hydro.models.plot_simulation(
+        fig = hydro.calibration.plot_calibration(
             simulation, results, objective_criteria.lower(), optimal
         )
 
@@ -330,12 +327,12 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
         # Send error to client
         try:
             await websocket.send_json({"type": "error", "message": str(e)})
-        except:
+        except Exception:
             pass
     finally:
         try:
             await websocket.close()
-        except:
+        except Exception:
             pass
 
 
@@ -366,39 +363,11 @@ def _read_data(
     data_ = data_.collect()
 
     # handle snow
-    if snow_model == "none":
-        pass
-    elif snow_model.lower() == "cemaneige":
-        # Read CemaNeige configuration
-        cemaneige_info = data.read_cemaneige_info(catchment)
-
-        # Extract day of year from date
-        day_of_year = (
-            data_["date"].dt.ordinal_day().to_numpy().squeeze().astype(int)
+    data_ = data_.with_columns(
+        pl.Series(
+            "precipitation",
+            hydro.snow.run_snow_model(data_, snow_model.lower(), catchment),  # type: ignore
         )
-
-        # Run CemaNeige to get effective precipitation
-        effective_precip = hydro.snow.run_cemaneige(
-            data_["precipitation"].to_numpy().squeeze(),
-            data_["temperature"].to_numpy().squeeze(),
-            day_of_year,
-            cemaneige_info["altitude_layers"],
-            cemaneige_info["median_altitude"],
-            cemaneige_info["n_altitude_layers"],
-            0.25,  # ctg - Default parameter
-            3.74,  # kf - Default parameter
-            0.0,  # beta
-            0.1,  # vmin
-            0.0,  # tf
-            cemaneige_info["qnbv"],
-            cemaneige_info["qnbv"] * 0.9,  # gthreshold
-        )
-
-        # Replace precipitation with effective precipitation
-        data_ = data_.with_columns(
-            pl.Series("precipitation", effective_precip)
-        )
-    else:
-        raise ValueError(f"Unknown snow model: {snow_model}")
+    )
 
     return data_
