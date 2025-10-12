@@ -330,7 +330,7 @@ async function runAutomatic(event) {
   // Create WebSocket connection
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const ws = new WebSocket(
-    `${protocol}//${window.location.host}/calibration/run_automatic_ws`,
+    `${protocol}//${window.location.host}/calibration/run_automatic`,
   );
 
   const start = performance.now();
@@ -352,6 +352,7 @@ async function runAutomatic(event) {
       const figData = JSON.parse(data.fig);
       model.results = data.results;
 
+
       clear(fig);
       Plotly.newPlot(fig, figData.data, figData.layout, {
         displayLogo: false,
@@ -366,7 +367,10 @@ async function runAutomatic(event) {
           "resetScale",
         ],
       });
-      fig.scrollIntoView({ behavior: "smooth", block: "end" });
+
+      if (data.iteration === 1) {
+        fig.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
 
     } else if (data.type === "complete") {
       // Render final plot
@@ -398,7 +402,6 @@ async function runAutomatic(event) {
       // Show export button
       document.querySelector(".results__export").removeAttribute("hidden");
 
-      fig.scrollIntoView({ behavior: "smooth", block: "end" });
       ws.close();
     } else if (data.type === "error") {
       console.error("Calibration error:", data.message);
@@ -451,21 +454,25 @@ function exportCalibrationResults() {
   const algorithm = document.getElementById("calibration__algorithm").value;
   const dateStart = document.getElementById("calibration__period-start").value;
   const dateEnd = document.getElementById("calibration__period-end").value;
+  const params = Object.entries(model.results.params).map(([key, vals]) => ({
+    name: key,
+    value: vals[vals.length - 1]
+  }));
+
 
   // Create export data matching the format from the screenshot
   const exportData = {
-    HM: hydroModel,
-    Ctch: catchment,
-    Crit: criteria,
-    QTrans: streamflowTransform,
-    Algo: algorithm,
-    DateSta: dateStart,
-    DateEnd: dateEnd,
-    WarmUp: 1, // Default warm-up period
-    ModelSnow: snowModel && snowModel !== "" ? 1 : 0,
-    SnowName: snowModel || "",
-    DataType: "Observations",
-    Param: model.results.parameters || []
+    "hydrological model": hydroModel,
+    "catchment": catchment,
+    "criteria": criteria,
+    "streamflow transformation": streamflowTransform,
+    "algorithm": algorithm,
+    "date start": dateStart,
+    "date end": dateEnd,
+    "warmup": true, // Default warm-up period
+    "snow model": snowModel || "",
+    "data type": "Observations",
+    "parameters": params,
   };
 
   // Convert to JSON and download

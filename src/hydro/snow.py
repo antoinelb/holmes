@@ -1,7 +1,10 @@
-import math
+from typing import Literal, assert_never
 
 import numba
 import numpy as np
+import polars as pl
+
+from src.data import read_cemaneige_info
 
 #########
 # types #
@@ -400,8 +403,65 @@ TEMPERATURE_GRADIENT = np.array(
 ##########
 
 
+def run_snow_model(
+    data: pl.DataFrame, model: Literal["none", "cemaneige"], catchment: str
+) -> np.ndarray:
+    if model == "none":
+        return data["precipitation"].to_numpy().squeeze()
+    elif model == "cemaneige":
+        # Read CemaNeige configuration
+        cemaneige_info = read_cemaneige_info(catchment)
+
+        # Extract day of year from date
+        day_of_year = (
+            data["date"].dt.ordinal_day().to_numpy().squeeze().astype(int)
+        )
+
+        # Run CemaNeige to get effective precipitation
+        return _run_cemaneige(
+            data["precipitation"].to_numpy().squeeze(),
+            data["temperature"].to_numpy().squeeze(),
+            day_of_year,
+            cemaneige_info["altitude_layers"],
+            cemaneige_info["median_altitude"],
+            cemaneige_info["n_altitude_layers"],
+            0.25,  # ctg - Default parameter
+            3.74,  # kf - Default parameter
+            0.0,  # beta
+            0.1,  # vmin
+            0.0,  # tf
+            cemaneige_info["qnbv"],
+            cemaneige_info["qnbv"] * 0.9,  # gthreshold
+        )
+    else:
+        assert_never(model)
+
+
+async def precompile() -> None:
+    _run_cemaneige(
+        np.array([1.0]),  # precipitation
+        np.array([0.0]),  # temperature
+        np.array([1]),  # day_of_year
+        np.array([100.0, 200.0, 300.0]),  # altitude_layers
+        200.0,  # median_altitude
+        3,  # n_altitude_layers
+        0.25,  # ctg
+        3.74,  # kf
+        0.0,  # beta
+        0.1,  # vmin
+        0.0,  # tf
+        1.0,  # qnbv
+        0.9,  # gthreshold
+    )
+
+
+###########
+# private #
+###########
+
+
 @numba.jit(nopython=True)
-def run_cemaneige(
+def _run_cemaneige(
     precipitation: np.ndarray,
     temperature: np.ndarray,
     day_of_year: np.ndarray,
@@ -498,22 +558,3 @@ def run_cemaneige(
         output[t] = np.sum(pl) + np.sum(snow_melt)
 
     return output
-
-
-async def precompile_cemaneige() -> None:
-    """Precompile CemaNeige model for faster first run."""
-    run_cemaneige(
-        np.array([1.0]),  # precipitation
-        np.array([0.0]),  # temperature
-        np.array([1]),  # day_of_year
-        np.array([100.0, 200.0, 300.0]),  # altitude_layers
-        200.0,  # median_altitude
-        3,  # n_altitude_layers
-        0.25,  # ctg
-        3.74,  # kf
-        0.0,  # beta
-        0.1,  # vmin
-        0.0,  # tf
-        1.0,  # qnbv
-        0.9,  # gthreshold
-    )

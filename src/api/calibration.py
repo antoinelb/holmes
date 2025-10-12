@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 import polars as pl
 from starlette.requests import Request
 from starlette.responses import Response
@@ -27,21 +25,15 @@ def get_routes() -> list[BaseRoute]:
             endpoint=_run_manual,
             methods=["POST"],
         ),
-        Route(
+        WebSocketRoute(
             "/run_automatic",
             endpoint=_run_automatic,
-            methods=["POST"],
-        ),
-        WebSocketRoute(
-            "/run_automatic_ws",
-            endpoint=_run_automatic_ws,
         ),
     ]
 
 
 async def precompile_functions() -> None:
-    await hydro.models.precompile()
-    await hydro.snow.precompile_cemaneige()
+    await hydro.precompile()
 
 
 ###########
@@ -52,7 +44,7 @@ async def precompile_functions() -> None:
 async def _get_available_config(_: Request) -> Response:
     catchments = data.get_available_catchments()
     config = {
-        "hydrological_model": hydro.models.hydrological_models,
+        "hydrological_model": hydro.hydrological_models,
         "catchment": catchments,
         "snow_model": {"none": {}, **hydro.snow.snow_models},
         "objective_criteria": ["RMSE", "NSE", "KGE"],
@@ -91,17 +83,17 @@ async def _run_manual(
     params: dict[str, float | int],
     prev_results: dict[str, dict[str, list[int | float]]] | None,
 ) -> Response:
-    data_ = _read_data(
+    data_ = hydro.read_transformed_hydro_data(
         catchment, calibration_start, calibration_end, snow_model
     )
-    simulation = hydro.models.run_model(data_, hydrological_model, params)
-    objective = hydro.utils.evaluate_simulation(
-        simulation["flow"].to_numpy().squeeze(),
-        simulation["simulation"].to_numpy().squeeze(),
+    simulation = hydro.run_model(data_, hydrological_model, params)
+    objective = hydro.evaluate_simulation(
+        data_["flow"].to_numpy().squeeze(),
+        simulation,
         objective_criteria.lower(),  # type: ignore
         streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
     )
-    optimal = hydro.utils.get_optimal_for_criteria(
+    optimal = hydro.get_optimal_for_criteria(
         objective_criteria.lower(),  # type: ignore
     )
 
@@ -121,8 +113,11 @@ async def _run_manual(
         ),
     }
 
-    fig = hydro.models.plot_simulation(
-        simulation, results, objective_criteria.lower(), optimal
+    fig = hydro.calibration.plot_calibration(
+        data_.with_columns(pl.Series("simulation", simulation)),
+        results,
+        objective_criteria.lower(),
+        optimal,
     )
 
     return JSONResponse(
@@ -133,80 +128,7 @@ async def _run_manual(
     )
 
 
-@with_json_params(
-    args=[
-        "hydrological_model",
-        "catchment",
-        "snow_model",
-        "objective_criteria",
-        "streamflow_transformation",
-        "calibration_start",
-        "calibration_end",
-        "ngs",
-        "npg",
-        "mings",
-        "nspl",
-        "maxn",
-        "kstop",
-        "pcento",
-        "peps",
-    ]
-)
-async def _run_automatic(
-    _: Request,
-    hydrological_model: str,
-    catchment: str,
-    snow_model: str,
-    objective_criteria: str,
-    streamflow_transformation: str,
-    calibration_start: str,
-    calibration_end: str,
-    ngs: str,
-    npg: str,
-    mings: str,
-    nspl: str,
-    maxn: str,
-    kstop: str,
-    pcento: str,
-    peps: str,
-) -> Response:
-    data_ = _read_data(
-        catchment, calibration_start, calibration_end, snow_model
-    )
-    results = await hydro.models.calibrate_model(
-        data_,
-        hydrological_model,
-        objective_criteria.lower(),  # type: ignore
-        streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
-        int(ngs),
-        int(npg),
-        int(mings),
-        int(nspl),
-        int(maxn),
-        int(kstop),
-        float(pcento),
-        float(peps),
-    )
-
-    # Generate final plot
-    params = {param: values[-1] for param, values in results["params"].items()}
-    simulation = hydro.models.run_model(data_, hydrological_model, params)
-    optimal = hydro.utils.get_optimal_for_criteria(
-        objective_criteria.lower(),  # type: ignore
-    )
-    fig = hydro.models.plot_simulation(
-        simulation, results, objective_criteria.lower(), optimal
-    )
-
-    return JSONResponse(
-        {
-            "fig": fig.to_json(),
-            "results": results,
-        }
-    )
-
-
-async def _run_automatic_ws(websocket: WebSocket) -> None:
+async def _run_automatic(websocket: WebSocket) -> None:
     """
     WebSocket endpoint for automatic calibration with real-time progress.
 
@@ -241,42 +163,33 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
         pcento = float(config["pcento"])
         peps = float(config["peps"])
 
-        # Read data
-        data_ = _read_data(
+        data_ = hydro.read_transformed_hydro_data(
             catchment, calibration_start, calibration_end, snow_model
         )
 
-        # Get optimal value for plotting
-        optimal = hydro.utils.get_optimal_for_criteria(
+        optimal = hydro.get_optimal_for_criteria(
             objective_criteria.lower(),  # type: ignore
         )
 
-        # Define progress callback that generates and sends plots
         async def send_progress(update: dict):
-            # Extract current results from progress update
             current_results = {
                 "params": update.pop("params_history"),
                 "objective": update.pop("objective_history"),
             }
 
-            # Generate current best simulation
             params = {
                 param: values[-1]
                 for param, values in current_results["params"].items()
             }
-            simulation = hydro.models.run_model(
-                data_, hydrological_model, params
-            )
+            simulation = hydro.run_model(data_, hydrological_model, params)
 
-            # Generate plot
-            fig = hydro.models.plot_simulation(
-                simulation,
+            fig = hydro.calibration.plot_calibration(
+                data_.with_columns(pl.Series("simulation", simulation)),
                 current_results,
                 objective_criteria.lower(),
                 optimal,
             )
 
-            # Send progress with plot
             await websocket.send_json(
                 {
                     **update,
@@ -285,8 +198,7 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
                 }
             )
 
-        # Run calibration
-        results = await hydro.models.calibrate_model(
+        results = await hydro.calibration.calibrate_model(
             data_,
             hydrological_model,
             objective_criteria.lower(),  # type: ignore
@@ -302,19 +214,20 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
             send_progress,
         )
 
-        # Generate final plot
         params = {
             param: values[-1] for param, values in results["params"].items()
         }
-        simulation = hydro.models.run_model(data_, hydrological_model, params)
-        optimal = hydro.utils.get_optimal_for_criteria(
+        simulation = hydro.run_model(data_, hydrological_model, params)
+        optimal = hydro.get_optimal_for_criteria(
             objective_criteria.lower(),  # type: ignore
         )
-        fig = hydro.models.plot_simulation(
-            simulation, results, objective_criteria.lower(), optimal
+        fig = hydro.calibration.plot_calibration(
+            data_.with_columns(pl.Series("simulation", simulation)),
+            results,
+            objective_criteria.lower(),
+            optimal,
         )
 
-        # Send final results
         await websocket.send_json(
             {
                 "type": "complete",
@@ -324,81 +237,14 @@ async def _run_automatic_ws(websocket: WebSocket) -> None:
         )
 
     except WebSocketDisconnect:
-        # Client disconnected - could add cancellation logic here
         pass
     except Exception as e:
-        # Send error to client
         try:
             await websocket.send_json({"type": "error", "message": str(e)})
-        except:
+        except Exception:
             pass
     finally:
         try:
             await websocket.close()
-        except:
+        except Exception:
             pass
-
-
-def _read_data(
-    catchment: str, start: str, end: str, snow_model: str
-) -> pl.DataFrame:
-    warmup_length = 365 * 3  # 3 years of warmup
-
-    data_ = data.read_catchment_data(catchment).rename(
-        {
-            "Date": "date",
-            "P": "precipitation",
-            "E0": "evapotranspiration",
-            "Qo": "flow",
-            "T": "temperature",
-        }
-    )
-
-    # keep only wanted data plus a warmup period
-    data_ = data_.filter(
-        pl.col("date").is_between(
-            datetime.strptime(start, "%Y-%m-%d")
-            - timedelta(days=warmup_length),
-            datetime.strptime(end, "%Y-%m-%d"),
-        )
-    )
-
-    data_ = data_.collect()
-
-    # handle snow
-    if snow_model == "none":
-        pass
-    elif snow_model.lower() == "cemaneige":
-        # Read CemaNeige configuration
-        cemaneige_info = data.read_cemaneige_info(catchment)
-
-        # Extract day of year from date
-        day_of_year = (
-            data_["date"].dt.ordinal_day().to_numpy().squeeze().astype(int)
-        )
-
-        # Run CemaNeige to get effective precipitation
-        effective_precip = hydro.snow.run_cemaneige(
-            data_["precipitation"].to_numpy().squeeze(),
-            data_["temperature"].to_numpy().squeeze(),
-            day_of_year,
-            cemaneige_info["altitude_layers"],
-            cemaneige_info["median_altitude"],
-            cemaneige_info["n_altitude_layers"],
-            0.25,  # ctg - Default parameter
-            3.74,  # kf - Default parameter
-            0.0,  # beta
-            0.1,  # vmin
-            0.0,  # tf
-            cemaneige_info["qnbv"],
-            cemaneige_info["qnbv"] * 0.9,  # gthreshold
-        )
-
-        # Replace precipitation with effective precipitation
-        data_ = data_.with_columns(
-            pl.Series("precipitation", effective_precip)
-        )
-    else:
-        raise ValueError(f"Unknown snow model: {snow_model}")
-
-    return data_

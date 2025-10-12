@@ -2,6 +2,7 @@
 @import "./header.css";
 @import "./main.css";
 @import "./calibration.css";
+@import "./simulation.css";
 
 :root {
   --theme: 0.4 0.2 300;
@@ -163,45 +164,6 @@ select {
 
   &:focus {
     outline: 0.05em solid oklch(var(--fg) / 0.5);
-  }
-}
-
-.checkbox {
-  height: 1em;
-  position: relative;
-  width: 1em;
-
-  & input {
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    margin: 0;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-
-    &:checked~span {
-      background: oklch(var(--theme));
-    }
-
-    &:hover~span,
-    &:focus~span {
-      border: 0.1em solid oklch(var(--theme-most));
-    }
-  }
-
-  & span {
-    background: none;
-    border: 0.1em solid oklch(var(--theme));
-    border-radius: 1em;
-    height: 100%;
-    left: 0;
-    margin: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-    z-index: -1;
   }
 }
 
