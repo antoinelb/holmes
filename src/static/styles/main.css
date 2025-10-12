@@ -1,7 +1,7 @@
 section {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
+  flex-direction: column;
 
   &[hidden] {
     display: none;

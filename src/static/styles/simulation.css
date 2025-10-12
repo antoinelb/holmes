@@ -1,11 +1,12 @@
 #simulation {
   & .config {
-    display: grid;
-    grid-template-columns: 1fr max-content;
+    display: flex;
+    /* grid-template-columns: 1fr max-content; */
     font-size: 0.9rem;
-    grid-column-gap: 2em;
+    gap: 2em;
     padding: 0 1em;
-    align-items: start;
+    justify-content: center;
+    /* align-items: start; */
 
     & #simulation__calibration {
       display: flex;
@@ -44,6 +45,7 @@
 
     & #simulation__period {
       display: grid;
+      height: max-content;
       grid-template-columns: max-content 1fr;
       grid-column-gap: 1em;
       grid-row-gap: 0.5em;

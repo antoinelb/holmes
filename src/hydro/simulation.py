@@ -38,7 +38,6 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                 name="Observations",
                 xaxis="x7",
                 yaxis="y7",
-                line_width=0.5,
             ),
             *[
                 go.Scatter(
@@ -52,8 +51,26 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                         i % len(utils.plotting.colours)
                     ],
                 )
-                for i in range(data.drop("date", "flow").shape[1])
+                for i in range(
+                    data.drop(
+                        "date", "flow", "multimodel", strict=False
+                    ).shape[1]
+                )
             ],
+            *(
+                [
+                    go.Scatter(
+                        x=data["date"],
+                        y=data["multimodel"],
+                        name="Multimodel",
+                        xaxis="x7",
+                        yaxis="y7",
+                        line_color="rgb(92,17,160)",
+                    )
+                ]
+                if "multimodel" in data.columns
+                else []
+            ),
         ],
         {
             "template": utils.plotting.template,
@@ -118,10 +135,7 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                 }
                 for i in range(6)
             },
-            "xaxis7": {
-                "domain": [0, 1],
-                "anchor": "y7",
-            },
+            "xaxis7": {"domain": [0, 1], "anchor": "y7", "title": "Date"},
             "yaxis7": {
                 "domain": [
                     0,
@@ -130,6 +144,7 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                     )[1],
                 ],  # the last plot takes the height of two plots
                 "anchor": "x7",
+                "title": "Streamflow [mm/D]",
             },
         },
     )
@@ -148,7 +163,9 @@ def _evaluate_simulations(
             data["flow"].to_numpy().squeeze(),
             data[f"simulation_{i+1}"].to_numpy().squeeze(),
         )
-        for i in range(data.drop("date", "flow").shape[1])
+        for i in range(
+            data.drop("date", "flow", "multimodel", strict=False).shape[1]
+        )
     ]
     return {
         "nse_high": (

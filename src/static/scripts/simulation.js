@@ -143,7 +143,7 @@ async function runSimulation(event) {
   )
   const resp = await fetch("/simulation/run", {
     method: "POST",
-    body: JSON.stringify({ configs: config }),
+    body: JSON.stringify({ configs: config, multimodel: document.getElementById("simulation__multimodel").checked }),
     headers: {
       "Content-type": "application/json",
     },

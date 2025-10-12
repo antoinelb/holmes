@@ -28,9 +28,11 @@ def get_routes() -> list[BaseRoute]:
 ###########
 
 
-@with_json_params(args=["configs"])
+@with_json_params(args=["configs", "multimodel"])
 async def _run_simulation(
-    _: Request, configs: list[dict[str, str | dict[str, float | int]]]
+    _: Request,
+    configs: list[dict[str, str | dict[str, float]]],
+    multimodel: bool,
 ) -> Response:
     if len(configs) == 0:
         return PlainTextResponse(
@@ -73,12 +75,17 @@ async def _run_simulation(
         how="horizontal",
     )
 
+    if multimodel:
+        simulations = simulations.with_columns(
+            pl.mean_horizontal("^simulation_\d+$").alias("multimodel")
+        )
+
     fig = hydro.simulation.plot_simulation(simulations)
 
     return JSONResponse({"fig": fig.to_json()})
 
 
-def _validate_config(config: dict[str, str | dict[str, float | int]]) -> None:
+def _validate_config(config: dict[str, str | dict[str, float]]) -> None:
     needed_keys = [
         "hydrological_model",
         "catchment",
@@ -101,7 +108,7 @@ def _run_single_simulation(
     snow_model: str,
     simulation_start: str,
     simulation_end: str,
-    params: dict[str, float | int],
+    params: dict[str, float],
 ) -> pl.DataFrame:
     data_ = hydro.read_transformed_hydro_data(
         catchment, simulation_start, simulation_end, snow_model
