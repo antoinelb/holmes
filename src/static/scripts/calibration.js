@@ -330,7 +330,7 @@ async function runAutomatic(event) {
   // Create WebSocket connection
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const ws = new WebSocket(
-    `${protocol}//${window.location.host}/calibration/run_automatic_ws`,
+    `${protocol}//${window.location.host}/calibration/run_automatic`,
   );
 
   const start = performance.now();

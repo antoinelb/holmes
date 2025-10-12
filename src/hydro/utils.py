@@ -79,25 +79,15 @@ def evaluate_simulation(
 
 
 def get_optimal_for_criteria(
-    criteria: Literal["rmse", "nse", "kge"],
+    criteria: Literal[
+        "rmse", "nse", "kge", "mean_bias", "deviation_bias", "correlation"
+    ],
 ) -> float:
-    return {"rmse": 0, "nse": 1, "kge": 1}[criteria]
-
-
-def evaluate_simulation_on_multiple_criteria(
-    flow: np.ndarray, simulation: np.ndarray
-) -> dict[str, float]:
     return {
-        "nse_high": evaluate_simulation(flow, simulation, "nse", "none"),
-        "nse_medium": evaluate_simulation(flow, simulation, "nse", "sqrt"),
-        "nse_low": evaluate_simulation(flow, simulation, "nse", "log"),
-        "water_balance": evaluate_simulation(
-            flow, simulation, "mean_bias", "none"
-        ),
-        "flow_variability": evaluate_simulation(
-            flow, simulation, "deviation_bias", "none"
-        ),
-        "correlation": evaluate_simulation(
-            flow, simulation, "correlation", "none"
-        ),
-    }
+        "rmse": 0,
+        "nse": 1,
+        "kge": 1,
+        "mean_bias": 1,
+        "deviation_bias": 1,
+        "correlation": 1,
+    }[criteria]

@@ -1,4 +1,4 @@
-import { formatDate, range } from "./utils.js";
+import { formatDate, clear, round } from "./utils.js";
 import "/static/assets/plotly-3.1.0.min.js";
 
 /*********/
@@ -41,28 +41,45 @@ function addEventListeners() {
 /* update */
 /**********/
 
+
 function importCalibratedConfig(event) {
+  const SIMULATION_KEYS = [
+    "hydrological model",
+    "catchment",
+    "criteria",
+    "streamflow transformation",
+    "algorithm",
+    "date start",
+    "date end",
+    "warmup",
+    "snow model",
+    "data type",
+    "parameters",
+  ];
+
   function updateConfig(event) {
     const table = document.getElementById("simulation__calibration-table");
-    model.config.push(JSON.parse(event.target.result));
-    const div = document.createElement("div");
-    div.style.setProperty("--column", model.config.length + 1);
-    table.appendChild(div);
+    const configData = JSON.parse(event.target.result);
+    model.config.push(configData);
 
-    function addSpan(key) {
-      const val = model.config[model.config.length - 1][key];
+    const div = document.createElement("div");
+    const h4 = document.createElement("h4");
+    h4.textContent = `Simulation ${model.config.length}`;
+    div.appendChild(h4);
+
+    SIMULATION_KEYS.forEach(key => {
+      const val = configData[key];
       const span = document.createElement("span");
-      if (typeof val === "object") {
-        span.innerHTML = val.map(v => `${v.name}: ${v.value}`).join("<br />");
+      if (typeof val === "object" && val !== null) {
+        span.innerHTML = val.map(v => `${v.name}: ${round(v.value, 2)}`).join("<br />");
       } else {
-        span.textContent = val;
+        span.textContent = val ?? "";
       }
       div.appendChild(span);
-    }
+    });
 
+    table.appendChild(div);
     table.style.setProperty("--n-columns", model.config.length + 1);
-
-    [...table.querySelectorAll("div:first-of-type span")].forEach(span => { addSpan(span.textContent) });
 
     updateSimulationPeriodDefaults();
   }
@@ -111,4 +128,43 @@ function updateToPeriodEnd(event) {
 
 async function runSimulation(event) {
   event.preventDefault();
+
+  const fig = document.querySelector("#simulation .results__fig");
+
+  const config = model.config.map(
+    config => ({
+      hydrological_model: config["hydrological model"],
+      catchment: config.catchment,
+      snow_model: config["snow model"],
+      params: config.parameters,
+      simulation_start: document.getElementById("simulation__period-start").value,
+      simulation_end: document.getElementById("simulation__period-end").value,
+    })
+  )
+  const resp = await fetch("/simulation/run", {
+    method: "POST",
+    body: JSON.stringify({ configs: config }),
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
+  const data = await resp.json();
+  const figData = JSON.parse(data.fig);
+
+  clear(fig);
+  Plotly.newPlot(fig, figData.data, figData.layout, {
+    displayLogo: false,
+    modeBarButtonsToRemove: [
+      "zoom",
+      "pan",
+      "select",
+      "lasso",
+      "zoomIn",
+      "zoomOut",
+      "autoScale",
+      "resetScale",
+    ],
+  });
+
+  fig.scrollIntoView({ behavior: "smooth", block: "end" });
 }
