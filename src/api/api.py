@@ -7,7 +7,7 @@ from starlette.staticfiles import StaticFiles
 
 from src.utils.paths import root_dir
 
-from . import calibration, simulation
+from . import calibration, projection, simulation
 
 #########
 # types #
@@ -33,6 +33,7 @@ def get_routes() -> list[BaseRoute]:
         ),
         Mount("/calibration", routes=calibration.get_routes()),
         Mount("/simulation", routes=simulation.get_routes()),
+        Mount("/projection", routes=projection.get_routes()),
     ]
 
 

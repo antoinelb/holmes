@@ -21,6 +21,30 @@ export function range(start, end) {
   }
 }
 
+export function equals(a, b) {
+  if ((typeof a) !== (typeof b)) {
+    return false;
+  } else {
+    if (typeof a === "object") {
+      if (Array.isArray(a)) {
+        if (a.length !== b.length) {
+          return false;
+        }
+        return a.every((aa, i) => equals(aa, b[i]));
+      }
+      const aKeys = [...Object.keys(a)];
+      const bKeys = [...Object.keys(b)];
+      if (!equals(aKeys, bKeys)) {
+        return false;
+      }
+      return aKeys.every(key => equals(a[key], b[key]));
+    } else {
+      return a === b;
+    }
+  }
+
+}
+
 export function checkEscape(model, event, dispatch) {
   if (model.preventEscape) {
     return false;

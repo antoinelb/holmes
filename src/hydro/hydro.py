@@ -56,7 +56,8 @@ def read_transformed_hydro_data(
             "E0": "evapotranspiration",
             "Qo": "flow",
             "T": "temperature",
-        }
+        },
+        strict=False,
     )
 
     # keep only wanted data plus a warmup period

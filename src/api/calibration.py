@@ -239,10 +239,11 @@ async def _run_automatic(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        try:
-            await websocket.send_json({"type": "error", "message": str(e)})
-        except Exception:
-            pass
+        raise e
+        # try:
+        #     await websocket.send_json({"type": "error", "message": str(e)})
+        # except Exception:
+        #     pass
     finally:
         try:
             await websocket.close()

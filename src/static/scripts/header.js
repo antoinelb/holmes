@@ -67,6 +67,36 @@ async function initVersion() {
 /* update */
 /**********/
 
+export function addNotification(text, isError) {
+  const notifications = document.getElementById("notifications");
+
+  const notification = document.createElement("div");
+  notification.classList.add("notification");
+  notification.addEventListener("click", () => removeNotification(notification));
+  if (isError) {
+    notification.classList.add("error");
+  }
+
+  const textSpan = document.createElement("span");
+  textSpan.textContent = text;
+  notification.appendChild(textSpan);
+
+  const progressBar = document.createElement("div");
+  const progress = document.createElement("div");
+  progressBar.appendChild(progress);
+  notification.appendChild(progressBar);
+
+  notifications.appendChild(notification);
+
+  setTimeout(() => removeNotification(notification), 3000);
+}
+
+function removeNotification(notification) {
+  if (notification.parentNode !== null) {
+    notification.parentNode.removeChild(notification);
+  }
+}
+
 function toggleNav() {
   const nav = document.getElementById("nav");
   if (nav.classList.contains("nav--open")) {

@@ -3,6 +3,7 @@
 @import "./main.css";
 @import "./calibration.css";
 @import "./simulation.css";
+@import "./projection.css";
 
 :root {
   --theme: 0.4 0.2 300;
