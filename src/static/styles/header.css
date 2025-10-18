@@ -134,7 +134,6 @@ body.light {
   padding-right: 1em;
 }
 
-
 #nav {
   position: absolute;
   left: 0;
@@ -229,4 +228,60 @@ body.light {
     transform: scale(1);
   }
 
+}
+
+#notifications {
+  position: absolute;
+  width: 20em;
+  top: 0;
+  left: calc(50% - 10em);
+  margin-top: 2em;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  & .notification {
+    background: oklch(var(--bg));
+    border: 1px solid oklch(var(--fg) / 0.5);
+    border-radius: 1em;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    text-align: center;
+    z-index: 10;
+    display: grid;
+    grid-template-rows: max-content 0.25em;
+    gap: 0.5em;
+
+    &.error {
+      background: oklch(0.35 0.15 30);
+      border: 1px solid oklch(0.6 0.25 30);
+      color: oklch(var(--fg-dark));
+    }
+
+    &>div {
+      height: 100%;
+      width: 100%;
+      background: oklch(0.45 0.15 30);
+      border-radius: 0.5em;
+      text-align: start;
+
+      &>div {
+        height: 100%;
+        border-radius: 0.5em;
+        animation: progress 3s linear;
+        background: oklch(0.5 0.15 30);
+      }
+    }
+  }
+}
+
+@keyframes progress {
+  100% {
+    width: 0%;
+  }
+
+  0% {
+    width: 100%;
+  }
 }

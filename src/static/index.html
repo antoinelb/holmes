@@ -56,6 +56,7 @@
         </div>
       </div>
     </div>
+    <div id="notifications"></div>
   </header>
   <main>
     <section id="calibration" hidden>
@@ -115,7 +116,7 @@
         <div class="results__fig"></div>
       </div>
     </section>
-    <section id="simulation">
+    <section id="simulation" hidden>
       <h2>Simulation</h2>
       <div class="config">
         <form id="simulation__calibration">
@@ -159,8 +160,54 @@
         <div class="results__fig"></div>
       </div>
     </section>
-    <section id="projection" hidden>
+    <section id="projection">
       <h2>Projection</h2>
+      <div class="config">
+        <form id="projection__calibration">
+          <h3>Calibration results</h3>
+          <div class="file-upload">
+            <label for="projection__import">Import model(s) parameters</label>
+            <input id="projection__import" type="file" accept="application/json" multiple />
+          </div>
+          <div id="projection__calibration-table">
+            <div>
+              <span></span>
+              <span>hydrological model</span>
+              <span>catchment</span>
+              <span>criteria</span>
+              <span>streamflow transformation</span>
+              <span>algorithm</span>
+              <span>date start</span>
+              <span>date end</span>
+              <span>warmup</span>
+              <span>snow model</span>
+              <span>data type</span>
+              <span>parameters</span>
+            </div>
+          </div>
+        </form>
+        <form id="projection__config">
+          <h3>Projection settings</h3>
+          <label for="projection__model">Climate model</label>
+          <select id="projection__model"></select>
+          <label for="projection__scenario">Climate scenario</label>
+          <select id="projection__scenario">
+            <option value="RCP4.5">RCP4.5</option>
+            <option value="RCP8.5">RCP8.5</option>
+          </select>
+          <label for="projection__horizon">Horizon</label>
+          <select id="projection__horizon"></select>
+          <label for="projection__multimodel">Multimodel projection</label>
+          <div class="checkbox">
+            <input id="projection__multimodel" type="checkbox" />
+            <span></span>
+          </div>
+          <input type="submit" value="Run" />
+        </form>
+      </div>
+      <div class="results">
+        <div class="results__fig"></div>
+      </div>
     </section>
   </main>
 </body>
