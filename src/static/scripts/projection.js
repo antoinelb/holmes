@@ -51,7 +51,12 @@ async function importCalibratedConfig(event) {
     "parameters",
   ];
 
-  model.config = await readConfigFile(event.target.files[0]);
+  const config = await readConfigFile(event.target.files[0])
+  const catchmentOk = await updateCatchment(config.catchment);
+  if (!catchmentOk) {
+    return;
+  }
+  model.config = config;
 
   const table = document.getElementById("projection__calibration-table");
 
@@ -73,7 +78,6 @@ async function importCalibratedConfig(event) {
 
   table.style.setProperty("--n-columns", 2);
 
-  await updateCatchment(model.config.catchment);
   document.getElementById("projection__config").removeAttribute("hidden");
 }
 
@@ -91,7 +95,7 @@ async function updateCatchment(catchment) {
   const resp = await fetch(`/projection/config?catchment=${catchment}`);
   if (!resp.ok) {
     addNotification(await resp.text(), true);
-    return;
+    return false;
   }
   model.settings = await resp.json();
 
@@ -113,6 +117,8 @@ async function updateCatchment(catchment) {
   select.addEventListener("change", event => updateHorizons(event.target.value));
 
   updateHorizons(climateModels[0]);
+
+  return true;
 }
 
 function updateHorizons(climateModel) {

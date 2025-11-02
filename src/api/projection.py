@@ -1,5 +1,5 @@
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import PlainTextResponse, Response
 from starlette.routing import BaseRoute, Route
 
 from src import data, hydro
@@ -34,7 +34,13 @@ def get_routes() -> list[BaseRoute]:
 
 @with_query_string_params(args=["catchment"])
 async def _get_available_config(_: Request, catchment: str) -> Response:
-    info = data.read_projection_info(catchment)
+    try:
+        info = data.read_projection_info(catchment)
+    except FileNotFoundError:
+        return PlainTextResponse(
+            "There is no projection available for this catchment.",
+            status_code=400,
+        )
     return JSONResponse(info)
 
 
