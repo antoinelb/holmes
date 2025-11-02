@@ -257,12 +257,20 @@ body.light {
       background: oklch(0.35 0.15 30);
       border: 1px solid oklch(0.6 0.25 30);
       color: oklch(var(--fg-dark));
+
+      &>div {
+        background: oklch(0.45 0.15 30);
+
+        &>div {
+          background: oklch(0.5 0.15 30);
+        }
+      }
     }
 
     &>div {
       height: 100%;
       width: 100%;
-      background: oklch(0.45 0.15 30);
+      background: oklch(var(--fg) / 0.25);
       border-radius: 0.5em;
       text-align: start;
 
@@ -270,7 +278,7 @@ body.light {
         height: 100%;
         border-radius: 0.5em;
         animation: progress 3s linear;
-        background: oklch(0.5 0.15 30);
+        background: oklch(var(--fg) / 0.5);
       }
     }
   }

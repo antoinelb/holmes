@@ -9,7 +9,7 @@
     content="HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada." />
 
   <title>HOLMES</title>
-  <link rel="icon" href="/static/assets/favicon.svg" />
+  <link rel="icon" href="/static/assets/loading.svg" />
 
   <link rel="preload" as="style" href="/static/styles/index.css" media="screen" />
   <link rel="modulepreload" href="/static/scripts/index.js" />
@@ -59,7 +59,10 @@
     <div id="notifications"></div>
   </header>
   <main>
-    <section id="calibration">
+    <svg class="icon loading">
+      <use href="/static/assets/sprite.svg#aperture" />
+    </svg>
+    <section id="calibration" hidden>
       <h2>Calibration</h2>
       <div class="config">
         <form id="calibration__general-config">
@@ -104,11 +107,10 @@
           <input id="calibration__pcento" type="number" value="0.001" step="0.001" />
           <label for="calibration__peps">peps</label>
           <input id="calibration__peps" type="number" value="0.1" step="0.1" />
-          <svg class="icon loading">
-            <use href="/static/assets/sprite.svg#loader" />
+          <svg class="icon loading" hidden>
+            <use href="/static/assets/sprite.svg#aperture" />
           </svg>
-          <span class="status-message" hidden></span>
-          <input type="submit" value="Run" hidden />
+          <input type="submit" value="Run" />
         </form>
       </div>
       <div class="results">
@@ -142,7 +144,7 @@
             </div>
           </div>
         </form>
-        <form id="simulation__period">
+        <form id="simulation__period" hidden>
           <h3>Simulation period</h3>
           <label for="simulation__period-start">Start <button>Set to period start</button></label>
           <input id="simulation__period-start" type="date" />
@@ -186,7 +188,7 @@
             </div>
           </div>
         </form>
-        <form id="projection__config">
+        <form id="projection__config" hidden>
           <h3>Projection settings</h3>
           <label for="projection__model">Climate model</label>
           <select id="projection__model"></select>

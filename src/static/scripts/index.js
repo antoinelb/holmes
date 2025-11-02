@@ -7,15 +7,19 @@ import * as projection from "./projection.js";
 
 async function init() {
   await header.init();
+  await precompileFunctions();
   await calibration.init();
   await simulation.init();
   await projection.init();
-  await precompileFunctions();
-  calibration.allowRunning();
 }
 
 async function precompileFunctions() {
+  const notification = header.addNotification("Started precompiling...");
   await fetch("/precompile");
+  header.toggleLoading(false);
+  document.getElementById("calibration").removeAttribute("hidden");
+  document.querySelector("main > .loading").setAttribute("hidden", true);
+  header.removeNotification(notification);
 }
 
 

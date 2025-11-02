@@ -51,6 +51,10 @@
       grid-row-gap: 0.5em;
       align-items: center;
 
+      &[hidden] {
+        visibility: hidden;
+      }
+
       & h3 {
         grid-column: 1 / -1;
         text-align: center;

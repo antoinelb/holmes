@@ -88,6 +88,7 @@ function importCalibratedConfig(event) {
     reader.onload = updateConfig;
     reader.readAsText(file);
   });
+  document.getElementById("simulation__period").removeAttribute("hidden");
 
 }
 

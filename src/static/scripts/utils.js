@@ -173,7 +173,7 @@ export function createLoading() {
   svg.classList.add("icon")
   svg.classList.add("loading")
   const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  use.setAttribute("href", "/static/assets/sprite.svg#loader")
+  use.setAttribute("href", "/static/assets/sprite.svg#aperture")
   svg.appendChild(use);
   return svg
 }

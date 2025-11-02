@@ -88,6 +88,10 @@
       & input[type='submit'] {
         width: 100%;
       }
+
+      & .loading {
+        justify-self: center;
+      }
     }
 
     & #calibration__automatic-config {
@@ -130,6 +134,11 @@
       & input[type='submit'] {
         grid-column: 1 / -1;
         width: 100%;
+      }
+
+      & .loading {
+        grid-column: 1 / -1;
+        justify-self: center;
       }
 
     }

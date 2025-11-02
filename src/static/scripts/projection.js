@@ -78,6 +78,7 @@ async function importCalibratedConfig(event) {
   table.style.setProperty("--n-columns", 2);
 
   await updateCatchment(model.config.catchment);
+  document.getElementById("projection__config").removeAttribute("hidden");
 }
 
 async function readConfigFile(file) {

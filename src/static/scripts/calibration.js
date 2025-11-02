@@ -1,4 +1,5 @@
 import { clear, createSlider, createLoading } from "./utils.js";
+import { toggleLoading, addNotification } from "./header.js";
 import "/static/assets/plotly-3.1.0.min.js";
 
 /*********/
@@ -25,14 +26,6 @@ let model = {
 export async function init() {
   addEventListeners();
   await initView();
-}
-
-export function allowRunning() {
-  model.runAllowed = true;
-  [...document.querySelectorAll(".loading")].forEach(elem => elem.setAttribute("hidden", true));
-
-  document.querySelector("#calibration__manual-config input[type='submit']").removeAttribute("hidden");
-  document.querySelector("#calibration__automatic-config input[type='submit']").removeAttribute("hidden");
 }
 
 async function initView() {
@@ -139,7 +132,7 @@ function addOptions(selectId, values) {
 function updateCatchment(catchment) {
   const info = model.config.catchments.filter((c) => c.name == catchment)[0];
   if (info === undefined) {
-    console.error(`There is no catchment named '${catchment}'.`);
+    addNotification(`There is no catchment named '${catchment}'.`, true)
   }
 
   if (info.snowAvailable) {
@@ -204,11 +197,12 @@ function updateManualCalibrationSettings(hydroModel) {
     },
   );
 
-  form.appendChild(createLoading());
+  const loader = createLoading();
+  loader.setAttribute("hidden", true);
+  form.appendChild(loader);
 
   const run = document.createElement("input");
   run.setAttribute("type", "submit");
-  run.setAttribute("hidden", true);
   run.value = "Run";
   form.appendChild(run);
 }
@@ -228,6 +222,13 @@ function updateShownConfig(algorithm) {
 
 async function runManual(event) {
   event.preventDefault();
+
+  const loader = document.querySelector("#calibration__manual-config .loading");
+  const submit = document.querySelector("#calibration__manual-config input[type='submit']");
+
+  toggleLoading(true);
+  loader.removeAttribute("hidden");
+  submit.setAttribute("hidden", true);
 
   const fig = document.querySelector("#calibration .results__fig");
 
@@ -255,7 +256,6 @@ async function runManual(event) {
     ),
     prev_results: model.results,
   };
-  const start = performance.now();
   const resp = await fetch("/calibration/run_manual", {
     method: "POST",
     body: JSON.stringify(config),
@@ -282,8 +282,10 @@ async function runManual(event) {
     ],
   });
 
-  // Show export button
+  loader.setAttribute("hidden", true);
+  submit.removeAttribute("hidden");
   document.querySelector(".results__export").removeAttribute("hidden");
+  toggleLoading(false);
 
   fig.scrollIntoView({ behavior: "smooth", block: "end" });
 }
@@ -294,13 +296,10 @@ async function runAutomatic(event) {
   const fig = document.querySelector("#calibration .results__fig");
   const runButton = document.querySelector("#calibration__automatic-config input[type='submit']");
   const loadingSpinner = document.querySelector("#calibration__automatic-config .loading");
-  const statusMessage = document.querySelector("#calibration__automatic-config .status-message");
 
-  // Hide Run button, show loading and status
   runButton.setAttribute("hidden", true);
   loadingSpinner.removeAttribute("hidden");
-  statusMessage.removeAttribute("hidden");
-  statusMessage.textContent = "Calibration started...";
+  toggleLoading(true);
 
   const config = {
     hydrological_model: document.getElementById(
@@ -327,31 +326,21 @@ async function runAutomatic(event) {
     peps: document.getElementById("calibration__peps").value,
   };
 
-  // Create WebSocket connection
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const ws = new WebSocket(
     `${protocol}//${window.location.host}/calibration/run_automatic`,
   );
 
-  const start = performance.now();
-
   ws.onopen = () => {
-    // Send configuration
     ws.send(JSON.stringify(config));
-    statusMessage.textContent = "Calibration in progress...";
   };
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
     if (data.type === "progress") {
-      // Update progress display
-      updateProgress(data);
-
-      // Render plot with current progress
       const figData = JSON.parse(data.fig);
       model.results = data.results;
-
 
       clear(fig);
       Plotly.newPlot(fig, figData.data, figData.layout, {
@@ -373,11 +362,8 @@ async function runAutomatic(event) {
       }
 
     } else if (data.type === "complete") {
-      // Render final plot
       const figData = JSON.parse(data.fig);
       model.results = data.results;
-
-      const duration = (performance.now() - start) / 1000;
 
       clear(fig);
       Plotly.newPlot(fig, figData.data, figData.layout, {
@@ -394,49 +380,32 @@ async function runAutomatic(event) {
         ],
       });
 
-      // Update UI state - calibration completed
       loadingSpinner.setAttribute("hidden", true);
-      statusMessage.textContent = `Calibration completed in ${duration.toFixed(1)} s`;
       runButton.removeAttribute("hidden");
+      toggleLoading(false);
 
-      // Show export button
       document.querySelector(".results__export").removeAttribute("hidden");
 
       ws.close();
     } else if (data.type === "error") {
-      console.error("Calibration error:", data.message);
+      addNotification(`Calibration error: ${data.message}`);
 
-      // Update UI state - error occurred
       loadingSpinner.setAttribute("hidden", true);
-      statusMessage.textContent = `Error: ${data.message}`;
       runButton.removeAttribute("hidden");
+      toggleLoading(false);
 
       ws.close();
     }
   };
 
   ws.onerror = (error) => {
-    console.error("WebSocket error:", error);
+    addNotification(`WebSocket error: ${error}`);
 
-    // Update UI state - connection error
     loadingSpinner.setAttribute("hidden", true);
-    statusMessage.textContent = "Connection error occurred";
     runButton.removeAttribute("hidden");
+    toggleLoading(false);
   };
 
-  ws.onclose = () => {
-    console.log("WebSocket connection closed");
-  };
-}
-
-function updateProgress(data) {
-  // Display progress in console (could be updated to show in UI)
-  console.log(
-    `Iteration ${data.iteration}: evaluations=${data.evaluations}, ` +
-    `best_objective=${data.best_objective.toFixed(4)}, ` +
-    `gnrng=${data.gnrng.toFixed(6)}, ` +
-    `percent_change=${data.percent_change.toFixed(6)}`,
-  );
 }
 
 function exportCalibrationResults() {

@@ -1,3 +1,15 @@
+main {
+  position: relative;
+
+  &>.icon.loading {
+    position: absolute;
+    height: 5em;
+    width: 5em;
+    left: calc(50% - 2.5em);
+    top: calc(50% - 2.5em);
+  }
+}
+
 section {
   display: flex;
   justify-content: center;

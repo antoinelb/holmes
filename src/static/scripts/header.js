@@ -1,5 +1,4 @@
 import { onKey } from "./utils.js";
-import * as main from "./main.js";
 
 /********/
 /* init */
@@ -19,7 +18,7 @@ function addEventListeners() {
   document.getElementById("nav").addEventListener("click", toggleNav)
   document.querySelectorAll("nav button").forEach(
     button => {
-      button.addEventListener("click", event => main.changeApp(event.target.textContent.toLowerCase()))
+      button.addEventListener("click", event => changeApp(event.target.textContent.toLowerCase()))
     }
   );
   document.getElementById("settings").addEventListener("click", toggleSettings)
@@ -89,11 +88,21 @@ export function addNotification(text, isError) {
   notifications.appendChild(notification);
 
   setTimeout(() => removeNotification(notification), 3000);
+
+  return notification;
 }
 
-function removeNotification(notification) {
+export function removeNotification(notification) {
   if (notification.parentNode !== null) {
     notification.parentNode.removeChild(notification);
+  }
+}
+
+export function toggleLoading(loading) {
+  if (loading) {
+    document.querySelector("link[rel~='icon']").setAttribute("href", "/static/assets/loading.svg");
+  } else {
+    document.querySelector("link[rel~='icon']").setAttribute("href", "/static/assets/favicon.svg");
   }
 }
 
@@ -125,4 +134,17 @@ function toggleTheme() {
     theme = "light";
   }
   localStorage.setItem("theme", theme);
+}
+
+function changeApp(app) {
+  const apps = document.querySelectorAll("main section");
+  apps.forEach(
+    app_ => {
+      if (app_.querySelector("h2").textContent.toLowerCase() == app) {
+        app_.removeAttribute("hidden");
+      } else {
+        app_.setAttribute("hidden", true);
+      }
+    }
+  )
 }
