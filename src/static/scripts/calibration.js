@@ -61,6 +61,10 @@ function addEventListeners() {
 
 async function initAvailableConfig() {
   const resp = await fetch("/calibration/config");
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    return;
+  }
   const config = await resp.json();
   model.config = {
     hydrologicalModel: config.hydrological_model,
@@ -223,6 +227,8 @@ function updateShownConfig(algorithm) {
 async function runManual(event) {
   event.preventDefault();
 
+  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
+
   const loader = document.querySelector("#calibration__manual-config .loading");
   const submit = document.querySelector("#calibration__manual-config input[type='submit']");
 
@@ -255,6 +261,7 @@ async function runManual(event) {
       ].map((input) => [input.name, parseFloat(input.value)]),
     ),
     prev_results: model.results,
+    theme: theme,
   };
   const resp = await fetch("/calibration/run_manual", {
     method: "POST",
@@ -263,6 +270,13 @@ async function runManual(event) {
       "Content-type": "application/json",
     },
   });
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    loader.setAttribute("hidden", true);
+    submit.removeAttribute("hidden");
+    toggleLoading(false);
+    return;
+  }
   const data = await resp.json();
   const figData = JSON.parse(data.fig);
   model.results = data.results;
@@ -292,6 +306,8 @@ async function runManual(event) {
 
 async function runAutomatic(event) {
   event.preventDefault();
+
+  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
 
   const fig = document.querySelector("#calibration .results__fig");
   const runButton = document.querySelector("#calibration__automatic-config input[type='submit']");
@@ -324,6 +340,7 @@ async function runAutomatic(event) {
     kstop: document.getElementById("calibration__kstop").value,
     pcento: document.getElementById("calibration__pcento").value,
     peps: document.getElementById("calibration__peps").value,
+    theme: theme,
   };
 
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";

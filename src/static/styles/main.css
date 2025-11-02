@@ -41,3 +41,12 @@ h2 {
     width: 100%;
   }
 }
+
+.plotly {
+  background-color: none;
+
+  & button,
+  & a {
+    box-shadow: none;
+  }
+}

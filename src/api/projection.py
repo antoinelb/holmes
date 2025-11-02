@@ -47,6 +47,7 @@ async def _get_available_config(_: Request, catchment: str) -> Response:
         "climate_model",
         "climate_scenario",
         "horizon",
+        "theme",
     ]
 )
 async def _run_projection(
@@ -58,6 +59,7 @@ async def _run_projection(
     climate_model: str,
     climate_scenario: str,
     horizon: str,
+    theme: str,
 ) -> Response:
     params_ = {str(param["name"]): float(param["value"]) for param in params}
     projections = hydro.projection.run_projection(
@@ -76,6 +78,7 @@ async def _run_projection(
         climate_model,
         climate_scenario,
         horizon,
+        template="simple_white" if theme == "light" else None,
     )
 
     return JSONResponse({"fig": fig.to_json()})

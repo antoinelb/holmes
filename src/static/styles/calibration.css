@@ -162,3 +162,13 @@
     }
   }
 }
+
+body.light {
+
+  & label[for="calibration__period-start"],
+  & label[for="calibration__period-end"] {
+    & button {
+      color: oklch(var(--fg));
+    }
+  }
+}

@@ -24,7 +24,7 @@
         --n-columns: 1;
         display: grid;
         grid-template-columns: repeat(var(--n-columns), 1fr);
-        grid-template-rows: repeat(12, max-content);
+        grid-template-rows: repeat(11, max-content);
         grid-auto-flow: column;
         grid-column-gap: 1em;
         grid-row-gap: 0.5em;

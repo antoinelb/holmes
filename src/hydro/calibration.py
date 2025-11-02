@@ -68,6 +68,8 @@ def plot_calibration(
     results: Results,
     objective: str,
     optimal: float,
+    *,
+    template: str | None = None,
 ) -> go.Figure:
     n_cols = 3
     n_rows = math.ceil((len(results["params"]) + 1) / n_cols) + 1
@@ -96,7 +98,11 @@ def plot_calibration(
                 showlegend=False,
             ),
             go.Scatter(
-                x=[1, len(results["objective"])],
+                x=(
+                    [1, len(results["objective"])]
+                    if len(results["objective"]) > 1
+                    else [0, 2]
+                ),
                 y=[optimal, optimal],
                 xaxis="x5",
                 yaxis="y5",
@@ -126,7 +132,11 @@ def plot_calibration(
             ),
         ],
         {
-            "template": utils.plotting.template,
+            "template": (
+                utils.plotting.template if template is None else template
+            ),
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
             "height": 600,
             "legend": {
                 "y": 0.1,

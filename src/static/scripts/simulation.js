@@ -1,4 +1,5 @@
 import { formatDate, clear, round } from "./utils.js";
+import { addNotification } from "./header.js";
 import "/static/assets/plotly-3.1.0.min.js";
 
 /*********/
@@ -94,6 +95,10 @@ function importCalibratedConfig(event) {
 
 async function updateSimulationPeriodDefaults() {
   const resp = await fetch("/calibration/config");
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    return;
+  }
   const config = await resp.json();
   const catchment = config.catchment.filter(catchment => catchment[0] ==
     model.config[model.config.length - 1].catchment).map(catchment =>
@@ -130,6 +135,8 @@ function updateToPeriodEnd(event) {
 async function runSimulation(event) {
   event.preventDefault();
 
+  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
+
   const fig = document.querySelector("#simulation .results__fig");
 
   const config = model.config.map(
@@ -144,11 +151,18 @@ async function runSimulation(event) {
   )
   const resp = await fetch("/simulation/run", {
     method: "POST",
-    body: JSON.stringify({ configs: config, multimodel: document.getElementById("simulation__multimodel").checked }),
+    body: JSON.stringify({
+      configs: config, multimodel: document.getElementById("simulation__multimodel").checked, theme:
+        theme
+    }),
     headers: {
       "Content-type": "application/json",
     },
   });
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    return;
+  }
   const data = await resp.json();
   const figData = JSON.parse(data.fig);
 

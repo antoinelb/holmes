@@ -58,6 +58,8 @@ def plot_projection(
     climate_model: str,
     climate_scenario: str,
     horizon: str,
+    *,
+    template: str | None = None,
 ) -> go.Figure:
     median = (
         data.unpivot(
@@ -91,7 +93,11 @@ def plot_projection(
             ),
         ],
         {
-            "template": utils.plotting.template,
+            "template": (
+                utils.plotting.template if template is None else template
+            ),
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
             "title": "{}, (Climate Model: {}, Scenario: {}, Horizon: {})".format(
                 catchment,
                 climate_model,

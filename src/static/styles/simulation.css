@@ -110,3 +110,13 @@
 
   }
 }
+
+body.light {
+
+  & label[for="simulation__period-start"],
+  & label[for="simulation__period-end"] {
+    & button {
+      color: oklch(var(--fg));
+    }
+  }
+}

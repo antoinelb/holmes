@@ -58,10 +58,6 @@ async function importCalibratedConfig(event) {
   const div = table.children.length == 1 ? document.createElement("div") : table.getElementsByTagName("div")[1];
   clear(div);
 
-  const h4 = document.createElement("h4");
-  h4.textContent = `Projection ${model.config.length}`;
-  div.appendChild(h4);
-
   SIMULATION_KEYS.forEach(key => {
     const val = model.config[key];
     const span = document.createElement("span");
@@ -93,6 +89,10 @@ async function readConfigFile(file) {
 
 async function updateCatchment(catchment) {
   const resp = await fetch(`/projection/config?catchment=${catchment}`);
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    return;
+  }
   model.settings = await resp.json();
 
   const climateModels = [...Object.keys(model.settings)].sort((a, b) => a > b)
@@ -133,6 +133,8 @@ function updateHorizons(climateModel) {
 async function runProjection(event) {
   event.preventDefault();
 
+  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
+
   const fig = document.querySelector("#projection .results__fig");
 
   const resp = await fetch("/projection/run", {
@@ -145,11 +147,16 @@ async function runProjection(event) {
       climate_model: document.getElementById("projection__model").value,
       climate_scenario: document.getElementById("projection__scenario").value,
       horizon: document.getElementById("projection__horizon").value,
+      theme: theme,
     }),
     headers: {
       "Content-type": "application/json",
     },
   });
+  if (!resp.ok) {
+    addNotification(await resp.text(), true);
+    return;
+  }
   const data = await resp.json();
   const figData = JSON.parse(data.fig);
 

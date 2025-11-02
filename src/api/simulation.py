@@ -28,11 +28,12 @@ def get_routes() -> list[BaseRoute]:
 ###########
 
 
-@with_json_params(args=["configs", "multimodel"])
+@with_json_params(args=["configs", "multimodel", "theme"])
 async def _run_simulation(
     _: Request,
     configs: list[dict[str, str | dict[str, float]]],
     multimodel: bool,
+    theme: str,
 ) -> Response:
     if len(configs) == 0:
         return PlainTextResponse(
@@ -80,7 +81,10 @@ async def _run_simulation(
             pl.mean_horizontal(r"^simulation_\d+$").alias("multimodel")
         )
 
-    fig = hydro.simulation.plot_simulation(simulations)
+    fig = hydro.simulation.plot_simulation(
+        simulations,
+        template="simple_white" if theme == "light" else None,
+    )
 
     return JSONResponse({"fig": fig.to_json()})
 

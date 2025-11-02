@@ -69,6 +69,7 @@ async def _get_available_config(_: Request) -> Response:
         "calibration_end",
         "params",
         "prev_results",
+        "theme",
     ]
 )
 async def _run_manual(
@@ -82,6 +83,7 @@ async def _run_manual(
     calibration_end: str,
     params: dict[str, float | int],
     prev_results: dict[str, dict[str, list[int | float]]] | None,
+    theme: str,
 ) -> Response:
     data_ = hydro.read_transformed_hydro_data(
         catchment, calibration_start, calibration_end, snow_model
@@ -118,6 +120,7 @@ async def _run_manual(
         results,
         objective_criteria.lower(),
         optimal,
+        template="simple_white" if theme == "light" else None,
     )
 
     return JSONResponse(
@@ -162,6 +165,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
         kstop = int(config["kstop"])
         pcento = float(config["pcento"])
         peps = float(config["peps"])
+        theme = config["theme"]
 
         data_ = hydro.read_transformed_hydro_data(
             catchment, calibration_start, calibration_end, snow_model
@@ -188,6 +192,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
                 current_results,
                 objective_criteria.lower(),
                 optimal,
+                template="simple_white" if theme == "light" else None,
             )
 
             await websocket.send_json(
@@ -226,6 +231,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
             results,
             objective_criteria.lower(),
             optimal,
+            template="simple_white" if theme == "light" else None,
         )
 
         await websocket.send_json(

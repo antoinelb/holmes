@@ -11,7 +11,9 @@ from .utils import evaluate_simulation, get_optimal_for_criteria
 ##########
 
 
-def plot_simulation(data: pl.DataFrame) -> go.Figure:
+def plot_simulation(
+    data: pl.DataFrame, *, template: str | None = None
+) -> go.Figure:
     n_cols = 3
     n_rows = 3
     x_pad = 0.15
@@ -74,7 +76,11 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
             ),
         ],
         {
-            "template": utils.plotting.template,
+            "template": (
+                utils.plotting.template if template is None else template
+            ),
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
             "height": 600,
             "legend": {
                 "y": 0.1,
