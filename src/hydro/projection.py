@@ -29,9 +29,8 @@ def run_projection(
         horizon,
     )
 
-    n_members = (
-        data.shape[1] - 1
-    ) // 2  # date column and precipitation and temperature per member
+    # date column and precipitation and temperature per member
+    n_members = (data.shape[1] - 1) // 2
 
     _projections = [
         _run_projection(
@@ -61,16 +60,36 @@ def plot_projection(
     horizon: str,
     multimodel: bool,
 ) -> go.Figure:
+    median = (
+        data.unpivot(
+            index="date",
+        )
+        .group_by("date")
+        .agg(pl.col("value").median().alias("median_flow"))
+        .sort("date")
+    )
     return go.Figure(
         [
+            *[
+                go.Scatter(
+                    x=data["date"],
+                    y=data[f"member_{i+1}_flow"],
+                    name="Members",
+                    mode="lines",
+                    line_width=0.5,
+                    line_color=utils.plotting.colours[0],
+                    showlegend=i == 0,
+                )
+                for i in range(data.shape[1] - 1)
+            ],
             go.Scatter(
-                x=data["date"],
-                y=data[f"member_{i+1}_flow"],
-                name=f"Member {i+1}",
+                x=median["date"],
+                y=median["median_flow"],
+                name="Median",
                 mode="lines",
-                line_width=0.5,
-            )
-            for i in range(data.shape[1] - 1)
+                line_width=2,
+                line_color=utils.plotting.colours[0],
+            ),
         ],
         {
             "template": utils.plotting.template,
@@ -102,21 +121,8 @@ def plot_projection(
 
 
 def _run_projection(
-    data: pl.DataFrame,
-    config: dict[str, str | dict[str, float]],
-    *,
-    warmup_length: int = 3,
+    data: pl.DataFrame, config: dict[str, str | dict[str, float]]
 ) -> pl.DataFrame:
-    # keep only wanted data plus a warmup period
-    warmup_length = 365 * warmup_length
-    data = data.filter(
-        pl.col("date").is_between(
-            datetime.strptime(config["date_start"], "%Y-%m-%d")  # type: ignore
-            - timedelta(days=warmup_length),
-            datetime.strptime(config["date_end"], "%Y-%m-%d"),  # type: ignore
-        )
-    )
-
     lat = read_cemaneige_info(cast(str, config["catchment"]))["latitude"]
     temperature = data["temperature"].to_numpy().squeeze()
     day_of_year = (
@@ -139,7 +145,9 @@ def _run_projection(
 
     data = (
         data.with_columns(
-            pl.col("date").dt.replace(year=pl.col("date").dt.year().max())
+            pl.col("date")
+            .dt.replace(day=28)
+            .dt.replace(year=pl.col("date").dt.year().max())
         )
         .group_by("date")
         .agg(pl.col("flow").mean())

@@ -152,8 +152,6 @@ async function runProjection(event) {
       catchment: config.catchment,
       snow_model: config["snow model"],
       params: config.parameters,
-      date_start: config["date start"],
-      date_end: config["date end"],
     })
   )
 

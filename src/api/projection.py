@@ -96,8 +96,6 @@ def _validate_config(config: dict[str, str | dict[str, float]]) -> None:
         "hydrological_model",
         "catchment",
         "snow_model",
-        "date_start",
-        "date_end",
         "params",
     ]
     if not all(key in config for key in needed_keys):
