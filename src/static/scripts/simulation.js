@@ -1,5 +1,5 @@
 import { formatDate, clear, round } from "./utils.js";
-import { addNotification } from "./header.js";
+import { toggleLoading, addNotification } from "./header.js";
 import "/static/assets/plotly-3.1.0.min.js";
 
 /*********/
@@ -137,6 +137,13 @@ async function runSimulation(event) {
 
   const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
 
+  const loader = document.querySelector("#simulation__period .loading");
+  const submit = document.querySelector("#simulation__period input[type='submit']");
+
+  toggleLoading(true);
+  loader.removeAttribute("hidden");
+  submit.setAttribute("hidden", true);
+
   const fig = document.querySelector("#simulation .results__fig");
 
   const config = model.config.map(
@@ -161,6 +168,9 @@ async function runSimulation(event) {
   });
   if (!resp.ok) {
     addNotification(await resp.text(), true);
+    loader.setAttribute("hidden", true);
+    submit.removeAttribute("hidden");
+    toggleLoading(false);
     return;
   }
   const data = await resp.json();
@@ -182,4 +192,8 @@ async function runSimulation(event) {
   });
 
   fig.scrollIntoView({ behavior: "smooth", block: "end" });
+
+  loader.setAttribute("hidden", true);
+  submit.removeAttribute("hidden");
+  toggleLoading(false);
 }

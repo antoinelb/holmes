@@ -1,5 +1,5 @@
-import { clear, round, equals } from "./utils.js";
-import { addNotification } from "./header.js";
+import { clear, round } from "./utils.js";
+import { toggleLoading, addNotification } from "./header.js";
 import "/static/assets/plotly-3.1.0.min.js";
 
 /*********/
@@ -135,6 +135,13 @@ async function runProjection(event) {
 
   const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
 
+  const loader = document.querySelector("#projection__config .loading");
+  const submit = document.querySelector("#projection__config input[type='submit']");
+
+  toggleLoading(true);
+  loader.removeAttribute("hidden");
+  submit.setAttribute("hidden", true);
+
   const fig = document.querySelector("#projection .results__fig");
 
   const resp = await fetch("/projection/run", {
@@ -155,6 +162,9 @@ async function runProjection(event) {
   });
   if (!resp.ok) {
     addNotification(await resp.text(), true);
+    loader.setAttribute("hidden", true);
+    submit.removeAttribute("hidden");
+    toggleLoading(false);
     return;
   }
   const data = await resp.json();
@@ -176,4 +186,8 @@ async function runProjection(event) {
   });
 
   fig.scrollIntoView({ behavior: "smooth", block: "end" });
+
+  loader.setAttribute("hidden", true);
+  submit.removeAttribute("hidden");
+  toggleLoading(false);
 }
