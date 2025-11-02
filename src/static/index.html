@@ -167,7 +167,7 @@
           <h3>Calibration results</h3>
           <div class="file-upload">
             <label for="projection__import">Import model(s) parameters</label>
-            <input id="projection__import" type="file" accept="application/json" multiple />
+            <input id="projection__import" type="file" accept="application/json" />
           </div>
           <div id="projection__calibration-table">
             <div>
@@ -197,11 +197,6 @@
           </select>
           <label for="projection__horizon">Horizon</label>
           <select id="projection__horizon"></select>
-          <label for="projection__multimodel">Multimodel projection</label>
-          <div class="checkbox">
-            <input id="projection__multimodel" type="checkbox" />
-            <span></span>
-          </div>
           <input type="submit" value="Run" />
         </form>
       </div>

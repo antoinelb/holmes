@@ -1,5 +1,5 @@
 from starlette.requests import Request
-from starlette.responses import PlainTextResponse, Response
+from starlette.responses import Response
 from starlette.routing import BaseRoute, Route
 
 from src import data, hydro
@@ -40,52 +40,42 @@ async def _get_available_config(_: Request, catchment: str) -> Response:
 
 @with_json_params(
     args=[
-        "configs",
+        "hydrological_model",
+        "catchment",
+        "snow_model",
+        "params",
         "climate_model",
         "climate_scenario",
         "horizon",
-        "multimodel",
     ]
 )
 async def _run_projection(
     _: Request,
-    configs: list[dict[str, str | dict[str, float]]],
+    hydrological_model: str,
+    catchment: str,
+    snow_model: str,
+    params: list[dict[str, float | str]],
     climate_model: str,
     climate_scenario: str,
     horizon: str,
-    multimodel: bool,
 ) -> Response:
-    if len(configs) == 0:
-        return PlainTextResponse(
-            "At least one config must be given.", status_code=400
-        )
-    try:
-        [_validate_config(config) for config in configs]
-    except ValueError as exc:
-        return PlainTextResponse(str(exc), status_code=400)
-
-    if len(set([config["catchment"] for config in configs])) != 1:
-        return PlainTextResponse(
-            "You can't compare multiple catchments together.", status_code=400
-        )
-
-    if len(configs) != 1:
-        return PlainTextResponse(
-            "Projections for multiple configs hasn't been implemented yet.",
-            status_code=400,
-        )
-
+    params_ = {str(param["name"]): float(param["value"]) for param in params}
     projections = hydro.projection.run_projection(
-        configs[0], climate_model, climate_scenario, horizon
+        hydrological_model,
+        catchment,
+        snow_model,
+        params_,
+        climate_model,
+        climate_scenario,
+        horizon,
     )
 
     fig = hydro.projection.plot_projection(
         projections,
-        configs[0],
+        catchment,
         climate_model,
         climate_scenario,
         horizon,
-        multimodel,
     )
 
     return JSONResponse({"fig": fig.to_json()})

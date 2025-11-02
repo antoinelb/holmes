@@ -26,6 +26,7 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                     x=[f"simulation {j+1}" for j in range(len(values))],
                     y=values,
                     showlegend=False,
+                    name=f"Simulation {i+1}",
                     xaxis="x" if i == 0 else f"x{i+1}",
                     yaxis="y" if i == 0 else f"y{i+1}",
                     marker_color=utils.plotting.colours[: len(values)],
@@ -46,7 +47,7 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                     name=f"Simulation {i+1}",
                     xaxis="x7",
                     yaxis="y7",
-                    line_width=0.5,
+                    # line_width=0.5,
                     line_color=utils.plotting.colours[
                         i % len(utils.plotting.colours)
                     ],
@@ -103,7 +104,8 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                     "yref": "y3",
                     "xanchor": "left",
                     "text": "Optimal",
-                }
+                    "font_color": "red",
+                },
             ],
             **{
                 ("xaxis" if i == 0 else f"xaxis{i+1}"): {
@@ -124,9 +126,9 @@ def plot_simulation(data: pl.DataFrame) -> go.Figure:
                     ),
                     "anchor": "x" if i == 0 else f"x{i+1}",
                     "title": [
-                        "High flows (NSE)",
-                        "Medium flows (NSE-sqrt)",
-                        "Low flows (NSE-log)",
+                        "High flows<br>(NSE)",
+                        "Medium flows<br>(NSE-sqrt)",
+                        "Low flows<br>(NSE-log)",
                         "Water balance<br>(Mean bias)",
                         "Flow variability<br>(Deviation bias)",
                         "Correlation",

@@ -7,7 +7,7 @@ import "/static/assets/plotly-3.1.0.min.js";
 /*********/
 
 let model = {
-  config: [],
+  config: null,
   settings: {},
 };
 
@@ -51,55 +51,43 @@ async function importCalibratedConfig(event) {
     "parameters",
   ];
 
-  let configs = await readConfigFiles(event.target.files);
-
-  const uniqueCatchments = new Set([...model.config.map(c => c.catchment), ...configs.map(c => c.catchment)]);
-  if (uniqueCatchments.size > 1) {
-    addNotification("All calibration configurations must be for the same catchment.", true);
-    return;
-  }
-
-  configs = configs.filter(config => !model.config.some(c => equals(config, c)));
+  model.config = await readConfigFile(event.target.files[0]);
 
   const table = document.getElementById("projection__calibration-table");
 
-  configs.forEach(configData => {
-    model.config.push(configData);
+  const div = table.children.length == 1 ? document.createElement("div") : table.getElementsByTagName("div")[1];
+  clear(div);
 
-    const div = document.createElement("div");
-    const h4 = document.createElement("h4");
-    h4.textContent = `Projection ${model.config.length}`;
-    div.appendChild(h4);
+  const h4 = document.createElement("h4");
+  h4.textContent = `Projection ${model.config.length}`;
+  div.appendChild(h4);
 
-    SIMULATION_KEYS.forEach(key => {
-      const val = configData[key];
-      const span = document.createElement("span");
-      if (typeof val === "object" && val !== null) {
-        span.innerHTML = val.map(v => `${v.name}: ${round(v.value, 2)}`).join("<br />");
-      } else {
-        span.textContent = val ?? "";
-      }
-      div.appendChild(span);
-    });
-
-    table.appendChild(div);
+  SIMULATION_KEYS.forEach(key => {
+    const val = model.config[key];
+    const span = document.createElement("span");
+    if (typeof val === "object" && val !== null) {
+      span.innerHTML = val.map(v => `${v.name}: ${round(v.value, 2)}`).join("<br />");
+    } else {
+      span.textContent = val ?? "";
+    }
+    div.appendChild(span);
   });
 
-  table.style.setProperty("--n-columns", model.config.length + 1);
+  table.appendChild(div);
 
-  await updateCatchment(model.config[0].catchment);
+  table.style.setProperty("--n-columns", 2);
+
+  await updateCatchment(model.config.catchment);
 }
 
-async function readConfigFiles(files) {
-  const filePromises = [...files].map(file => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(JSON.parse(e.target.result));
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
+async function readConfigFile(file) {
+  const promise = new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(JSON.parse(e.target.result));
+    reader.onerror = reject;
+    reader.readAsText(file);
   });
-  return await Promise.all(filePromises);
+  return await promise
 }
 
 async function updateCatchment(catchment) {
@@ -146,23 +134,16 @@ async function runProjection(event) {
 
   const fig = document.querySelector("#projection .results__fig");
 
-  const config = model.config.map(
-    config => ({
-      hydrological_model: config["hydrological model"],
-      catchment: config.catchment,
-      snow_model: config["snow model"],
-      params: config.parameters,
-    })
-  )
-
   const resp = await fetch("/projection/run", {
     method: "POST",
     body: JSON.stringify({
-      configs: config,
+      hydrological_model: model.config["hydrological model"],
+      catchment: model.config.catchment,
+      snow_model: model.config["snow model"],
+      params: model.config.parameters,
       climate_model: document.getElementById("projection__model").value,
       climate_scenario: document.getElementById("projection__scenario").value,
       horizon: document.getElementById("projection__horizon").value,
-      multimodel: document.getElementById("projection__multimodel").checked
     }),
     headers: {
       "Content-type": "application/json",

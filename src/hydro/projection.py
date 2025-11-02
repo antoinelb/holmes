@@ -1,6 +1,3 @@
-from datetime import datetime, timedelta
-from typing import cast
-
 import plotly.graph_objects as go
 import polars as pl
 
@@ -17,16 +14,16 @@ from .snow import run_snow_model
 
 
 def run_projection(
-    config: dict[str, str | dict[str, float]],
+    hydrological_model: str,
+    catchment: str,
+    snow_model: str,
+    params: dict[str, float],
     climate_model: str,
     climate_scenario: str,
     horizon: str,
 ):
     data = read_projection_data(
-        config["catchment"],  # type: ignore
-        climate_model,
-        climate_scenario,
-        horizon,
+        catchment, climate_model, climate_scenario, horizon
     )
 
     # date column and precipitation and temperature per member
@@ -39,7 +36,10 @@ def run_projection(
                 pl.col(f"member_{i+1}_temperature").alias("temperature"),
                 pl.col(f"member_{i+1}_precipitation").alias("precipitation"),
             ),
-            config,
+            hydrological_model,
+            catchment,
+            snow_model,
+            params,
         ).rename({"flow": f"member_{i+1}_flow"})
         for i in range(n_members)
     ]
@@ -54,11 +54,10 @@ def run_projection(
 
 def plot_projection(
     data: pl.DataFrame,
-    config: dict[str, str | dict[str, float]],
+    catchment: str,
     climate_model: str,
     climate_scenario: str,
     horizon: str,
-    multimodel: bool,
 ) -> go.Figure:
     median = (
         data.unpivot(
@@ -94,7 +93,7 @@ def plot_projection(
         {
             "template": utils.plotting.template,
             "title": "{}, (Climate Model: {}, Scenario: {}, Horizon: {})".format(
-                config["catchment"],
+                catchment,
                 climate_model,
                 climate_scenario,
                 horizon.replace("H", ""),
@@ -121,16 +120,20 @@ def plot_projection(
 
 
 def _run_projection(
-    data: pl.DataFrame, config: dict[str, str | dict[str, float]]
+    data: pl.DataFrame,
+    hydrological_model: str,
+    catchment: str,
+    snow_model: str,
+    params: dict[str, float],
 ) -> pl.DataFrame:
-    lat = read_cemaneige_info(cast(str, config["catchment"]))["latitude"]
+    lat = read_cemaneige_info(catchment)["latitude"]
     temperature = data["temperature"].to_numpy().squeeze()
     day_of_year = (
         data.select(pl.col("date").dt.ordinal_day()).to_numpy().squeeze()
     )
     evapotranspiration = run_oudin(temperature, day_of_year, lat)
     precipitation = run_snow_model(
-        data, config["snow_model"].lower(), config["catchment"]  # type: ignore
+        data, snow_model.lower(), catchment  # type: ignore
     )
 
     flow = run_model(
@@ -138,8 +141,8 @@ def _run_projection(
             pl.Series("precipitation", precipitation),
             pl.Series("evapotranspiration", evapotranspiration),
         ),
-        config["hydrological_model"],  # type: ignore
-        {param["name"]: param["value"] for param in config["params"]},  # type: ignore
+        hydrological_model,
+        params,
     )
     data = data.select("date").with_columns(pl.Series("flow", flow))
 
