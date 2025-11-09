@@ -6,6 +6,7 @@ import plotly.io
 #########
 
 
+# Dark theme colors - vibrant colors for dark backgrounds
 colours = [
     "#fd7f6f",
     "#7eb0d5",
@@ -16,6 +17,19 @@ colours = [
     "#beb9db",
     "#fdcce5",
     "#8bd3c7",
+]
+
+# Light theme colors - soft, muted palette for light backgrounds
+light_colours = [
+    "#d97373",  # soft coral red
+    "#5a9bc7",  # muted blue
+    "#8fba4d",  # soft green
+    "#a866aa",  # muted purple
+    "#e89a3c",  # soft orange
+    "#d4b83e",  # muted yellow
+    "#9b94c4",  # soft lavender
+    "#e5a8c8",  # soft pink
+    "#6cb3a3",  # muted teal
 ]
 
 
@@ -42,6 +56,34 @@ template = {
             "paper_bgcolor": "rgba(0,0,0,0)",
             "plot_bgcolor": "rgba(0,0,0,0)",
             "colorway": colours,
+            "legend_traceorder": "normal",
+        }
+    )
+}
+
+light_template = {
+    "layout": go.Layout(
+        {
+            "title": {
+                "xanchor": "center",
+                "x": 0.5,
+            },
+            "font": {
+                "color": "rgb(50,50,50)",
+            },
+            "xaxis": {
+                "gridcolor": "#e5e5e5",
+                "linecolor": "rgb(80,80,80)",
+                "automargin": True,
+            },
+            "yaxis": {
+                "gridcolor": "#e5e5e5",
+                "linecolor": "rgb(80,80,80)",
+                "automargin": True,
+            },
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
+            "colorway": light_colours,
             "legend_traceorder": "normal",
         }
     )

@@ -5,6 +5,7 @@ from starlette.routing import BaseRoute, Route, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from src import data, hydro
+from src.utils import plotting
 
 from .utils import JSONResponse, with_json_params
 
@@ -120,7 +121,7 @@ async def _run_manual(
         results,
         objective_criteria.lower(),
         optimal,
-        template="simple_white" if theme == "light" else None,
+        template=plotting.light_template if theme == "light" else None,
     )
 
     return JSONResponse(
@@ -192,7 +193,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
                 current_results,
                 objective_criteria.lower(),
                 optimal,
-                template="simple_white" if theme == "light" else None,
+                template=plotting.light_template if theme == "light" else None,
             )
 
             await websocket.send_json(
@@ -231,7 +232,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
             results,
             objective_criteria.lower(),
             optimal,
-            template="simple_white" if theme == "light" else None,
+            template=plotting.light_template if theme == "light" else None,
         )
 
         await websocket.send_json(

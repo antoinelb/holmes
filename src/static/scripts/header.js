@@ -134,6 +134,8 @@ function toggleTheme() {
     theme = "light";
   }
   localStorage.setItem("theme", theme);
+  // Notify other modules that theme has changed
+  window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
 }
 
 function changeApp(app) {

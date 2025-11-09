@@ -4,6 +4,7 @@ from starlette.responses import PlainTextResponse, Response
 from starlette.routing import BaseRoute, Route
 
 from src import hydro
+from src.utils import plotting
 from src.utils.print import format_list
 
 from .utils import JSONResponse, with_json_params
@@ -83,7 +84,7 @@ async def _run_simulation(
 
     fig = hydro.simulation.plot_simulation(
         simulations,
-        template="simple_white" if theme == "light" else None,
+        template=plotting.light_template if theme == "light" else None,
     )
 
     # Calculate metrics for export

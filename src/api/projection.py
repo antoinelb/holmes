@@ -3,6 +3,7 @@ from starlette.responses import PlainTextResponse, Response
 from starlette.routing import BaseRoute, Route
 
 from src import data, hydro
+from src.utils import plotting
 from src.utils.print import format_list
 
 from .utils import JSONResponse, with_json_params, with_query_string_params
@@ -84,7 +85,7 @@ async def _run_projection(
         climate_model,
         climate_scenario,
         horizon,
-        template="simple_white" if theme == "light" else None,
+        template=plotting.light_template if theme == "light" else None,
     )
 
     return JSONResponse(

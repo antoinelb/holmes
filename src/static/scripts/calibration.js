@@ -224,6 +224,77 @@ function updateShownConfig(algorithm) {
   }
 }
 
+function getPlotlyTemplate(theme) {
+  // Dark theme colors - vibrant colors for dark backgrounds
+  const darkColors = [
+    "#fd7f6f", "#7eb0d5", "#b2e061", "#bd7ebe", "#ffb55a",
+    "#ffee65", "#beb9db", "#fdcce5", "#8bd3c7",
+  ];
+
+  // Light theme colors - soft, muted palette for light backgrounds
+  const lightColors = [
+    "#d97373", "#5a9bc7", "#8fba4d", "#a866aa", "#e89a3c",
+    "#d4b83e", "#9b94c4", "#e5a8c8", "#6cb3a3",
+  ];
+
+  if (theme === "light") {
+    return {
+      font: { color: "rgb(50,50,50)" },
+      xaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
+      yaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      colorway: lightColors,
+    };
+  } else {
+    return {
+      font: { color: "rgb(230,230,230)" },
+      xaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
+      yaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      colorway: darkColors,
+    };
+  }
+}
+
+function updateCalibrationPlotTheme(event) {
+  const fig = document.querySelector("#calibration .results__fig");
+  if (!fig || !fig.data) return;
+
+  const theme = event.detail.theme;
+  const template = getPlotlyTemplate(theme);
+
+  // Build update object for all axes (including subplots)
+  const updates = {
+    'font.color': template.font.color,
+    'paper_bgcolor': template.paper_bgcolor,
+    'plot_bgcolor': template.plot_bgcolor,
+  };
+
+  // Update all xaxis and yaxis (handles subplots)
+  const layout = fig.layout;
+  Object.keys(layout).forEach(key => {
+    if (key.startsWith('xaxis') || key === 'xaxis') {
+      updates[`${key}.gridcolor`] = template.xaxis.gridcolor;
+      updates[`${key}.linecolor`] = template.xaxis.linecolor;
+    }
+    if (key.startsWith('yaxis') || key === 'yaxis') {
+      updates[`${key}.gridcolor`] = template.yaxis.gridcolor;
+      updates[`${key}.linecolor`] = template.yaxis.linecolor;
+    }
+  });
+
+  // Update trace colors
+  const dataUpdates = fig.data.map((trace, i) => ({
+    'marker.color': template.colorway[i % template.colorway.length],
+    'line.color': template.colorway[i % template.colorway.length],
+  }));
+
+  // Use Plotly.update to change both layout and traces
+  Plotly.update(fig, dataUpdates, updates);
+}
+
 async function runManual(event) {
   event.preventDefault();
 
@@ -295,6 +366,9 @@ async function runManual(event) {
       "resetScale",
     ],
   });
+
+  // Add theme change listener for dynamic plot updates
+  window.addEventListener('themeChanged', updateCalibrationPlotTheme);
 
   loader.setAttribute("hidden", true);
   submit.removeAttribute("hidden");
@@ -375,6 +449,8 @@ async function runAutomatic(event) {
       });
 
       if (data.iteration === 1) {
+        // Add theme change listener for dynamic plot updates (only once)
+        window.addEventListener('themeChanged', updateCalibrationPlotTheme);
         fig.scrollIntoView({ behavior: "smooth", block: "end" });
       }
 
