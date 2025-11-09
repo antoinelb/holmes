@@ -1,6 +1,7 @@
 import { formatDate, clear, round } from "./utils.js";
 import { toggleLoading, addNotification } from "./header.js";
 import "/static/assets/plotly-3.1.0.min.js";
+import "/static/assets/jszip-3.10.1.min.js";
 
 /*********/
 /* model */
@@ -10,6 +11,8 @@ let model = {
   config: [],
   periodMin: null,
   periodMax: null,
+  lastTimeseries: null,
+  lastMetrics: null,
 };
 
 /********/
@@ -35,6 +38,9 @@ function addEventListeners() {
     .querySelector("label[for='simulation__period-end'] button")
     .addEventListener("click", updateToPeriodEnd);
   document.getElementById("simulation__period").addEventListener("submit", runSimulation);
+  document
+    .querySelector("#simulation .results__export")
+    .addEventListener("click", exportSimulationResults);
 }
 
 
@@ -191,9 +197,95 @@ async function runSimulation(event) {
     ],
   });
 
+  // Store data for export
+  model.lastTimeseries = data.timeseries;
+  model.lastMetrics = data.metrics;
+
   fig.scrollIntoView({ behavior: "smooth", block: "end" });
 
   loader.setAttribute("hidden", true);
   submit.removeAttribute("hidden");
   toggleLoading(false);
+  document.querySelector("#simulation .results__export").removeAttribute("hidden");
+}
+
+async function exportSimulationResults() {
+  if (!model.lastTimeseries || !model.lastMetrics) {
+    addNotification("No simulation results to export", true);
+    return;
+  }
+
+  const loader = document.querySelector("#simulation .results .loading");
+  const exportButton = document.querySelector("#simulation .results__export");
+
+  toggleLoading(true);
+  loader.removeAttribute("hidden");
+  exportButton.setAttribute("hidden", true);
+
+  try {
+    const zip = new JSZip();
+
+    // Get the plotly figure element
+    const figElement = document.querySelector("#simulation .results__fig");
+
+    // Generate PNG using Plotly's built-in function
+    const pngBlob = await new Promise((resolve) => {
+      Plotly.toImage(figElement, {
+        format: "png",
+        width: 1200,
+        height: 800
+      }).then((dataUrl) => {
+        fetch(dataUrl).then(r => r.blob()).then(resolve);
+      });
+    });
+
+    const svgBlob = await new Promise((resolve) => {
+      Plotly.toImage(figElement, {
+        format: "svg",
+        width: 1200,
+        height: 800
+      }).then((dataUrl) => {
+        fetch(dataUrl).then(r => r.blob()).then(resolve);
+      });
+    });
+
+    // Add plot images to ZIP
+    zip.file("plot.png", pngBlob);
+    zip.file("plot.svg", svgBlob);
+
+    // Create metrics CSV
+    const metricsHeader = "simulation,nse_high,nse_medium,nse_low,water_balance,flow_variability,correlation\n";
+    const metricsRows = model.lastMetrics.map(m =>
+      `${m.simulation},${m.nse_high},${m.nse_medium},${m.nse_low},${m.water_balance},${m.flow_variability},${m.correlation}`
+    ).join("\n");
+    zip.file("metrics.csv", metricsHeader + metricsRows);
+
+    // Create timeseries CSV
+    const timeseriesKeys = Object.keys(model.lastTimeseries[0]);
+    const timeseriesHeader = timeseriesKeys.join(",") + "\n";
+    const timeseriesRows = model.lastTimeseries.map(row =>
+      timeseriesKeys.map(key => row[key]).join(",")
+    ).join("\n");
+    zip.file("timeseries.csv", timeseriesHeader + timeseriesRows);
+
+    // Generate ZIP and trigger download
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const url = window.URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "simulation_results.zip";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    addNotification("Export completed successfully", false);
+  } catch (error) {
+    console.error("Export error:", error);
+    addNotification("Export failed: " + error.message, true);
+  } finally {
+    loader.setAttribute("hidden", true);
+    exportButton.removeAttribute("hidden");
+    toggleLoading(false);
+  }
 }

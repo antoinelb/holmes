@@ -87,7 +87,12 @@ async def _run_projection(
         template="simple_white" if theme == "light" else None,
     )
 
-    return JSONResponse({"fig": fig.to_json()})
+    return JSONResponse(
+        {
+            "fig": fig.to_json(),
+            "timeseries": projections.to_dicts(),
+        }
+    )
 
 
 def _validate_config(config: dict[str, str | dict[str, float]]) -> None:
