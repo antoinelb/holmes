@@ -45,7 +45,7 @@ def run_model(
     x3: int,
     x4: float,
 ) -> np.ndarray:
-    flows: list[float] = []
+    flows = np.zeros(shape=precipitation.shape[0])
 
     production_store, routing_store = _get_initial_stores(x1, x3)
     unit_hydrographs = _create_unit_hydrographs(x4)
@@ -69,9 +69,9 @@ def run_model(
             x2,
             x3,
         )
-        flows.append(float(flow))
+        flows[t] = flow
 
-    return np.array(flows)
+    return flows
 
 
 async def precompile() -> None:

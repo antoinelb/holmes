@@ -55,7 +55,7 @@ function addEventListeners() {
       updateShownConfig(event.target.value),
     );
   document
-    .querySelector(".results__export")
+    .querySelector("#calibration .results__export")
     .addEventListener("click", exportCalibrationResults);
 }
 

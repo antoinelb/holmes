@@ -5,6 +5,7 @@ description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a softwar
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "kaleido>=1.2.0",
     "numba>=0.62.1",
     "numpy>=2.3.3",
     "pandas>=2.3.3",
@@ -16,6 +17,21 @@ dependencies = [
     "tqdm>=4.67.1",
     "uvicorn>=0.36.0",
     "websockets>=15.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "httpx>=0.28.1",
+    "isort>=6.0.1",
+    "playwright>=1.55.0",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "pytest-playwright>=0.7.1",
+    "ruff>=0.13.1",
+    "ty>=0.0.1a21",
 ]
 
 [build-system]
@@ -45,47 +61,25 @@ addopts = [
     "--cov",
     "--cov-report=term-missing",
 ]
-qt_api = "pyqt6"
-qt_default_raising = true
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
     "slow: Slow running tests",
-    "gui: GUI-related tests",
-]
-env = [
-    "QT_QPA_PLATFORM=offscreen",
+    "requires_data: Tests that require data files",
+    "playwright: Frontend tests with Playwright",
 ]
 
 [tool.coverage.run]
 source = ["src"]
 omit = [
-    "*/tests/*",
     "*/__pycache__/*",
-    "*/venv/*",
-    "*/.venv/*",
 ]
 
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "def __repr__",
     "if __name__ == .__main__.:",
-    "raise NotImplementedError",
-    "pass",
-    "except ImportError:",
-    "if TYPE_CHECKING:",
 ]
 precision = 2
 show_missing = true
 
-[dependency-groups]
-dev = [
-    "black>=25.9.0",
-    "isort>=6.0.1",
-    "pytest>=8.4.2",
-    "pytest-asyncio>=1.2.0",
-    "pytest-cov>=7.0.0",
-    "ruff>=0.13.1",
-    "ty>=0.0.1a21",
-]

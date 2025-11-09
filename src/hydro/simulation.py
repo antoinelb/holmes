@@ -81,6 +81,7 @@ def plot_simulation(
             ),
             "paper_bgcolor": "rgba(0,0,0,0)",
             "plot_bgcolor": "rgba(0,0,0,0)",
+            "margin_t": 10,
             "height": 600,
             "legend": {
                 "y": 0.1,

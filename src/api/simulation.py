@@ -86,7 +86,31 @@ async def _run_simulation(
         template="simple_white" if theme == "light" else None,
     )
 
-    return JSONResponse({"fig": fig.to_json()})
+    # Calculate metrics for export
+    n_simulations = simulations.drop(
+        "date", "flow", "multimodel", strict=False
+    ).shape[1]
+
+    metrics = []
+    for i in range(n_simulations):
+        flow = simulations["flow"].to_numpy()
+        simulation = simulations[f"simulation_{i+1}"].to_numpy()
+
+        metrics.append({
+            "simulation": f"simulation_{i+1}",
+            "nse_high": hydro.evaluate_simulation(flow, simulation, "nse", "none"),
+            "nse_medium": hydro.evaluate_simulation(flow, simulation, "nse", "sqrt"),
+            "nse_low": hydro.evaluate_simulation(flow, simulation, "nse", "log"),
+            "water_balance": hydro.evaluate_simulation(flow, simulation, "mean_bias", "none"),
+            "flow_variability": hydro.evaluate_simulation(flow, simulation, "deviation_bias", "none"),
+            "correlation": hydro.evaluate_simulation(flow, simulation, "correlation", "none"),
+        })
+
+    return JSONResponse({
+        "fig": fig.to_json(),
+        "timeseries": simulations.to_dicts(),
+        "metrics": metrics,
+    })
 
 
 def _validate_config(config: dict[str, str | dict[str, float]]) -> None:

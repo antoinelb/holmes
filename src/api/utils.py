@@ -7,7 +7,29 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse as _JSONResponse
 from starlette.responses import PlainTextResponse, Response
 
-from src import utils
+#########
+# types #
+#########
+
+
+NumericType = [
+    pl.Decimal,
+    pl.Float32,
+    pl.Float64,
+    pl.Int8,
+    pl.Int16,
+    pl.Int32,
+    pl.Int64,
+    pl.Int128,
+    pl.UInt8,
+    pl.UInt16,
+    pl.UInt32,
+    pl.UInt64,
+]
+
+##########
+# public #
+##########
 
 
 async def get_json_params(
@@ -207,14 +229,19 @@ def with_headers(
 
 
 def JSONResponse(data: Any, *args: Any, **kwargs: Any) -> _JSONResponse:
-    return _JSONResponse(convert_for_json(data), *args, **kwargs)
+    return _JSONResponse(_convert_for_json(data), *args, **kwargs)
 
 
-def convert_for_json(data: Any) -> Any:
+###########
+# private #
+###########
+
+
+def _convert_for_json(data: Any) -> Any:
     if isinstance(data, dict):
-        return {key: convert_for_json(val) for key, val in data.items()}
+        return {key: _convert_for_json(val) for key, val in data.items()}
     elif isinstance(data, (list, tuple)):
-        return [convert_for_json(val) for val in data]
+        return [_convert_for_json(val) for val in data]
     elif isinstance(data, datetime):
         return int(data.replace(tzinfo=timezone.utc).timestamp())
     elif isinstance(data, date):
@@ -225,11 +252,11 @@ def convert_for_json(data: Any) -> Any:
         )
     elif isinstance(data, pl.DataFrame):
         return [
-            convert_for_json(d)
+            _convert_for_json(d)
             for d in data.with_columns(
-                pl.when(pl.col(utils.data.NumericType).is_infinite())
+                pl.when(pl.col(NumericType).is_infinite())
                 .then(None)
-                .otherwise(pl.col(utils.data.NumericType))
+                .otherwise(pl.col(NumericType))
                 .name.keep()
             ).to_dicts()
         ]
