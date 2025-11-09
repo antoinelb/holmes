@@ -35,7 +35,7 @@ possible_params = {
 ##########
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def run_model(
     precipitation: np.ndarray,
     evapotranspiration: np.ndarray,
@@ -87,14 +87,14 @@ async def precompile() -> None:
 ###########
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _get_initial_stores(x1: float, x3: float):
     production_store = x1 / 2
     routing_store = x3 / 2
     return production_store, routing_store
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _create_unit_hydrographs(x4: float) -> tuple[np.ndarray, np.ndarray]:
     if int(x4) == x4:
         s_curve_1 = np.power(np.arange(x4 + 1) / x4, 1.25)
@@ -132,7 +132,7 @@ def _create_unit_hydrographs(x4: float) -> tuple[np.ndarray, np.ndarray]:
     return unit_hydrograph_1, unit_hydrograph_2
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _update_production(
     store: float, precipitation: float, evapotranspiration: float, x1: float
 ) -> tuple[float, float]:
@@ -184,7 +184,7 @@ def _update_production(
     return store, routing_precipitation
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _update_routing(
     store: float,
     hydrographs: tuple[np.ndarray, np.ndarray],
@@ -215,7 +215,7 @@ def _update_routing(
     return store, hydrographs, total_flow
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _update_hydrographs(
     routing_precipitation: float,
     hydrographs: tuple[np.ndarray, np.ndarray],

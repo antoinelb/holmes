@@ -631,7 +631,7 @@ def _competitive_complex_evolution(
     return snew, fnew, icall
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _compute_normalized_geometric_range(
     population: np.ndarray,
     lower_bounds: np.ndarray,

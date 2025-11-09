@@ -460,7 +460,7 @@ async def precompile() -> None:
 ###########
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def _run_cemaneige(
     precipitation: np.ndarray,
     temperature: np.ndarray,

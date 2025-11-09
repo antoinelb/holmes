@@ -8,7 +8,7 @@ import numpy as np
 ##########
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def run_oudin(
     temperature: np.ndarray,
     day_of_year: np.ndarray,
