@@ -153,10 +153,14 @@ def _run_projection(
     data = data.select("date").with_columns(pl.Series("flow", flow))
 
     data = (
-        data.with_columns(
-            pl.col("date")
-            .dt.replace(day=28)
-            .dt.replace(year=pl.col("date").dt.year().max())
+        data.filter(
+            ~(
+                (pl.col("date").dt.month() == 2)
+                & (pl.col("date").dt.day() == 29)
+            )
+        )
+        .with_columns(
+            pl.col("date").dt.replace(year=pl.col("date").dt.year().max())
         )
         .group_by("date")
         .agg(pl.col("flow").mean())
