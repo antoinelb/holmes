@@ -11,7 +11,7 @@ import polars as pl
 from src import utils
 from src.utils.print import format_list
 
-from . import gr4j
+from . import bucket, gr4j
 from .utils import Results, evaluate_simulation, hydrological_models
 
 ##########
@@ -37,22 +37,9 @@ async def calibrate_model(
     if hydrological_model.lower() == "gr4j":
         model = gr4j.run_model
         params = gr4j.possible_params
-        return await _run_sce_calibration(
-            model,
-            data,
-            params,
-            criteria,
-            transformation,
-            ngs,
-            npg,
-            mings,
-            nspl,
-            maxn,
-            kstop,
-            pcento,
-            peps,
-            progress_callback,
-        )
+    elif hydrological_model.lower() == "bucket":
+        model = bucket.run_model
+        params = bucket.possible_params
     else:
         raise ValueError(
             "The only available hydrological models are {}.".format(
@@ -61,6 +48,22 @@ async def calibrate_model(
                 )
             )
         )
+    return await _run_sce_calibration(
+        model,
+        data,
+        params,
+        criteria,
+        transformation,
+        ngs,
+        npg,
+        mings,
+        nspl,
+        maxn,
+        kstop,
+        pcento,
+        peps,
+        progress_callback,
+    )
 
 
 def plot_calibration(
@@ -92,8 +95,8 @@ def plot_calibration(
             go.Scatter(
                 x=list(range(1, len(results["objective"]) + 1)),
                 y=results["objective"],
-                xaxis="x5",
-                yaxis="y5",
+                xaxis=f"x{len(results['params'])+1}",
+                yaxis=f"y{len(results['params'])+1}",
                 marker_color=utils.plotting.colours[0],
                 showlegend=False,
             ),
@@ -104,8 +107,8 @@ def plot_calibration(
                     else [0, 2]
                 ),
                 y=[optimal, optimal],
-                xaxis="x5",
-                yaxis="y5",
+                xaxis=f"x{len(results['params'])+1}",
+                yaxis=f"y{len(results['params'])+1}",
                 mode="lines",
                 line_color=utils.plotting.colours[1],
                 showlegend=False,
@@ -117,8 +120,8 @@ def plot_calibration(
                 mode="lines",
                 line_color=utils.plotting.colours[1],
                 line_width=0.5,
-                xaxis="x6",
-                yaxis="y6",
+                xaxis=f"x{len(results['params'])+2}",
+                yaxis=f"y{len(results['params'])+2}",
             ),
             go.Scatter(
                 x=simulation["date"],
@@ -127,8 +130,8 @@ def plot_calibration(
                 mode="lines",
                 line_color=utils.plotting.colours[0],
                 line_width=0.5,
-                xaxis="x6",
-                yaxis="y6",
+                xaxis=f"x{len(results['params'])+2}",
+                yaxis=f"y{len(results['params'])+2}",
             ),
         ],
         {
@@ -160,25 +163,27 @@ def plot_calibration(
                 }
                 for i in range(len(results["params"]))
             },
-            "xaxis5": {
-                "domain": utils.plotting.compute_domain(1, n_cols, x_pad),
-                "anchor": "y5",
-            },
-            "yaxis5": {
+            f"xaxis{len(results['params'])+1}": {
                 "domain": utils.plotting.compute_domain(
-                    1, n_rows, y_pad, reverse=True
+                    len(results["params"]) % n_cols, n_cols, x_pad
                 ),
-                "anchor": "x5",
+                "anchor": f"y{len(results['params'])+1}",
             },
-            "xaxis6": {
+            f"yaxis{len(results['params'])+1}": {
+                "domain": utils.plotting.compute_domain(
+                    len(results["params"]) // n_cols, n_rows, y_pad, reverse=True
+                ),
+                "anchor": f"x{len(results['params'])+1}",
+            },
+            f"xaxis{len(results['params'])+2}": {
                 "domain": [0, 1],
-                "anchor": "y6",
+                "anchor": f"y{len(results['params'])+2}",
             },
-            "yaxis6": {
+            f"yaxis{len(results['params'])+2}": {
                 "domain": utils.plotting.compute_domain(
-                    2, n_rows, y_pad, reverse=True
+                    n_rows - 1, n_rows, y_pad, reverse=True
                 ),
-                "anchor": "x6",
+                "anchor": f"x{len(results['params'])+2}",
             },
             "annotations": [
                 *[
@@ -197,8 +202,8 @@ def plot_calibration(
                     "showarrow": False,
                     "x": 0.5,
                     "y": 1,
-                    "yref": "y5 domain",
-                    "xref": "x5 domain",
+                    "yref": f"y{len(results['params'])+1} domain",
+                    "xref": f"x{len(results['params'])+1} domain",
                     "yshift": 20,
                     "text": objective,
                 },
@@ -206,8 +211,8 @@ def plot_calibration(
                     "showarrow": False,
                     "x": 1,
                     "y": optimal,
-                    "yref": "y5",
-                    "xref": "x5 domain",
+                    "yref": f"y{len(results['params'])+1}",
+                    "xref": f"x{len(results['params'])+1} domain",
                     "xanchor": "left",
                     "text": "Optimal value",
                 },

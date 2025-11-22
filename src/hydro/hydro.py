@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -6,13 +7,14 @@ import polars as pl
 from src import data
 from src.utils.print import format_list
 
-from . import gr4j, snow
+from . import bucket, gr4j, snow
 from .utils import hydrological_models
 
 
 async def precompile() -> None:
-    await gr4j.precompile()
-    await snow.precompile()
+    await asyncio.gather(
+        gr4j.precompile(), bucket.precompile(), snow.precompile()
+    )
 
 
 def run_model(
@@ -28,6 +30,17 @@ def run_model(
             x2=params["x2"],
             x3=int(params["x3"]),
             x4=params["x4"],
+        )
+    elif hydrological_model.lower() == "bucket":
+        return bucket.run_model(
+            data["precipitation"].to_numpy().squeeze(),
+            data["evapotranspiration"].to_numpy().squeeze(),
+            C_soil=params["C_soil"],
+            alpha=params["alpha"],
+            k_R=params["k_R"],
+            delta=params["delta"],
+            beta=params["beta"],
+            k_T=params["k_T"],
         )
     else:
         raise ValueError(

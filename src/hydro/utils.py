@@ -2,7 +2,7 @@ from typing import Literal, TypedDict, assert_never
 
 import numpy as np
 
-from . import gr4j
+from . import bucket, gr4j
 
 #########
 # types #
@@ -11,6 +11,9 @@ from . import gr4j
 hydrological_models = {
     "GR4J": {
         "parameters": gr4j.possible_params,
+    },
+    "BUCKET": {
+        "parameters": bucket.possible_params,
     },
 }
 
@@ -49,9 +52,7 @@ def evaluate_simulation(
         if denominator == 0:
             # Constant flow - NSE is undefined
             return -np.inf if not np.allclose(flow, simulation) else 1.0
-        return float(
-            1 - np.sum((flow - simulation) ** 2) / denominator
-        )
+        return float(1 - np.sum((flow - simulation) ** 2) / denominator)
     elif criteria == "kge":
         correlation = evaluate_simulation(
             flow, simulation, "correlation", "none"
