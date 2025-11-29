@@ -70,3 +70,7 @@ RELOAD=True         # Enable auto-reload on code changes (default: False)
 HOST=127.0.0.1      # Server host (default: 127.0.0.1)
 PORT=8000           # Server port (default: 8000)
 ```
+
+## Références
+
+- [Modèle Bucket](https://github.com/ulaval-rs/HOOPLApy/tree/main/hoopla/models/hydro)
