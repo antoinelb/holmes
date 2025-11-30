@@ -1,10 +1,10 @@
-"""Tests for src/hydro/hydro.py - main hydro interface."""
+"""Tests for holmes.hydro.hydro - main hydro interface."""
 
 import numpy as np
 import polars as pl
 import pytest
-from src.hydro import hydro
-from src import data
+from holmes.hydro import hydro
+from holmes import data
 
 
 # Test precompile

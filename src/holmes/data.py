@@ -4,13 +4,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-from src.utils.paths import root_dir
-
-#########
-# types #
-#########
-
-data_dir = root_dir / "data"
+from holmes.utils.paths import data_dir
 
 ##########
 # public #

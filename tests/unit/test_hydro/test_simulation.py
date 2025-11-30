@@ -1,9 +1,9 @@
-"""Comprehensive tests for src/hydro/simulation.py."""
+"""Comprehensive tests for holmes.hydro.simulation."""
 
 import numpy as np
 import polars as pl
 import pytest
-from src.hydro import simulation
+from holmes.hydro import simulation
 
 
 class TestPlotSimulation:

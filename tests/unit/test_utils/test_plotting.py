@@ -1,7 +1,7 @@
 """Tests for src/utils/plotting.py - plotting utilities."""
 
 import plotly.graph_objects as go
-from src.utils import plotting
+from holmes.utils import plotting
 
 
 # Test colours

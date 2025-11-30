@@ -1,6 +1,6 @@
 """Tests for src/utils/print.py - print utilities."""
 
-from src.utils import print as print_utils
+from holmes.utils import print as print_utils
 
 
 # Test format_list

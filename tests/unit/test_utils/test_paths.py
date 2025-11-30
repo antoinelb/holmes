@@ -1,36 +1,50 @@
-"""Tests for src/utils/paths.py - path utilities."""
+"""Tests for holmes/utils/paths.py - path utilities."""
 
 from pathlib import Path
-from src.utils import paths
+from holmes.utils import paths
 
 
-def test_root_dir_exists():
-    """Root directory should exist."""
-    assert paths.root_dir.exists()
+def test_package_dir_exists():
+    """Package directory should exist."""
+    assert paths.package_dir.exists()
 
 
-def test_root_dir_is_directory():
-    """Root should be a directory."""
-    assert paths.root_dir.is_dir()
+def test_package_dir_is_directory():
+    """Package dir should be a directory."""
+    assert paths.package_dir.is_dir()
 
 
-def test_root_dir_contains_src():
-    """Root should contain src directory."""
-    assert (paths.root_dir / "src").exists()
+def test_data_dir_exists():
+    """Data directory should exist."""
+    assert paths.data_dir.exists()
 
 
-def test_root_dir_contains_pyproject():
-    """Root should contain pyproject.toml."""
-    assert (paths.root_dir / "pyproject.toml").exists()
+def test_data_dir_contains_observation_files():
+    """Data directory should contain observation CSV files."""
+    observation_files = list(paths.data_dir.glob("*_Observations.csv"))
+    assert len(observation_files) > 0
 
 
-def test_root_dir_is_path_object():
-    """root_dir should be a Path object."""
-    assert isinstance(paths.root_dir, Path)
+def test_static_dir_exists():
+    """Static directory should exist."""
+    assert paths.static_dir.exists()
 
 
-def test_root_dir_absolute_path():
-    """root_dir should be an absolute path or convertible to one."""
-    # The path might be relative initially, but should be resolvable
-    resolved = paths.root_dir.resolve()
-    assert resolved.exists()
+def test_static_dir_contains_index():
+    """Static directory should contain index.html."""
+    assert (paths.static_dir / "index.html").exists()
+
+
+def test_package_dir_is_path_object():
+    """package_dir should be a Path object."""
+    assert isinstance(paths.package_dir, Path)
+
+
+def test_data_dir_is_path_object():
+    """data_dir should be a Path object."""
+    assert isinstance(paths.data_dir, Path)
+
+
+def test_static_dir_is_path_object():
+    """static_dir should be a Path object."""
+    assert isinstance(paths.static_dir, Path)

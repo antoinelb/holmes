@@ -3,14 +3,14 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from starlette.applications import Starlette
-from src.app import create_app, run_server
+from holmes.app import create_app, run_server
 
 
 class TestCreateApp:
     """Tests for create_app function."""
 
-    @patch("src.app.init_logging")
-    @patch("src.app.logger")
+    @patch("holmes.app.init_logging")
+    @patch("holmes.app.logger")
     def test_create_app_returns_starlette(self, mock_logger, mock_init_logging):
         """Test that create_app returns a Starlette app."""
         app = create_app()
@@ -19,9 +19,9 @@ class TestCreateApp:
         mock_init_logging.assert_called_once()
         mock_logger.info.assert_called_once_with("App started.")
 
-    @patch("src.app.init_logging")
-    @patch("src.app.logger")
-    @patch("src.app.config")
+    @patch("holmes.app.init_logging")
+    @patch("holmes.app.logger")
+    @patch("holmes.app.config")
     def test_create_app_debug_mode(self, mock_config, mock_logger, mock_init_logging):
         """Test create_app in debug mode."""
         mock_config.DEBUG = True
@@ -32,9 +32,9 @@ class TestCreateApp:
         assert mock_logger.warning.called
         assert mock_logger.warning.call_args[0][0] == "Running in debug mode."
 
-    @patch("src.app.init_logging")
-    @patch("src.app.logger")
-    @patch("src.app.config")
+    @patch("holmes.app.init_logging")
+    @patch("holmes.app.logger")
+    @patch("holmes.app.config")
     def test_create_app_production_mode(
         self, mock_config, mock_logger, mock_init_logging
     ):
@@ -49,10 +49,10 @@ class TestCreateApp:
 class TestRunServer:
     """Tests for run_server function."""
 
-    @patch("src.app.uvicorn.run")
-    @patch("src.app.init_logging")
-    @patch("src.app.logger")
-    @patch("src.app.config")
+    @patch("holmes.app.uvicorn.run")
+    @patch("holmes.app.init_logging")
+    @patch("holmes.app.logger")
+    @patch("holmes.app.config")
     def test_run_server_debug_mode(
         self, mock_config, mock_logger, mock_init_logging, mock_uvicorn_run
     ):
@@ -77,10 +77,10 @@ class TestRunServer:
         assert call_kwargs["log_level"] == "debug"
         assert call_kwargs["access_log"] is True
 
-    @patch("src.app.uvicorn.run")
-    @patch("src.app.init_logging")
-    @patch("src.app.logger")
-    @patch("src.app.config")
+    @patch("holmes.app.uvicorn.run")
+    @patch("holmes.app.init_logging")
+    @patch("holmes.app.logger")
+    @patch("holmes.app.config")
     def test_run_server_production_mode(
         self, mock_config, mock_logger, mock_init_logging, mock_uvicorn_run
     ):

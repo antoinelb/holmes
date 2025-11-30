@@ -1,8 +1,8 @@
 import plotly.graph_objects as go
 import polars as pl
 
-from src import utils
-from src.data import read_cemaneige_info, read_projection_data
+from holmes import utils
+from holmes.data import read_cemaneige_info, read_projection_data
 
 from .hydro import run_model
 from .oudin import run_oudin

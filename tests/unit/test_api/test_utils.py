@@ -9,7 +9,7 @@ import pytest
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 
-from src.api import utils
+from holmes.api import utils
 
 # Test get_json_params
 

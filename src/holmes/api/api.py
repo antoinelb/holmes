@@ -1,20 +1,13 @@
-import tomllib
+from importlib.metadata import version
 
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, PlainTextResponse, Response
 from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
-from src.utils.paths import root_dir
+from holmes.utils.paths import static_dir
 
 from . import calibration, projection, simulation
-
-#########
-# types #
-#########
-
-pyproject_path = root_dir / "pyproject.toml"
-static_dir = root_dir / "src" / "static"
 
 ##########
 # public #
@@ -47,12 +40,10 @@ async def _ping(_: Request) -> Response:
 
 
 async def _get_version(_: Request) -> Response:
-    with open(pyproject_path, "rb") as f:
-        config = tomllib.load(f)
-    if "project" in config and "version" in config["project"]:
-        return PlainTextResponse(config["project"]["version"])
-    else:
-        return PlainTextResponse("Unknown version", 500)
+    try:
+        return PlainTextResponse(version("holmes"))
+    except Exception:
+        return PlainTextResponse("Unknown version", status_code=500)
 
 
 async def _index(_: Request) -> Response:

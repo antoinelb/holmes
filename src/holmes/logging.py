@@ -20,7 +20,7 @@ def init_logging() -> None:
             "formatters": {
                 "simple": {
                     "format": "%(levelname)s - %(message)s",
-                    "class": "src.logging.ColourFormatter",
+                    "class": "holmes.logging.ColourFormatter",
                 },
                 "complete": {
                     "datefmt": "%Y-%m-%d %H:%M:%S",

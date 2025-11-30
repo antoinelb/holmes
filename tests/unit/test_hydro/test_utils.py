@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from src.hydro import utils
+from holmes.hydro import utils
 
 
 # Test RMSE objective function

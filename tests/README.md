@@ -46,7 +46,7 @@ pytest -m "not slow"
 
 ### With Coverage Report
 ```bash
-pytest --cov=src --cov-report=html
+pytest --cov=holmes --cov-report=html
 open htmlcov/index.html
 ```
 
@@ -119,7 +119,7 @@ See `docs/function-based-testing-guide.md` for the complete guide.
 
 ```python
 import pytest
-from src.hydro import gr4j
+from holmes.hydro import gr4j
 
 
 @pytest.fixture
@@ -141,11 +141,11 @@ def test_gr4j_returns_array_same_length(sample_inputs):
 
 | Module | Target Coverage | Priority |
 |--------|----------------|----------|
-| `src/hydro/utils.py` | 100% | HIGH |
-| `src/hydro/gr4j.py` | 95% | HIGH |
-| `src/hydro/sce.py` | 90% | HIGH |
-| `src/data.py` | 95% | HIGH |
-| `src/api/*.py` | 90% | HIGH |
+| `holmes/hydro/utils.py` | 100% | HIGH |
+| `holmes/hydro/gr4j.py` | 95% | HIGH |
+| `holmes/hydro/sce.py` | 90% | HIGH |
+| `holmes/data.py` | 95% | HIGH |
+| `holmes/api/*.py` | 90% | HIGH |
 
 ## Debugging Failed Tests
 

@@ -8,8 +8,8 @@ import numpy as np
 import plotly.graph_objects as go
 import polars as pl
 
-from src import utils
-from src.utils.print import format_list
+from holmes import utils
+from holmes.utils.print import format_list
 
 from . import bucket, gr4j
 from .utils import Results, evaluate_simulation, hydrological_models

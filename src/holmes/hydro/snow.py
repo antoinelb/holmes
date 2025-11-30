@@ -4,7 +4,7 @@ import numba
 import numpy as np
 import polars as pl
 
-from src.data import read_cemaneige_info
+from holmes.data import read_cemaneige_info
 
 #########
 # types #

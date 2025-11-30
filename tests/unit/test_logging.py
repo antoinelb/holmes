@@ -6,14 +6,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.logging import RouteFilter, init_logging
+from holmes.logging import RouteFilter, init_logging
 
 
 class TestInitLogging:
     """Tests for init_logging function."""
 
-    @patch("src.logging.logging.config.dictConfig")
-    @patch("src.logging.config")
+    @patch("holmes.logging.logging.config.dictConfig")
+    @patch("holmes.logging.config")
     def test_init_logging_debug_mode(self, mock_config, mock_dictConfig):
         """Test init_logging in debug mode."""
         mock_config.DEBUG = True
@@ -30,8 +30,8 @@ class TestInitLogging:
         assert "loggers" in config_dict
         assert config_dict["disable_existing_loggers"] is True
 
-    @patch("src.logging.logging.config.dictConfig")
-    @patch("src.logging.config")
+    @patch("holmes.logging.logging.config.dictConfig")
+    @patch("holmes.logging.config")
     def test_init_logging_production_mode(self, mock_config, mock_dictConfig):
         """Test init_logging in production mode."""
         mock_config.DEBUG = False

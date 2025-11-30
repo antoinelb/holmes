@@ -4,8 +4,8 @@ from starlette.responses import Response
 from starlette.routing import BaseRoute, Route, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from src import data, hydro
-from src.utils import plotting
+from holmes import data, hydro
+from holmes.utils import plotting
 
 from .utils import JSONResponse, with_json_params
 

@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from src.hydro import gr4j
+from holmes.hydro import gr4j
 
 
 # Test possible_params structure

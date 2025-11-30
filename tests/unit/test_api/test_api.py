@@ -2,7 +2,7 @@
 
 import pytest
 from starlette.testclient import TestClient
-from src.app import create_app
+from holmes.app import create_app
 
 
 @pytest.fixture
@@ -39,11 +39,11 @@ class TestVersionRoute:
     async def test_version_missing_from_pyproject(self):
         """Test error handling when version is missing from pyproject.toml."""
         from unittest.mock import patch, mock_open
-        from src.api import api
+        from holmes.api import api
         from starlette.requests import Request
 
-        # Mock tomllib.load to return config without version
-        with patch("src.api.api.tomllib.load", return_value={"tool": {}}):
+        # Mock importlib.metadata.version to raise an exception
+        with patch("holmes.api.api.version", side_effect=Exception("No version")):
             async def dummy_receive():
                 return {"type": "http.request"}
 

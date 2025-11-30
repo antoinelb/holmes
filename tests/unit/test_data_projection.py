@@ -1,7 +1,7 @@
 """Additional tests for projection data to cover missing lines."""
 
 import pytest
-from src import data
+from holmes import data
 
 
 def test_read_projection_data_with_non_ref_horizon_rcp45():

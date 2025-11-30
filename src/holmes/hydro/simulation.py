@@ -2,7 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 import polars as pl
 
-from src import utils
+from holmes import utils
 
 from .utils import evaluate_simulation, get_optimal_for_criteria
 

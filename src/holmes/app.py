@@ -35,12 +35,12 @@ def run_server() -> None:
     )
 
     uvicorn.run(
-        "src.app:create_app",
+        "holmes.app:create_app",
         factory=True,
         host=config.HOST,
         port=config.PORT,
         reload=config.RELOAD,
-        reload_dirs=str((Path(__file__).parent / "..").absolute()),
+        reload_dirs=str(Path(__file__).parent.parent.absolute()),
         log_level="debug" if config.DEBUG else "info",
         access_log=True,
     )

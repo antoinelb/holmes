@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from src.hydro import oudin
+from holmes.hydro import oudin
 
 
 class TestRunOudin:

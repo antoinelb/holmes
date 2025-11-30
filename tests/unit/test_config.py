@@ -1,6 +1,6 @@
-"""Tests for src/config.py - configuration module."""
+"""Tests for holmes.config - configuration module."""
 
-from src import config
+from holmes import config
 
 
 def test_debug_is_bool():

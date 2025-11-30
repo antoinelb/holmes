@@ -1,10 +1,10 @@
-"""Tests for src/data.py - data loading and processing functions."""
+"""Tests for holmes.data - data loading and processing functions."""
 
 import pytest
 import polars as pl
 import numpy as np
 from pathlib import Path
-from src import data
+from holmes import data
 
 
 # Test get_available_catchments

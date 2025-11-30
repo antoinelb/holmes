@@ -3,9 +3,9 @@ from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 from starlette.routing import BaseRoute, Route
 
-from src import hydro
-from src.utils import plotting
-from src.utils.print import format_list
+from holmes import hydro
+from holmes.utils import plotting
+from holmes.utils.print import format_list
 
 from .utils import JSONResponse, with_json_params
 

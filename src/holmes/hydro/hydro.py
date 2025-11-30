@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import numpy as np
 import polars as pl
 
-from src import data
-from src.utils.print import format_list
+from holmes import data
+from holmes.utils.print import format_list
 
 from . import bucket, gr4j, snow
 from .utils import hydrological_models

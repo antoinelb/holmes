@@ -36,16 +36,22 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.8.4"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.uv.build-backend]
-module-root = ""
-module-name = "src"
+[tool.hatch.build.targets.wheel]
+packages = ["src/holmes"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/data" = "holmes/data"
+"src/static" = "holmes/static"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests/", "docs/", "pyproject.toml", "README.md"]
 
 [project.scripts]
-holmes = "src.app:run_server"
-h = "src.app:run_server"
+holmes = "holmes.app:run_server"
+h = "holmes.app:run_server"
 
 [tool.black]
 line_length = 79
@@ -53,7 +59,7 @@ target-version = ['py313']
 
 [tool.isort]
 profile = "black"
-src_paths = ["src", "tests"]
+src_paths = ["src/holmes", "tests"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -71,7 +77,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src"]
+source = ["src/holmes"]
 omit = [
     "*/__pycache__/*",
 ]
@@ -83,4 +89,3 @@ exclude_lines = [
 ]
 precision = 2
 show_missing = true
-
