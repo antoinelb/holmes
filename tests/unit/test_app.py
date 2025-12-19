@@ -52,6 +52,7 @@ class TestCreateApp:
 class TestRunServer:
     """Tests for run_server function."""
 
+    @patch("sys.argv", ["holmes"])
     @patch("holmes.app.uvicorn.run")
     @patch("holmes.app.init_logging")
     @patch("holmes.app.logger")
@@ -80,6 +81,7 @@ class TestRunServer:
         assert call_kwargs["log_level"] == "debug"
         assert call_kwargs["access_log"] is True
 
+    @patch("sys.argv", ["holmes"])
     @patch("holmes.app.uvicorn.run")
     @patch("holmes.app.init_logging")
     @patch("holmes.app.logger")
