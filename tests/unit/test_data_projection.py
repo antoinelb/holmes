@@ -27,4 +27,6 @@ def test_read_projection_data_with_non_ref_horizon_rcp85():
 def test_read_projection_data_invalid_scenario_with_non_ref_horizon():
     """Test invalid scenario with non-REF horizon to cover line 99-100."""
     with pytest.raises(ValueError, match="must be RCP4.5 or RCP8.5"):
-        data.read_projection_data("Au Saumon", "CSI", "INVALID_SCENARIO", "H80")
+        data.read_projection_data(
+            "Au Saumon", "CSI", "INVALID_SCENARIO", "H80"
+        )

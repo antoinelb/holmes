@@ -100,7 +100,7 @@ async def _run_manual(
         objective_criteria.lower(),  # type: ignore
     )
 
-    results = {
+    results: hydro.Results = {
         "params": {
             param: (
                 [*prev_results["params"][param], val]
@@ -177,7 +177,7 @@ async def _run_automatic(websocket: WebSocket) -> None:
         )
 
         async def send_progress(update: dict):
-            current_results = {
+            current_results: hydro.Results = {
                 "params": update.pop("params_history"),
                 "objective": update.pop("objective_history"),
             }

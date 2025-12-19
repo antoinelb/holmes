@@ -1,5 +1,7 @@
 """Tests for holmes.hydro.hydro - main hydro interface."""
 
+from datetime import date
+
 import numpy as np
 import polars as pl
 import pytest
@@ -82,9 +84,7 @@ def test_read_transformed_hydro_data_returns_dataframe():
     catchment = catchments[0][0]
     _, _, (start, end) = catchments[0]
 
-    result = hydro.read_transformed_hydro_data(
-        catchment, start, end, "none"
-    )
+    result = hydro.read_transformed_hydro_data(catchment, start, end, "none")
 
     assert isinstance(result, pl.DataFrame)
     assert "date" in result.columns
@@ -116,7 +116,9 @@ def test_read_transformed_hydro_data_warmup_period_included():
     # Should have approximately 92 days + 365 days warmup
     assert len(result) > 365
     # First date should be before start date
-    assert result["date"].min() < datetime.strptime(start, "%Y-%m-%d").date()
+    first_date = result["date"].min()
+    assert isinstance(first_date, date)
+    assert first_date < datetime.strptime(start, "%Y-%m-%d").date()
 
 
 @pytest.mark.requires_data
@@ -154,9 +156,7 @@ def test_read_transformed_hydro_data_renames_columns():
     catchment = catchments[0][0]
     _, _, (start, end) = catchments[0]
 
-    result = hydro.read_transformed_hydro_data(
-        catchment, start, end, "none"
-    )
+    result = hydro.read_transformed_hydro_data(catchment, start, end, "none")
 
     # Check for renamed columns
     assert "date" in result.columns
@@ -176,7 +176,6 @@ def test_read_transformed_hydro_data_renames_columns():
 @pytest.mark.requires_data
 def test_read_transformed_hydro_data_filters_date_range():
     """Should filter data to specified date range (plus warmup)."""
-    from datetime import datetime
 
     catchments = data.get_available_catchments()
     if not catchments:
@@ -207,9 +206,7 @@ def test_read_transformed_hydro_data_with_snow_model_none():
     catchment = catchments[0][0]
     _, _, (start, end) = catchments[0]
 
-    result = hydro.read_transformed_hydro_data(
-        catchment, start, end, "none"
-    )
+    result = hydro.read_transformed_hydro_data(catchment, start, end, "none")
 
     assert isinstance(result, pl.DataFrame)
     assert len(result) > 0
@@ -218,7 +215,6 @@ def test_read_transformed_hydro_data_with_snow_model_none():
 @pytest.mark.requires_data
 def test_read_transformed_hydro_data_default_warmup():
     """Should use default warmup of 3 years."""
-    from datetime import datetime
 
     catchments = data.get_available_catchments()
     if not catchments:
@@ -226,7 +222,9 @@ def test_read_transformed_hydro_data_default_warmup():
 
     catchment, _, (min_date, max_date) = catchments[0]
     # Use dates well within the available range (need at least 3 years of history)
-    start_year = int(min_date[:4]) + 4  # Start 4 years after min to ensure warmup available
+    start_year = (
+        int(min_date[:4]) + 4
+    )  # Start 4 years after min to ensure warmup available
     start = f"{start_year}-01-01"
     end = f"{start_year}-12-31"
 
@@ -248,9 +246,7 @@ def test_read_transformed_hydro_data_returns_collected_dataframe():
     catchment = catchments[0][0]
     _, _, (start, end) = catchments[0]
 
-    result = hydro.read_transformed_hydro_data(
-        catchment, start, end, "none"
-    )
+    result = hydro.read_transformed_hydro_data(catchment, start, end, "none")
 
     # Should be DataFrame, not LazyFrame
     assert isinstance(result, pl.DataFrame)

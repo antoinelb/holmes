@@ -1,7 +1,7 @@
 import asyncio
 import math
 import random
-from typing import Callable, Literal
+from typing import Awaitable, Callable, Literal
 
 import numba
 import numpy as np
@@ -72,7 +72,7 @@ def plot_calibration(
     objective: str,
     optimal: float,
     *,
-    template: str | None = None,
+    template: str | dict[str, go.Layout] | None = None,
 ) -> go.Figure:
     n_cols = 3
     n_rows = math.ceil((len(results["params"]) + 1) / n_cols) + 1
@@ -171,7 +171,10 @@ def plot_calibration(
             },
             f"yaxis{len(results['params'])+1}": {
                 "domain": utils.plotting.compute_domain(
-                    len(results["params"]) // n_cols, n_rows, y_pad, reverse=True
+                    len(results["params"]) // n_cols,
+                    n_rows,
+                    y_pad,
+                    reverse=True,
                 ),
                 "anchor": f"x{len(results['params'])+1}",
             },
@@ -240,7 +243,7 @@ async def _run_sce_calibration(
     kstop: int,
     pcento: float,
     peps: float,
-    progress_callback: Callable[[dict], None] | None = None,
+    progress_callback: Callable[[dict], Awaitable[None]] | None = None,
 ) -> Results:
     """
     Run SCE-UA calibration algorithm.

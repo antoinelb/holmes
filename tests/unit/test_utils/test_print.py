@@ -50,7 +50,9 @@ def test_format_list_with_surround():
 
 def test_format_list_with_quotes():
     """Should surround items with quotes."""
-    result = print_utils.format_list(["apple", "banana", "cherry"], surround='"')
+    result = print_utils.format_list(
+        ["apple", "banana", "cherry"], surround='"'
+    )
     assert result == '"apple", "banana" and "cherry"'
 
 
@@ -74,7 +76,9 @@ def test_format_list_four_items():
 
 def test_format_list_with_surround_and_or():
     """Should work with both surround and 'or'."""
-    result = print_utils.format_list(["apple", "banana"], surround="'", word="or")
+    result = print_utils.format_list(
+        ["apple", "banana"], surround="'", word="or"
+    )
     assert result == "'apple' or 'banana'"
 
 

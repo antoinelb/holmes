@@ -12,7 +12,7 @@ from .utils import evaluate_simulation, get_optimal_for_criteria
 
 
 def plot_simulation(
-    data: pl.DataFrame, *, template: str | None = None
+    data: pl.DataFrame, *, template: str | dict[str, go.Layout] | None = None
 ) -> go.Figure:
     n_cols = 3
     n_rows = 3

@@ -11,7 +11,8 @@ Start the server with: `holmes` or `h` before running these tests.
 
 import subprocess
 import time
-from urllib.request import Request, URLError, urlopen
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 import pytest
 import pytest_asyncio

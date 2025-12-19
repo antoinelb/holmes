@@ -2,7 +2,6 @@
 
 import numpy as np
 import polars as pl
-import pytest
 from holmes.hydro import simulation
 
 
@@ -19,11 +18,13 @@ class TestPlotSimulation:
             interval="1d",
             eager=True,
         )
-        df = pl.DataFrame({
-            "date": dates,
-            "flow": np.random.uniform(0, 10, n),
-            "simulation_1": np.random.uniform(0, 10, n),
-        })
+        df = pl.DataFrame(
+            {
+                "date": dates,
+                "flow": np.random.uniform(0, 10, n),
+                "simulation_1": np.random.uniform(0, 10, n),
+            }
+        )
 
         fig = simulation.plot_simulation(df)
 
@@ -41,13 +42,15 @@ class TestPlotSimulation:
             interval="1d",
             eager=True,
         )
-        df = pl.DataFrame({
-            "date": dates,
-            "flow": np.random.uniform(0, 10, n),
-            "simulation_1": np.random.uniform(0, 10, n),
-            "simulation_2": np.random.uniform(0, 10, n),
-            "simulation_3": np.random.uniform(0, 10, n),
-        })
+        df = pl.DataFrame(
+            {
+                "date": dates,
+                "flow": np.random.uniform(0, 10, n),
+                "simulation_1": np.random.uniform(0, 10, n),
+                "simulation_2": np.random.uniform(0, 10, n),
+                "simulation_3": np.random.uniform(0, 10, n),
+            }
+        )
 
         fig = simulation.plot_simulation(df)
 
@@ -64,13 +67,15 @@ class TestPlotSimulation:
             interval="1d",
             eager=True,
         )
-        df = pl.DataFrame({
-            "date": dates,
-            "flow": np.random.uniform(0, 10, n),
-            "simulation_1": np.random.uniform(0, 10, n),
-            "simulation_2": np.random.uniform(0, 10, n),
-            "multimodel": np.random.uniform(0, 10, n),
-        })
+        df = pl.DataFrame(
+            {
+                "date": dates,
+                "flow": np.random.uniform(0, 10, n),
+                "simulation_1": np.random.uniform(0, 10, n),
+                "simulation_2": np.random.uniform(0, 10, n),
+                "multimodel": np.random.uniform(0, 10, n),
+            }
+        )
 
         fig = simulation.plot_simulation(df)
 
@@ -87,11 +92,13 @@ class TestPlotSimulation:
             interval="1d",
             eager=True,
         )
-        df = pl.DataFrame({
-            "date": dates,
-            "flow": np.random.uniform(0, 10, n),
-            "simulation_1": np.random.uniform(0, 10, n),
-        })
+        df = pl.DataFrame(
+            {
+                "date": dates,
+                "flow": np.random.uniform(0, 10, n),
+                "simulation_1": np.random.uniform(0, 10, n),
+            }
+        )
 
         fig = simulation.plot_simulation(df, template="simple_white")
 
@@ -107,10 +114,12 @@ class TestPlotSimulation:
             interval="1d",
             eager=True,
         )
-        df = pl.DataFrame({
-            "date": dates,
-            "flow": np.random.uniform(0, 10, n),
-        })
+        df = pl.DataFrame(
+            {
+                "date": dates,
+                "flow": np.random.uniform(0, 10, n),
+            }
+        )
 
         fig = simulation.plot_simulation(df)
 

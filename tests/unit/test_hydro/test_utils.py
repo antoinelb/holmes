@@ -199,23 +199,29 @@ def test_evaluate_none_transformation():
     sim = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
 
     # All criteria should give optimal value
-    assert utils.evaluate_simulation(obs, sim, "rmse", "none") == pytest.approx(0.0)
-    assert utils.evaluate_simulation(obs, sim, "nse", "none") == pytest.approx(1.0)
+    assert utils.evaluate_simulation(
+        obs, sim, "rmse", "none"
+    ) == pytest.approx(0.0)
+    assert utils.evaluate_simulation(obs, sim, "nse", "none") == pytest.approx(
+        1.0
+    )
 
 
 # Test combinations of criteria and transformations
 
 
-@pytest.mark.parametrize("criteria", ["rmse", "nse", "kge", "mean_bias", "correlation"])
-def test_evaluate_all_criteria_with_transformations(criteria):
+@pytest.mark.parametrize(
+    "criteria", ["rmse", "nse", "kge", "mean_bias", "correlation"]
+)
+@pytest.mark.parametrize("transformation", ["none", "log", "sqrt"])
+def test_evaluate_all_criteria_with_transformations(criteria, transformation):
     """All criteria should work with all transformations."""
     obs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     sim = np.array([1.1, 2.1, 3.1, 4.1, 5.1])
 
-    for transformation in ["none", "log", "sqrt"]:
-        result = utils.evaluate_simulation(obs, sim, criteria, transformation)
-        assert isinstance(result, float)
-        assert np.isfinite(result)
+    result = utils.evaluate_simulation(obs, sim, criteria, transformation)
+    assert isinstance(result, float)
+    assert np.isfinite(result)
 
 
 # Test get_optimal_for_criteria

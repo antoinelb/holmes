@@ -59,7 +59,7 @@ def plot_projection(
     climate_scenario: str,
     horizon: str,
     *,
-    template: str | None = None,
+    template: str | dict[str, go.Layout] | None = None,
 ) -> go.Figure:
     median = (
         data.unpivot(

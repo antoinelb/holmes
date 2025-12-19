@@ -97,21 +97,37 @@ async def _run_simulation(
         flow = simulations["flow"].to_numpy()
         simulation = simulations[f"simulation_{i+1}"].to_numpy()
 
-        metrics.append({
-            "simulation": f"simulation_{i+1}",
-            "nse_high": hydro.evaluate_simulation(flow, simulation, "nse", "none"),
-            "nse_medium": hydro.evaluate_simulation(flow, simulation, "nse", "sqrt"),
-            "nse_low": hydro.evaluate_simulation(flow, simulation, "nse", "log"),
-            "water_balance": hydro.evaluate_simulation(flow, simulation, "mean_bias", "none"),
-            "flow_variability": hydro.evaluate_simulation(flow, simulation, "deviation_bias", "none"),
-            "correlation": hydro.evaluate_simulation(flow, simulation, "correlation", "none"),
-        })
+        metrics.append(
+            {
+                "simulation": f"simulation_{i+1}",
+                "nse_high": hydro.evaluate_simulation(
+                    flow, simulation, "nse", "none"
+                ),
+                "nse_medium": hydro.evaluate_simulation(
+                    flow, simulation, "nse", "sqrt"
+                ),
+                "nse_low": hydro.evaluate_simulation(
+                    flow, simulation, "nse", "log"
+                ),
+                "water_balance": hydro.evaluate_simulation(
+                    flow, simulation, "mean_bias", "none"
+                ),
+                "flow_variability": hydro.evaluate_simulation(
+                    flow, simulation, "deviation_bias", "none"
+                ),
+                "correlation": hydro.evaluate_simulation(
+                    flow, simulation, "correlation", "none"
+                ),
+            }
+        )
 
-    return JSONResponse({
-        "fig": fig.to_json(),
-        "timeseries": simulations.to_dicts(),
-        "metrics": metrics,
-    })
+    return JSONResponse(
+        {
+            "fig": fig.to_json(),
+            "timeseries": simulations.to_dicts(),
+            "metrics": metrics,
+        }
+    )
 
 
 def _validate_config(config: dict[str, str | dict[str, float]]) -> None:
@@ -153,7 +169,7 @@ def _combine_simulation_results(
         [
             simulations[0]["data"].rename({"simulation": "simulation_1"}),  # type: ignore
             *[
-                simulation.select(
+                simulation["data"].select(  # type: ignore
                     pl.col("simulation").alias(f"simulation_{i+2}")
                 )
                 for i, simulation in enumerate(simulations[1:])
@@ -170,4 +186,4 @@ def _combine_simulation_results(
         }
         for key in simulations[0]["result"].keys()  # type: ignore
     }
-    return data, results
+    return data, results  # type: ignore

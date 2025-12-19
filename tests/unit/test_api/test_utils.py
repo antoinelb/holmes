@@ -64,6 +64,7 @@ async def test_get_json_params_optional_params():
         request, args=["foo"], opt_args=["optional"]
     )
 
+    assert isinstance(result, dict)
     assert result["foo"] == "bar"
     assert "optional" not in result
 
@@ -83,6 +84,7 @@ async def test_get_json_params_optional_params_present():
         request, args=["foo"], opt_args=["optional"]
     )
 
+    assert isinstance(result, dict)
     assert result["foo"] == "bar"
     assert result["optional"] == "value"
 
@@ -175,6 +177,7 @@ async def test_get_query_string_params_optional():
         request, args=["foo"], opt_args=["optional"]
     )
 
+    assert isinstance(result, dict)
     assert result["foo"] == "bar"
     assert "optional" not in result
 
@@ -378,6 +381,7 @@ def test_json_response_converts_data():
     data = {"timestamp": dt}
     response = utils.JSONResponse(data)
     # Parse the body to check conversion
+    assert isinstance(response.body, bytes)
     body = json.loads(response.body.decode())
     assert isinstance(body["timestamp"], int)
 
@@ -539,7 +543,7 @@ async def test_with_json_params_optional_single_string():
 
     @utils.with_json_params(args="foo", opt_args="optional")
     async def handler(
-        req: Request, foo: str, optional: str = None
+        req: Request, foo: str, optional: str | None = None
     ) -> Response:
         return Response(content=f"{foo}-{optional}")
 

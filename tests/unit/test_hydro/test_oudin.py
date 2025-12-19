@@ -1,7 +1,6 @@
 """Comprehensive tests for src/hydro/oudin.py - Oudin PET model."""
 
 import numpy as np
-import pytest
 from holmes.hydro import oudin
 
 

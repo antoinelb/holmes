@@ -30,7 +30,7 @@ def init_logging() -> None:
                     "%(message)s",
                 },
             },
-            "filters": {"route": {"()": RouteFilter}},
+            "filters": {"route": {"()": RouteFilter}},  # type: ignore
             "handlers": {
                 "console": {
                     "class": "logging.StreamHandler",
@@ -40,7 +40,7 @@ def init_logging() -> None:
                     "filters": ["route"],
                 },
             },
-            "loggers": {
+            "loggers": {  # type: ignore
                 **{
                     logger: {
                         "handlers": ["console"],

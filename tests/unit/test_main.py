@@ -1,6 +1,5 @@
 """Tests for __main__.py module."""
 
-import pytest
 from unittest.mock import patch
 
 

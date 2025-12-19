@@ -20,16 +20,18 @@ def sample_catchment_data():
         start=pl.date(2020, 1, 1),
         end=pl.date(2020, 12, 31),
         interval="1d",
-        eager=True
+        eager=True,
     )
 
-    return pl.DataFrame({
-        "Date": dates,
-        "P": np.random.uniform(0, 20, n_days),
-        "E0": np.random.uniform(0, 5, n_days),
-        "Qo": np.random.uniform(0, 15, n_days),
-        "T": np.random.uniform(-5, 25, n_days),
-    })
+    return pl.DataFrame(
+        {
+            "Date": dates,
+            "P": np.random.uniform(0, 20, n_days),
+            "E0": np.random.uniform(0, 5, n_days),
+            "Qo": np.random.uniform(0, 15, n_days),
+            "T": np.random.uniform(-5, 25, n_days),
+        }
+    )
 
 
 @pytest.fixture
@@ -61,6 +63,7 @@ def sample_calibration_result():
 def mock_plotly_figure():
     """Mock Plotly figure for testing."""
     import plotly.graph_objects as go
+
     return go.Figure(data=[go.Scatter(x=[1, 2, 3], y=[1, 2, 3])])
 
 
@@ -68,11 +71,13 @@ def mock_plotly_figure():
 def sample_hydro_data():
     """Sample hydrological data for testing."""
     n = 100
-    return pl.DataFrame({
-        "precipitation": np.random.uniform(0, 20, n),
-        "evapotranspiration": np.random.uniform(0, 5, n),
-        "flow": np.random.uniform(0, 15, n),
-    })
+    return pl.DataFrame(
+        {
+            "precipitation": np.random.uniform(0, 20, n),
+            "evapotranspiration": np.random.uniform(0, 5, n),
+            "flow": np.random.uniform(0, 15, n),
+        }
+    )
 
 
 @pytest.fixture

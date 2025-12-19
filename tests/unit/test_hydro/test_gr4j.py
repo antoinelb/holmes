@@ -75,9 +75,7 @@ def test_run_model_output_is_non_negative(sample_precipitation_evap):
 def test_run_model_single_timestep():
     """Should work with single timestep."""
     flow = gr4j.run_model(
-        np.array([10.0]),
-        np.array([2.0]),
-        x1=350, x2=0.0, x3=50, x4=2.0
+        np.array([10.0]), np.array([2.0]), x1=350, x2=0.0, x3=50, x4=2.0
     )
     assert len(flow) == 1
     assert flow[0] >= 0
@@ -167,13 +165,7 @@ def test_run_model_minimum_parameters():
     """Should work with minimum parameter values."""
     precip = np.random.uniform(0, 20, 100)
     evap = np.random.uniform(0, 5, 100)
-    flow = gr4j.run_model(
-        precip, evap,
-        x1=10,
-        x2=-5,
-        x3=10,
-        x4=0.8
-    )
+    flow = gr4j.run_model(precip, evap, x1=10, x2=-5, x3=10, x4=0.8)
     assert np.all(np.isfinite(flow))
 
 
@@ -181,13 +173,7 @@ def test_run_model_maximum_parameters():
     """Should work with maximum parameter values."""
     precip = np.random.uniform(0, 20, 100)
     evap = np.random.uniform(0, 5, 100)
-    flow = gr4j.run_model(
-        precip, evap,
-        x1=1500,
-        x2=3,
-        x3=400,
-        x4=10.0
-    )
+    flow = gr4j.run_model(precip, evap, x1=1500, x2=3, x3=400, x4=10.0)
     assert np.all(np.isfinite(flow))
 
 
@@ -244,9 +230,17 @@ def test_run_model_realistic_scenario():
     # Simulate a year of daily data with seasonal pattern
     n = 365
     # Simple seasonal precipitation pattern
-    precip = 5 + 10 * np.sin(2 * np.pi * np.arange(n) / 365) + np.random.uniform(0, 5, n)
+    precip = (
+        5
+        + 10 * np.sin(2 * np.pi * np.arange(n) / 365)
+        + np.random.uniform(0, 5, n)
+    )
     # Simple seasonal evapotranspiration pattern
-    evap = 2 + 3 * np.sin(2 * np.pi * np.arange(n) / 365) + np.random.uniform(0, 2, n)
+    evap = (
+        2
+        + 3 * np.sin(2 * np.pi * np.arange(n) / 365)
+        + np.random.uniform(0, 2, n)
+    )
     precip = np.maximum(precip, 0)
     evap = np.maximum(evap, 0)
 
@@ -343,7 +337,10 @@ def test_run_model_accepts_different_array_types():
     flow = gr4j.run_model(
         np.array(precip_list, dtype=np.float64),
         np.array(evap_list, dtype=np.float64),
-        x1=350, x2=0.0, x3=50, x4=2.0
+        x1=350,
+        x2=0.0,
+        x3=50,
+        x4=2.0,
     )
     assert len(flow) == 5
 

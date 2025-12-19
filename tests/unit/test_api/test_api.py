@@ -38,12 +38,15 @@ class TestVersionRoute:
     @pytest.mark.asyncio
     async def test_version_missing_from_pyproject(self):
         """Test error handling when version is missing from pyproject.toml."""
-        from unittest.mock import patch, mock_open
+        from unittest.mock import patch
         from holmes.api import api
         from starlette.requests import Request
 
         # Mock importlib.metadata.version to raise an exception
-        with patch("holmes.api.api.version", side_effect=Exception("No version")):
+        with patch(
+            "holmes.api.api.version", side_effect=Exception("No version")
+        ):
+
             async def dummy_receive():
                 return {"type": "http.request"}
 
@@ -51,6 +54,7 @@ class TestVersionRoute:
             response = await api._get_version(request)
 
             assert response.status_code == 500
+            assert isinstance(response.body, bytes)
             assert "Unknown version" in response.body.decode()
 
 

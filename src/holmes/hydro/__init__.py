@@ -1,4 +1,5 @@
 __all__ = [
+    "Results",
     "calibration",
     "evaluate_simulation",
     "get_optimal_for_criteria",
@@ -14,6 +15,7 @@ __all__ = [
 from . import calibration, projection, simulation, snow
 from .hydro import precompile, read_transformed_hydro_data, run_model
 from .utils import (
+    Results,
     evaluate_simulation,
     get_optimal_for_criteria,
     hydrological_models,

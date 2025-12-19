@@ -1,7 +1,6 @@
 """Tests for app module."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from starlette.applications import Starlette
 from holmes.app import create_app, run_server
 
@@ -11,7 +10,9 @@ class TestCreateApp:
 
     @patch("holmes.app.init_logging")
     @patch("holmes.app.logger")
-    def test_create_app_returns_starlette(self, mock_logger, mock_init_logging):
+    def test_create_app_returns_starlette(
+        self, mock_logger, mock_init_logging
+    ):
         """Test that create_app returns a Starlette app."""
         app = create_app()
 
@@ -22,7 +23,9 @@ class TestCreateApp:
     @patch("holmes.app.init_logging")
     @patch("holmes.app.logger")
     @patch("holmes.app.config")
-    def test_create_app_debug_mode(self, mock_config, mock_logger, mock_init_logging):
+    def test_create_app_debug_mode(
+        self, mock_config, mock_logger, mock_init_logging
+    ):
         """Test create_app in debug mode."""
         mock_config.DEBUG = True
 

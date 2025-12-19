@@ -3,7 +3,6 @@
 import pytest
 import polars as pl
 import numpy as np
-from pathlib import Path
 from holmes import data
 
 

@@ -1,10 +1,8 @@
 """Tests for logging module."""
 
 import logging
-import re
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from holmes.logging import RouteFilter, init_logging
 
@@ -75,7 +73,9 @@ class TestRouteFilter:
     def test_filter_blocks_root_route(self):
         """Test that filter blocks root route GET requests."""
         record = MagicMock(spec=logging.LogRecord)
-        record.getMessage.return_value = '127.0.0.1:12345 - "GET / HTTP/1.1" 200'
+        record.getMessage.return_value = (
+            '127.0.0.1:12345 - "GET / HTTP/1.1" 200'
+        )
 
         result = self.filter.filter(record)
 
@@ -117,7 +117,9 @@ class TestRouteFilter:
     def test_filter_allows_non_get_requests(self):
         """Test that filter allows non-GET requests."""
         record = MagicMock(spec=logging.LogRecord)
-        record.getMessage.return_value = '127.0.0.1:12345 - "POST / HTTP/1.1" 200'
+        record.getMessage.return_value = (
+            '127.0.0.1:12345 - "POST / HTTP/1.1" 200'
+        )
 
         result = self.filter.filter(record)
 

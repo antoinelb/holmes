@@ -9,13 +9,13 @@ Functional implementation based on:
 
 import asyncio
 import random
-from typing import Callable, Literal
+from typing import Awaitable, Callable, Literal
 
 import numba
 import numpy as np
 import polars as pl
 
-from .utils import Results, evaluate_simulation, get_optimal_for_criteria
+from .utils import Results, evaluate_simulation
 
 ##########
 # public #
@@ -36,7 +36,7 @@ async def run_sce_calibration(
     kstop: int,
     pcento: float,
     peps: float,
-    progress_callback: Callable[[dict], None] | None = None,
+    progress_callback: Callable[[dict], Awaitable[None]] | None = None,
 ) -> Results:
     """
     Run SCE-UA calibration algorithm.
@@ -120,7 +120,6 @@ async def run_sce_calibration(
     BESTF = [bestf]
 
     # Convergence tracking
-    bound = upper_bounds - lower_bounds
     gnrng = _compute_normalized_geometric_range(
         population, lower_bounds, upper_bounds
     )
