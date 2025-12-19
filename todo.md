@@ -1,2 +1,0 @@
-- [ ] Open browser at start
-- [ ] Made executable

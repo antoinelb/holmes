@@ -1,9 +1,3 @@
-[![Pipeline](https://gitlab.com/antoinelb/holmes/badges/main/pipeline.svg)](https://gitlab.com/antoinelb/holmes/commits/main)
-[![coverage report](https://gitlab.com/antoinelb/holmes/badges/main/coverage.svg)](https://gitlab.com/antoinelb/holmes/commits/main)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
-
 # HOLMES
 
 HOLMES (HydrOLogical Modeling Educational Software) is a software developed to teach operational hydrology. It is developed at Université Laval, Québec, Canada.
