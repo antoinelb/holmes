@@ -1,3 +1,5 @@
+import threading
+import webbrowser
 from pathlib import Path
 
 import uvicorn
@@ -29,10 +31,18 @@ def create_app() -> Starlette:
 def run_server() -> None:
     init_logging()
 
+    url = f"http://{config.HOST}:{config.PORT}"
     logger.info(
         f"Starting app in {'debug' if config.DEBUG else 'production'} mode "
-        f"on port {config.PORT}"
+        f"on port {config.PORT} : {url}"
     )
+
+    def open_browser() -> None:
+        threading.Event().wait(1.0)
+        webbrowser.open(url)
+
+    if not config.DEBUG:
+        threading.Thread(target=open_browser, daemon=True).start()
 
     uvicorn.run(
         "holmes.app:create_app",

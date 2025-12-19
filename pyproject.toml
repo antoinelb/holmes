@@ -1,6 +1,6 @@
 [project]
 name = "holmes-hydro"
-version = "3.2.2"
+version = "3.2.3"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
 authors = [
@@ -66,7 +66,6 @@ include = ["src/", "tests/", "docs/", "pyproject.toml", "README.md"]
 
 [project.scripts]
 holmes = "holmes.app:run_server"
-h = "holmes.app:run_server"
 
 [tool.black]
 line_length = 79

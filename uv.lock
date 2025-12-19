@@ -227,8 +227,8 @@ wheels = [
 ]
 
 [[package]]
-name = "holmes"
-version = "3.2.0"
+name = "holmes-hydro"
+version = "3.2.3"
 source = { editable = "." }
 dependencies = [
     { name = "jaxtyping" },
