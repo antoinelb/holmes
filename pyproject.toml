@@ -55,10 +55,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/holmes"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/data" = "holmes/data"
-"src/static" = "holmes/static"
-
 [tool.hatch.build.targets.sdist]
 include = ["src/", "tests/", "docs/", "pyproject.toml", "README.md"]
 

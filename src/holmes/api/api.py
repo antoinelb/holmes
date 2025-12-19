@@ -1,4 +1,4 @@
-from importlib.metadata import version
+import importlib.metadata
 
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, PlainTextResponse, Response
@@ -41,7 +41,7 @@ async def _ping(_: Request) -> Response:
 
 async def _get_version(_: Request) -> Response:
     try:
-        return PlainTextResponse(version("holmes"))
+        return PlainTextResponse(importlib.metadata.version("holmes_hydro"))
     except Exception:
         return PlainTextResponse("Unknown version", status_code=500)
 
