@@ -1,3 +1,4 @@
+import os
 import threading
 import webbrowser
 from pathlib import Path
@@ -41,7 +42,7 @@ def run_server() -> None:
         threading.Event().wait(1.0)
         webbrowser.open(url)
 
-    if not config.DEBUG:
+    if not config.DEBUG and "PYTEST_CURRENT_TEST" not in os.environ:
         threading.Thread(target=open_browser, daemon=True).start()
 
     uvicorn.run(

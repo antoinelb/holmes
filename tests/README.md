@@ -24,21 +24,6 @@ tests/
 pytest
 ```
 
-### Unit Tests Only
-```bash
-pytest tests/unit
-```
-
-### Integration Tests Only
-```bash
-pytest tests/integration
-```
-
-### Playwright Tests Only
-```bash
-pytest -m playwright
-```
-
 ### Skip Slow Tests
 ```bash
 pytest -m "not slow"
@@ -55,50 +40,6 @@ open htmlcov/index.html
 pytest -n auto
 ```
 
-## Frontend Tests (Playwright)
-
-The Playwright tests in `tests/integration/test_frontend_integration.py` test the frontend by automating browser interactions.
-
-### Prerequisites
-
-1. **Install Playwright** (already done if you ran `uv add --dev`)
-   ```bash
-   uv add --dev playwright pytest-playwright
-   ```
-
-2. **Install Firefox Browser**
-   ```bash
-   playwright install firefox
-   ```
-
-### Running Frontend Tests
-
-The tests automatically start and stop the HOLMES server, so you don't need to manually run it.
-
-```bash
-# Run all Playwright tests
-pytest tests/integration/test_frontend_integration.py -v
-
-# Or use the marker
-pytest -m playwright -v
-```
-
-### Frontend Test Coverage
-
-Current Playwright tests:
-- ✅ Homepage loads successfully
-- ✅ Precompilation completes
-- ✅ Theme toggle functionality
-- ✅ Navigation between sections
-- ✅ Manual calibration workflow
-
-Still to implement:
-- ⏳ Automatic calibration workflow
-- ⏳ Simulation workflow
-- ⏳ Projection workflow
-- ⏳ File imports and exports
-- ⏳ Plot rendering and interactions
-
 ## Test Markers
 
 Tests are marked with the following markers:
@@ -107,7 +48,6 @@ Tests are marked with the following markers:
 - `@pytest.mark.integration` - Integration tests
 - `@pytest.mark.slow` - Tests that take >1s
 - `@pytest.mark.requires_data` - Tests needing data files
-- `@pytest.mark.playwright` - Frontend tests with Playwright
 
 ## Writing Tests
 
