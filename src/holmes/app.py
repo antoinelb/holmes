@@ -1,3 +1,5 @@
+import argparse
+import importlib.metadata
 import os
 import threading
 import webbrowser
@@ -30,6 +32,14 @@ def create_app() -> Starlette:
 
 
 def run_server() -> None:
+    parser = argparse.ArgumentParser(prog="holmes")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {importlib.metadata.version('holmes-hydro')}",
+    )
+    parser.parse_args()
+
     init_logging()
 
     url = f"http://{config.HOST}:{config.PORT}"
