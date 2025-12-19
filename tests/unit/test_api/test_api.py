@@ -2,6 +2,7 @@
 
 import pytest
 from starlette.testclient import TestClient
+
 from holmes.app import create_app
 
 
@@ -39,12 +40,15 @@ class TestVersionRoute:
     async def test_version_missing_from_pyproject(self):
         """Test error handling when version is missing from pyproject.toml."""
         from unittest.mock import patch
-        from holmes.api import api
+
         from starlette.requests import Request
+
+        from holmes.api import api
 
         # Mock importlib.metadata.version to raise an exception
         with patch(
-            "holmes.api.api.version", side_effect=Exception("No version")
+            "holmes.api.api.importlib.metadata.version",
+            side_effect=Exception("No version"),
         ):
 
             async def dummy_receive():

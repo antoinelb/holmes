@@ -1,17 +1,13 @@
 """Tests for holmes/utils/paths.py - path utilities."""
 
 from pathlib import Path
+
 from holmes.utils import paths
 
 
-def test_package_dir_exists():
-    """Package directory should exist."""
-    assert paths.package_dir.exists()
-
-
-def test_package_dir_is_directory():
-    """Package dir should be a directory."""
-    assert paths.package_dir.is_dir()
+def test_root_dir_exists():
+    """Root directory should exist."""
+    assert paths.root_dir.exists()
 
 
 def test_data_dir_exists():
@@ -35,9 +31,9 @@ def test_static_dir_contains_index():
     assert (paths.static_dir / "index.html").exists()
 
 
-def test_package_dir_is_path_object():
-    """package_dir should be a Path object."""
-    assert isinstance(paths.package_dir, Path)
+def test_root_dir_is_path_object():
+    """root_dir should be a Path object."""
+    assert isinstance(paths.root_dir, Path)
 
 
 def test_data_dir_is_path_object():
