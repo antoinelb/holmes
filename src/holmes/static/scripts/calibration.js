@@ -1,551 +1,1471 @@
-import { clear, createSlider, createLoading } from "./utils.js";
-import { toggleLoading, addNotification } from "./header.js";
-import "/static/assets/plotly-3.1.0.min.js";
+import { create, clear, createSlider } from "./utils/elements.js";
+import { connect } from "./utils/ws.js";
+import { colours, toTitle, formatNumber } from "./utils/misc.js";
 
 /*********/
 /* model */
 /*********/
 
-let model = {
-  runAllowed: false,
-  config: {
-    hydrologicalModel: {},
-    catchments: [],
-    snowModel: {},
-    objectiveCriteria: [],
-    streamflowTransformation: [],
-    algorithm: [],
-  },
-  results: null,
-};
-
-/********/
-/* init */
-/********/
-
-export async function init() {
-  addEventListeners();
-  await initView();
-}
-
-async function initView() {
-  await initAvailableConfig();
-}
-
-function addEventListeners() {
-  document
-    .getElementById("calibration__general-config")
-    .addEventListener("submit", (event) => {
-      event.preventDefault();
-    });
-  document
-    .getElementById("calibration__catchment")
-    .addEventListener("change", (event) => {
-      updateCatchment(event.target.value);
-    });
-  document
-    .querySelector("label[for='calibration__period-start'] button")
-    .addEventListener("click", updateToPeriodStart);
-  document
-    .querySelector("label[for='calibration__period-end'] button")
-    .addEventListener("click", updateToPeriodEnd);
-  document
-    .getElementById("calibration__algorithm")
-    .addEventListener("change", (event) =>
-      updateShownConfig(event.target.value),
-    );
-  document
-    .querySelector("#calibration .results__export")
-    .addEventListener("click", exportCalibrationResults);
-}
-
-async function initAvailableConfig() {
-  const resp = await fetch("/calibration/config");
-  if (!resp.ok) {
-    addNotification(await resp.text(), true);
-    return;
-  }
-  const config = await resp.json();
-  model.config = {
-    hydrologicalModel: config.hydrological_model,
-    catchments: config.catchment.map((catchment) => ({
-      name: catchment[0],
-      snowAvailable: catchment[1],
-      periodMin: catchment[2][0],
-      periodMax: catchment[2][1],
-    })),
-    snowModel: config.snow_model,
-    objectiveCriteria: config.objective_criteria,
-    streamflowTransformation: config.streamflow_transformation,
-    algorithm: config.algorithm,
+export function initModel() {
+  return {
+    loading: false,
+    ws: null,
+    running: false,
+    availableConfig: null,
+    config: {
+      hydroModel: window.localStorage.getItem(
+        "holmes--calibration--hydroModel",
+      ),
+      catchment: window.localStorage.getItem("holmes--calibration--catchment"),
+      snowModel:
+        window.localStorage.getItem("holmes--calibration--snowModel") === "none"
+          ? null
+          : window.localStorage.getItem("holmes--calibration--snowModel"),
+      objective: window.localStorage.getItem("holmes--calibration--objective"),
+      transformation: window.localStorage.getItem(
+        "holmes--calibration--transformation",
+      ),
+      start: window.localStorage.getItem("holmes--calibration--start"),
+      end: window.localStorage.getItem("holmes--calibration--end"),
+      algorithm: window.localStorage.getItem("holmes--calibration--algorithm"),
+    },
+    params: null,
+    algorithmParams: null,
+    observations: null,
+    simulation: null,
+    results: null,
   };
-
-  addOptions(
-    "calibration__hydrological-model",
-    Object.keys(model.config.hydrologicalModel),
-  );
-  addOptions(
-    "calibration__catchment",
-    model.config.catchments.map((catchment) => catchment.name),
-  );
-  addOptions("calibration__snow-model", Object.keys(model.config.snowModel));
-  addOptions("calibration__objective-criteria", model.config.objectiveCriteria);
-  addOptions(
-    "calibration__streamflow-transformation",
-    model.config.streamflowTransformation,
-  );
-  addOptions("calibration__algorithm", model.config.algorithm);
-
-  updateCatchment(model.config.catchments[0].name);
-
-  document
-    .getElementById("calibration__hydrological-model")
-    .addEventListener("change", (event) =>
-      updateManualCalibrationSettings(event.target.value),
-    );
-  updateManualCalibrationSettings(
-    Object.keys(model.config.hydrologicalModel)[0],
-  );
-
-  document
-    .getElementById("calibration__manual-config")
-    .addEventListener("submit", runManual);
-  document
-    .getElementById("calibration__automatic-config")
-    .addEventListener("submit", runAutomatic);
 }
 
-function addOptions(selectId, values) {
-  const select = document.getElementById(selectId);
-  values.forEach((val, i) => {
-    const option = document.createElement("option");
-    option.value = val;
-    option.textContent = val;
-    select.appendChild(option);
-    if (i == 0) {
-      select.value = val;
-    }
-  });
-}
-
+export const initialMsg = [
+  {
+    type: "CalibrationMsg",
+    data: { type: "Connect" },
+  },
+];
 
 /**********/
 /* update */
 /**********/
 
-function updateCatchment(catchment) {
-  const info = model.config.catchments.filter((c) => c.name == catchment)[0];
-  if (info === undefined) {
-    addNotification(`There is no catchment named '${catchment}'.`, true)
-  }
-
-  if (info.snowAvailable) {
-    document
-      .querySelector("label[for='calibration__snow-model']")
-      .classList.remove("label-disabled");
-    document
-      .getElementById("calibration__snow-model")
-      .removeAttribute("disabled");
-  } else {
-    document
-      .querySelector("label[for='calibration__snow-model']")
-      .classList.add("label-disabled");
-    document
-      .getElementById("calibration__snow-model")
-      .setAttribute("disabled", true);
-  }
-
-  const periodStart = document.getElementById("calibration__period-start");
-  const periodEnd = document.getElementById("calibration__period-end");
-  periodStart.setAttribute("min", info.periodMin);
-  periodEnd.setAttribute("max", info.periodMax);
-  if (periodStart.value == "" || periodStart.value < info.periodMin) { periodStart.value = info.periodMin; } if
-    (periodEnd.value == "" || periodEnd.value > info.periodMax) {
-    periodEnd.value = info.periodMax;
-  }
-}
-
-function updateToPeriodStart() {
-  const input = document.getElementById("calibration__period-start");
-  input.value = input.min;
-}
-
-function updateToPeriodEnd() {
-  const input = document.getElementById("calibration__period-end");
-  input.value = input.max;
-}
-
-function updateManualCalibrationSettings(hydroModel) {
-  const form = document.getElementById("calibration__manual-config");
-  clear(form);
-
-  const h3 = document.createElement("h3");
-  h3.textContent = "Manual calibration settings";
-  form.appendChild(h3);
-
-  Object.entries(model.config.hydrologicalModel[hydroModel].parameters).forEach(
-    ([param, config]) => {
-      const label = document.createElement("label");
-      label.setAttribute("for", `calibration__parameter-${param}`);
-      label.textContent = `Parameter ${param}`;
-      form.appendChild(label);
-
-      const slider = createSlider(
-        `calibration__parameter-${param}`,
-        param,
-        config.min,
-        config.max,
-        config.is_integer,
-      );
-      form.appendChild(slider);
-    },
-  );
-
-  const loader = createLoading();
-  loader.setAttribute("hidden", true);
-  form.appendChild(loader);
-
-  const run = document.createElement("input");
-  run.setAttribute("type", "submit");
-  run.value = "Run";
-  form.appendChild(run);
-}
-
-function updateShownConfig(algorithm) {
-  const manual = document.getElementById("calibration__manual-config");
-  const automatic = document.getElementById("calibration__automatic-config");
-
-  if (algorithm.toLowerCase() == "manual") {
-    manual.removeAttribute("hidden");
-    automatic.setAttribute("hidden", true);
-  } else {
-    manual.setAttribute("hidden", true);
-    automatic.removeAttribute("hidden");
-  }
-}
-
-function getPlotlyTemplate(theme) {
-  // Dark theme colors - vibrant colors for dark backgrounds
-  const darkColors = [
-    "#fd7f6f", "#7eb0d5", "#b2e061", "#bd7ebe", "#ffb55a",
-    "#ffee65", "#beb9db", "#fdcce5", "#8bd3c7",
-  ];
-
-  // Light theme colors - soft, muted palette for light backgrounds
-  const lightColors = [
-    "#d97373", "#5a9bc7", "#8fba4d", "#a866aa", "#e89a3c",
-    "#d4b83e", "#9b94c4", "#e5a8c8", "#6cb3a3",
-  ];
-
-  if (theme === "light") {
-    return {
-      font: { color: "rgb(50,50,50)" },
-      xaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
-      yaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      colorway: lightColors,
-    };
-  } else {
-    return {
-      font: { color: "rgb(230,230,230)" },
-      xaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
-      yaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      colorway: darkColors,
-    };
-  }
-}
-
-function updateCalibrationPlotTheme(event) {
-  const fig = document.querySelector("#calibration .results__fig");
-  if (!fig || !fig.data) return;
-
-  const theme = event.detail.theme;
-  const template = getPlotlyTemplate(theme);
-
-  // Build update object for all axes (including subplots)
-  const updates = {
-    'font.color': template.font.color,
-    'paper_bgcolor': template.paper_bgcolor,
-    'plot_bgcolor': template.plot_bgcolor,
-  };
-
-  // Update all xaxis and yaxis (handles subplots)
-  const layout = fig.layout;
-  Object.keys(layout).forEach(key => {
-    if (key.startsWith('xaxis') || key === 'xaxis') {
-      updates[`${key}.gridcolor`] = template.xaxis.gridcolor;
-      updates[`${key}.linecolor`] = template.xaxis.linecolor;
-    }
-    if (key.startsWith('yaxis') || key === 'yaxis') {
-      updates[`${key}.gridcolor`] = template.yaxis.gridcolor;
-      updates[`${key}.linecolor`] = template.yaxis.linecolor;
-    }
-  });
-
-  // Update trace colors
-  const dataUpdates = fig.data.map((trace, i) => ({
-    'marker.color': template.colorway[i % template.colorway.length],
-    'line.color': template.colorway[i % template.colorway.length],
-  }));
-
-  // Use Plotly.update to change both layout and traces
-  Plotly.update(fig, dataUpdates, updates);
-}
-
-async function runManual(event) {
-  event.preventDefault();
-
-  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
-
-  const loader = document.querySelector("#calibration__manual-config .loading");
-  const submit = document.querySelector("#calibration__manual-config input[type='submit']");
-
-  toggleLoading(true);
-  loader.removeAttribute("hidden");
-  submit.setAttribute("hidden", true);
-
-  const fig = document.querySelector("#calibration .results__fig");
-
-  const config = {
-    hydrological_model: document.getElementById(
-      "calibration__hydrological-model",
-    ).value,
-    catchment: document.getElementById("calibration__catchment").value,
-    snow_model: document.getElementById("calibration__snow-model").value,
-    objective_criteria: document.getElementById(
-      "calibration__objective-criteria",
-    ).value,
-    streamflow_transformation: document.getElementById(
-      "calibration__streamflow-transformation",
-    ).value,
-    calibration_start: document.getElementById("calibration__period-start")
-      .value,
-    calibration_end: document.getElementById("calibration__period-end").value,
-    params: Object.fromEntries(
-      [
-        ...document.querySelectorAll(
-          "#calibration__manual-config input[type='range']",
-        ),
-      ].map((input) => [input.name, parseFloat(input.value)]),
-    ),
-    prev_results: model.results,
-    theme: theme,
-  };
-  const resp = await fetch("/calibration/run_manual", {
-    method: "POST",
-    body: JSON.stringify(config),
-    headers: {
-      "Content-type": "application/json",
-    },
-  });
-  if (!resp.ok) {
-    addNotification(await resp.text(), true);
-    loader.setAttribute("hidden", true);
-    submit.removeAttribute("hidden");
-    toggleLoading(false);
-    return;
-  }
-  const data = await resp.json();
-  const figData = JSON.parse(data.fig);
-  model.results = data.results;
-
-  clear(fig);
-  Plotly.newPlot(fig, figData.data, figData.layout, {
-    displayLogo: false,
-    modeBarButtonsToRemove: [
-      "zoom",
-      "pan",
-      "select",
-      "lasso",
-      "zoomIn",
-      "zoomOut",
-      "autoScale",
-      "resetScale",
-    ],
-  });
-
-  // Add theme change listener for dynamic plot updates
-  window.addEventListener('themeChanged', updateCalibrationPlotTheme);
-
-  loader.setAttribute("hidden", true);
-  submit.removeAttribute("hidden");
-  document.querySelector(".results__export").removeAttribute("hidden");
-  toggleLoading(false);
-
-  fig.scrollIntoView({ behavior: "smooth", block: "end" });
-}
-
-async function runAutomatic(event) {
-  event.preventDefault();
-
-  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
-
-  const fig = document.querySelector("#calibration .results__fig");
-  const runButton = document.querySelector("#calibration__automatic-config input[type='submit']");
-  const loadingSpinner = document.querySelector("#calibration__automatic-config .loading");
-
-  runButton.setAttribute("hidden", true);
-  loadingSpinner.removeAttribute("hidden");
-  toggleLoading(true);
-
-  const config = {
-    hydrological_model: document.getElementById(
-      "calibration__hydrological-model",
-    ).value,
-    catchment: document.getElementById("calibration__catchment").value,
-    snow_model: document.getElementById("calibration__snow-model").value,
-    objective_criteria: document.getElementById(
-      "calibration__objective-criteria",
-    ).value,
-    streamflow_transformation: document.getElementById(
-      "calibration__streamflow-transformation",
-    ).value,
-    calibration_start: document.getElementById("calibration__period-start")
-      .value,
-    calibration_end: document.getElementById("calibration__period-end").value,
-    ngs: document.getElementById("calibration__ngs").value,
-    npg: document.getElementById("calibration__npg").value,
-    mings: document.getElementById("calibration__mings").value,
-    nspl: document.getElementById("calibration__nspl").value,
-    maxn: document.getElementById("calibration__maxn").value,
-    kstop: document.getElementById("calibration__kstop").value,
-    pcento: document.getElementById("calibration__pcento").value,
-    peps: document.getElementById("calibration__peps").value,
-    theme: theme,
-  };
-
-  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const ws = new WebSocket(
-    `${protocol}//${window.location.host}/calibration/run_automatic`,
-  );
-
-  ws.onopen = () => {
-    ws.send(JSON.stringify(config));
-  };
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.type === "progress") {
-      const figData = JSON.parse(data.fig);
-      model.results = data.results;
-
-      clear(fig);
-      Plotly.newPlot(fig, figData.data, figData.layout, {
-        displayLogo: false,
-        modeBarButtonsToRemove: [
-          "zoom",
-          "pan",
-          "select",
-          "lasso",
-          "zoomIn",
-          "zoomOut",
-          "autoScale",
-          "resetScale",
-        ],
-      });
-
-      if (data.iteration === 1) {
-        // Add theme change listener for dynamic plot updates (only once)
-        window.addEventListener('themeChanged', updateCalibrationPlotTheme);
-        fig.scrollIntoView({ behavior: "smooth", block: "end" });
+export async function update(model, msg, dispatch, createNotification) {
+  dispatch = createDispatch(dispatch);
+  let config;
+  let configValid;
+  switch (msg.type) {
+    case "Connect":
+      connect("calibration/", handleMessage, dispatch, createNotification);
+      return { ...model, loading: true };
+    case "Connected":
+      if (model.availableConfig === null) {
+        dispatch({ type: "GetAvailableConfig" });
       }
-
-    } else if (data.type === "complete") {
-      const figData = JSON.parse(data.fig);
-      model.results = data.results;
-
-      clear(fig);
-      Plotly.newPlot(fig, figData.data, figData.layout, {
-        displayLogo: false,
-        modeBarButtonsToRemove: [
-          "zoom",
-          "pan",
-          "select",
-          "lasso",
-          "zoomIn",
-          "zoomOut",
-          "autoScale",
-          "resetScale",
-        ],
+      if (model.observations === null) {
+        dispatch({ type: "GetObservations" });
+      }
+      return { ...model, loading: false, ws: msg.data };
+    case "Disconnected":
+      setTimeout(() => dispatch({ type: "Connect" }), 3000);
+      return { ...model, ws: null };
+    case "GetAvailableConfig":
+      if (model.ws?.readyState === WebSocket.OPEN) {
+        model.ws.send(JSON.stringify({ type: "config" }));
+      }
+      return { ...model, loading: true };
+    case "GotAvailableConfig":
+      config = Object.fromEntries(
+        Object.entries(msg.data).map(([key, value]) => [
+          key.split("_")[0] + key.split("_").slice(1).map(toTitle).join(""),
+          value,
+        ]),
+      );
+      Object.entries(config).forEach(([field, values]) => {
+        if (model.config[field] === null) {
+          dispatch({
+            type: "UpdateConfigField",
+            data: {
+              field: field,
+              value:
+                typeof values[0] !== "object"
+                  ? values[0]
+                  : field === "catchment" ||
+                      field === "hydroModel" ||
+                      field === "algorithm"
+                    ? values[0].name
+                    : null,
+            },
+          });
+        }
       });
-
-      loadingSpinner.setAttribute("hidden", true);
-      runButton.removeAttribute("hidden");
-      toggleLoading(false);
-
-      document.querySelector(".results__export").removeAttribute("hidden");
-
-      ws.close();
-    } else if (data.type === "error") {
-      addNotification(`Calibration error: ${data.message}`);
-
-      loadingSpinner.setAttribute("hidden", true);
-      runButton.removeAttribute("hidden");
-      toggleLoading(false);
-
-      ws.close();
-    }
-  };
-
-  ws.onerror = (error) => {
-    addNotification(`WebSocket error: ${error}`);
-
-    loadingSpinner.setAttribute("hidden", true);
-    runButton.removeAttribute("hidden");
-    toggleLoading(false);
-  };
-
+      model = {
+        ...model,
+        loading: false,
+        availableConfig: config,
+      };
+      if (model.config.catchment !== null) {
+        updateCatchment(model, model.config.catchment, dispatch);
+      }
+      return model;
+    case "UpdateConfigField":
+      window.localStorage.setItem(
+        `holmes--calibration--${msg.data.field}`,
+        msg.data.value === null ? "none" : msg.data.value,
+      );
+      if (msg.data.field === "catchment") {
+        updateCatchment(model, msg.data.value, dispatch);
+      }
+      if (msg.data.field === "start" || msg.data.field === "end") {
+        dispatch({ type: "GetObservations" });
+      }
+      return {
+        ...model,
+        config: {
+          ...model.config,
+          [msg.data.field]: msg.data.value === "none" ? null : msg.data.value,
+        },
+        results: null,
+      };
+    case "ResetDate":
+      if (model.availableConfig !== null && model.config.catchment !== null) {
+        const catchment = model.availableConfig.catchment.filter(
+          (c) => c.name == model.config.catchment,
+        )[0];
+        if (msg.data === "start") {
+          dispatch({
+            type: "UpdateConfigField",
+            data: { field: "start", value: catchment.start },
+          });
+        } else if (msg.data === "end") {
+          dispatch({
+            type: "UpdateConfigField",
+            data: { field: "end", value: catchment.end },
+          });
+        } else {
+          console.error(
+            `Wrong msg data: got ${msg.data}, allowed start and end`,
+          );
+        }
+      }
+      return model;
+    case "GetObservations":
+      configValid =
+        model.config.catchment !== null &&
+        model.config.catchment.start !== null &&
+        model.config.catchment.end !== null;
+      if (model.ws?.readyState === WebSocket.OPEN && configValid) {
+        model.ws.send(
+          JSON.stringify({
+            type: "observations",
+            data: {
+              catchment: model.config.catchment,
+              start: model.config.start,
+              end: model.config.end,
+            },
+          }),
+        );
+      } else {
+        setTimeout(() => dispatch(msg), 1000);
+      }
+      return { ...model, loading: true };
+    case "GotObservations":
+      return {
+        ...model,
+        loading: false,
+        observations: msg.data,
+      };
+    case "RunManual":
+      config = model.config;
+      config.hydroParams = [
+        ...document.querySelectorAll(
+          "#calibration__manual-config input[type='number']",
+        ),
+      ].map((input) => parseFloat(input.value));
+      configValid = Object.entries(config).every(
+        ([field, value]) => field === "snowModel" || value !== null,
+      );
+      if (model.ws?.readyState === WebSocket.OPEN && configValid) {
+        model.ws.send(
+          JSON.stringify({
+            type: "manual",
+            data: config,
+          }),
+        );
+      } else {
+        setTimeout(() => dispatch(msg), 1000);
+      }
+      return { ...model, loading: true };
+    case "StartCalibration":
+      config = model.config;
+      config.algorithmParams = Object.fromEntries(
+        [
+          ...document.querySelectorAll("#calibration__automatic-config input"),
+        ].map((input) => [
+          input.id.split("__").reverse()[0],
+          parseFloat(input.value),
+        ]),
+      );
+      configValid = Object.entries(config).every(
+        ([field, value]) => field === "snowModel" || value !== null,
+      );
+      if (model.ws?.readyState === WebSocket.OPEN && configValid) {
+        model.ws.send(
+          JSON.stringify({
+            type: "calibration_start",
+            data: config,
+          }),
+        );
+      } else {
+        setTimeout(() => dispatch(msg), 1000);
+      }
+      return { ...model, loading: true, running: true, results: null };
+    case "StopCalibration":
+      if (model.ws?.readyState === WebSocket.OPEN && model.running) {
+        model.ws.send(
+          JSON.stringify({
+            type: "calibration_stop",
+          }),
+        );
+      }
+      return { ...model, loading: false, running: false };
+    case "GotResults":
+      return {
+        ...model,
+        loading: !msg.data.done,
+        running: !msg.data.done,
+        simulation: msg.data.simulation,
+        results:
+          model.results === null
+            ? [{ params: msg.data.params, objective: msg.data.objective }]
+            : [
+                ...model.results,
+                { params: msg.data.params, objective: msg.data.objective },
+              ],
+      };
+    case "ExportParams":
+      downloadParams(model);
+      return model;
+    case "ExportData":
+      downloadData(model);
+      return model;
+    default:
+      return model;
+  }
 }
 
-function exportCalibrationResults() {
-  if (!model.results) {
-    alert("No calibration results to export. Please run a calibration first.");
-    return;
+function createDispatch(dispatch) {
+  return (msg) => dispatch({ type: "CalibrationMsg", data: msg });
+}
+
+function handleMessage(event, dispatch, createNotification) {
+  const msg = JSON.parse(event.data);
+  switch (msg.type) {
+    case "error":
+      createNotification(msg.data, true);
+      break;
+    case "config":
+      dispatch({ type: "GotAvailableConfig", data: msg.data });
+      break;
+    case "observations":
+      dispatch({ type: "GotObservations", data: msg.data });
+      break;
+    case "result":
+      dispatch({ type: "GotResults", data: msg.data });
+      break;
+    default:
+      createNotification("Unknown websocket message", true);
+      break;
+  }
+}
+
+function updateCatchment(model, catchment, dispatch) {
+  const _catchment = model.availableConfig.catchment.filter(
+    (c) => c.name == catchment,
+  )[0];
+  if (!_catchment.snow && model.config.snowModel !== null) {
+    dispatch({
+      type: "UpdateConfigField",
+      data: { field: "snowModel", value: "none" },
+    });
+  }
+  if (model.config.start === null || model.config.start < _catchment.start) {
+    dispatch({
+      type: "UpdateConfigField",
+      data: { field: "start", value: _catchment.start },
+    });
+  }
+  if (model.config.end === null || model.config.end > _catchment.end) {
+    dispatch({
+      type: "UpdateConfigField",
+      data: { field: "end", value: _catchment.end },
+    });
+  }
+  dispatch({ type: "GetObservations" });
+}
+
+function downloadParams(model) {
+  if (
+    model.availableConfig !== null &&
+    model.config.catchment !== null &&
+    model.config.hydroModel !== null &&
+    model.results !== null
+  ) {
+    const paramNames = model.availableConfig.hydroModel
+      .filter((h) => h.name == model.config.hydroModel)[0]
+      .params.map((p) => p.name);
+    const data = {
+      ...model.config,
+      hydroParams: Object.fromEntries(
+        paramNames.map((p, i) => [
+          p,
+          model.results[model.results.length - 1].params[i],
+        ]),
+      ),
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_params.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+function downloadData(model) {
+  if (
+    model.availableConfig !== null &&
+    model.config.catchment !== null &&
+    model.config.hydroModel !== null &&
+    model.config.objective !== null &&
+    model.results !== null &&
+    model.observations !== null &&
+    model.simulation !== null
+  ) {
+    const paramNames = model.availableConfig.hydroModel
+      .filter((h) => h.name == model.config.hydroModel)[0]
+      .params.map((p) => p.name);
+    const paramData = model.results.map((r) =>
+      Object.fromEntries(paramNames.map((p, i) => [p, r.params[i]])),
+    );
+    const objectiveData = model.results.map((r) => r.objective);
+    const data = {
+      parameters: paramData,
+      [model.config.objective]: objectiveData,
+    };
+
+    let blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_results.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    const streamflowData = [
+      ["date", "observation", "simulation"].join(","),
+      ...model.observations.map(
+        (o, i) => `${o.date},${o.streamflow},${model.simulation[i].streamflow}`,
+      ),
+    ].join("\n");
+
+    blob = new Blob([streamflowData], {
+      type: "text/csv",
+    });
+    url = URL.createObjectURL(blob);
+    a = document.createElement("a");
+    a.href = url;
+    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_data.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+/********/
+/* view */
+/********/
+
+export function initView(dispatch) {
+  dispatch = createDispatch(dispatch);
+
+  const calibrationResults = create("div", { id: "calibration__results" });
+
+  let resizeTimeout;
+  const resizeObserver = new ResizeObserver(() => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => dispatch({ type: "Noop" }), 100);
+  });
+  resizeObserver.observe(calibrationResults);
+
+  return create("section", { id: "calibration" }, [
+    create("h2", {}, ["Calibration"]),
+    create("div", { class: "config" }, [
+      initGeneralSettingsView(dispatch),
+      initCalibrationSettingsView(dispatch),
+    ]),
+    calibrationResults,
+  ]);
+}
+
+export function view(model, dispatch) {
+  dispatch = createDispatch(dispatch);
+  generalSettingsView(model);
+  calibrationSettingsView(model);
+  resultsView(model);
+}
+
+function initGeneralSettingsView(dispatch) {
+  return create(
+    "form",
+    { id: "calibration__general-config" },
+    [
+      create("h3", {}, ["General settings"]),
+      create("label", { for: "calibration__hydro-model" }, [
+        "Hydrological model",
+      ]),
+      create(
+        "select",
+        { id: "calibration__hydro-model" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "hydroModel", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__catchment" }, ["Catchment"]),
+      create(
+        "select",
+        { id: "calibration__catchment" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "catchment", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__snow-model" }, [
+        "Snow model (optional)",
+      ]),
+      create(
+        "select",
+        { id: "calibration__snow-model" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "snowModel", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__objective" }, [
+        "Objective criteria",
+      ]),
+      create(
+        "select",
+        { id: "calibration__objective" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "objective", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__transformation" }, [
+        "Streamflow transformation",
+      ]),
+      create(
+        "select",
+        { id: "calibration__transformation" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "transformation", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__start" }, [
+        create(
+          "button",
+          { type: "button", title: "Set to possible start" },
+          ["Reset"],
+          [
+            {
+              event: "click",
+              fct: () => dispatch({ type: "ResetDate", data: "start" }),
+            },
+          ],
+        ),
+        create("span", {}, ["Calibration start"]),
+      ]),
+      create(
+        "input",
+        { id: "calibration__start", type: "date" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "start", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__end" }, [
+        create(
+          "button",
+          { type: "button", title: "Set to possible end" },
+          ["Reset"],
+          [
+            {
+              event: "click",
+              fct: () => dispatch({ type: "ResetDate", data: "end" }),
+            },
+          ],
+        ),
+        create("span", {}, ["Calibration end"]),
+      ]),
+      create(
+        "input",
+        { id: "calibration__end", type: "date" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "end", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+      create("label", { for: "calibration__algorithm" }, [
+        "Calibration algorithm",
+      ]),
+      create(
+        "select",
+        { id: "calibration__algorithm" },
+        [],
+        [
+          {
+            event: "input",
+            fct: (event) => {
+              dispatch({
+                type: "UpdateConfigField",
+                data: { field: "algorithm", value: event.target.value },
+              });
+            },
+          },
+        ],
+      ),
+    ],
+    [
+      {
+        event: "submit",
+        fct: (event) => {
+          event.preventDefault();
+        },
+      },
+    ],
+  );
+}
+
+function initCalibrationSettingsView(dispatch) {
+  return create("div", { id: "calibration__calibration-config" }, [
+    initManualCalibrationSettingsView(dispatch),
+    initAutomaticCalibrationSettingsView(dispatch),
+  ]);
+}
+
+function initManualCalibrationSettingsView(dispatch) {
+  return create(
+    "form",
+    { id: "calibration__manual-config" },
+    [
+      create("h3", {}, ["Manual calibration settings"]),
+      create("div"),
+      create("input", { type: "submit", value: "Run" }),
+      create(
+        "input",
+        {
+          class: "calibration__export-params",
+          type: "button",
+          value: "Export parameters",
+          disabled: true,
+        },
+        [],
+        [{ event: "click", fct: () => dispatch({ type: "ExportParams" }) }],
+      ),
+      create(
+        "input",
+        {
+          class: "calibration__export-data",
+          type: "button",
+          value: "Export data",
+          disabled: true,
+        },
+        [],
+        [{ event: "click", fct: () => dispatch({ type: "ExportData" }) }],
+      ),
+    ],
+    [
+      {
+        event: "submit",
+        fct: (event) => {
+          event.preventDefault();
+          dispatch({ type: "RunManual" });
+        },
+      },
+    ],
+  );
+}
+
+function initAutomaticCalibrationSettingsView(dispatch) {
+  return create(
+    "form",
+    { id: "calibration__automatic-config", hidden: true },
+    [
+      create("h3", {}, []),
+      create("div"),
+      create(
+        "input",
+        {
+          id: "calibration__automatic__start",
+          type: "submit",
+          value: "Start calibration",
+        },
+        [],
+        [
+          {
+            event: "click",
+            fct: () => {
+              dispatch({ type: "StartCalibration" });
+            },
+          },
+        ],
+      ),
+      create(
+        "input",
+        {
+          id: "calibration__automatic__stop",
+          type: "button",
+          value: "Stop calibration",
+          hidden: true,
+        },
+        [],
+        [
+          {
+            event: "click",
+            fct: () => {
+              dispatch({ type: "StopCalibration" });
+            },
+          },
+        ],
+      ),
+      create(
+        "input",
+        {
+          class: "calibration__export-params",
+          type: "button",
+          value: "Export parameters",
+          disabled: true,
+        },
+        [],
+        [{ event: "click", fct: () => dispatch({ type: "ExportParams" }) }],
+      ),
+      create(
+        "input",
+        {
+          class: "calibration__export-data",
+          type: "button",
+          value: "Export data",
+          disabled: true,
+        },
+        [],
+        [{ event: "click", fct: () => dispatch({ type: "ExportData" }) }],
+      ),
+    ],
+    [
+      {
+        event: "submit",
+        fct: (event) => {
+          event.preventDefault();
+        },
+      },
+    ],
+  );
+}
+
+function generalSettingsView(model) {
+  const hydroSelect = document.getElementById("calibration__hydro-model");
+  if (hydroSelect.children.length === 0 && model.availableConfig !== null) {
+    model.availableConfig.hydroModel.forEach((o) => {
+      hydroSelect.appendChild(create("option", { value: o.name }, [o.name]));
+    });
+  }
+  if (model.config.hydroModel !== null) {
+    hydroSelect.value = model.config.hydroModel;
   }
 
-  // Gather all calibration settings and results
-  const hydroModel = document.getElementById("calibration__hydrological-model").value;
-  const catchment = document.getElementById("calibration__catchment").value;
-  const snowModel = document.getElementById("calibration__snow-model").value;
-  const criteria = document.getElementById("calibration__objective-criteria").value;
-  const streamflowTransform = document.getElementById("calibration__streamflow-transformation").value;
-  const algorithm = document.getElementById("calibration__algorithm").value;
-  const dateStart = document.getElementById("calibration__period-start").value;
-  const dateEnd = document.getElementById("calibration__period-end").value;
-  const params = Object.entries(model.results.params).map(([key, vals]) => ({
-    name: key,
-    value: vals[vals.length - 1]
-  }));
+  const catchmentSelect = document.getElementById("calibration__catchment");
+  if (catchmentSelect.children.length === 0 && model.availableConfig !== null) {
+    model.availableConfig.catchment.forEach((o) => {
+      catchmentSelect.appendChild(
+        create(
+          "option",
+          {
+            value: o.name,
+          },
+          [o.name],
+        ),
+      );
+    });
+  }
+  if (model.config.catchment !== null) {
+    catchmentSelect.value = model.config.catchment;
+  }
 
+  const snowSelect = document.getElementById("calibration__snow-model");
+  if (snowSelect.children.length === 0 && model.availableConfig !== null) {
+    model.availableConfig.snowModel.forEach((o) => {
+      snowSelect.appendChild(
+        create(
+          "option",
+          {
+            value: o === null ? "none" : o,
+          },
+          [o === null ? "none" : o],
+        ),
+      );
+    });
+  }
+  if (model.config.snowModel !== null) {
+    snowSelect.value = model.config.snowModel;
+  } else {
+    snowSelect.value = "none";
+  }
 
-  // Create export data matching the format from the screenshot
-  const exportData = {
-    "hydrological model": hydroModel,
-    "catchment": catchment,
-    "criteria": criteria,
-    "streamflow transformation": streamflowTransform,
-    "algorithm": algorithm,
-    "date start": dateStart,
-    "date end": dateEnd,
-    "warmup": true, // Default warm-up period
-    "snow model": snowModel || "",
-    "data type": "Observations",
-    "parameters": params,
-  };
+  const objectiveSelect = document.getElementById("calibration__objective");
+  if (objectiveSelect.children.length === 0 && model.availableConfig !== null) {
+    model.availableConfig.objective.forEach((o) => {
+      objectiveSelect.appendChild(create("option", { value: o }, [o]));
+    });
+  }
+  if (model.config.objective !== null) {
+    objectiveSelect.value = model.config.objective;
+  }
 
-  // Convert to JSON and download
-  const jsonStr = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([jsonStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `calibration_${catchment}_${hydroModel}_${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const transformationSelect = document.getElementById(
+    "calibration__transformation",
+  );
+  if (
+    transformationSelect.children.length === 0 &&
+    model.availableConfig !== null
+  ) {
+    model.availableConfig.transformation.forEach((o) => {
+      transformationSelect.appendChild(
+        create("option", { value: o }, [
+          {
+            log: "Low flows: log",
+            sqrt: "Medium flows: sqrt",
+            none: "High flows: none",
+          }[o],
+        ]),
+      );
+    });
+  }
+  if (model.config.transformation !== null) {
+    transformationSelect.value = model.config.transformation;
+  }
+
+  const algorithmSelect = document.getElementById("calibration__algorithm");
+  if (algorithmSelect.children.length === 0 && model.availableConfig !== null) {
+    model.availableConfig.algorithm.forEach((o) => {
+      algorithmSelect.appendChild(
+        create("option", { value: o.name }, [
+          {
+            manual: "Manual",
+            sce: "Automatic - SCE",
+          }[o.name],
+        ]),
+      );
+    });
+  }
+  if (model.config.algorithm !== null) {
+    algorithmSelect.value = model.config.algorithm;
+  }
+
+  datesView(model);
+  snowConfigView(model);
+}
+
+function datesView(model) {
+  if (model.availableConfig !== null && model.config.catchment !== null) {
+    const start = document.getElementById("calibration__start");
+    const end = document.getElementById("calibration__end");
+    const catchment = model.availableConfig.catchment.filter(
+      (c) => c.name == model.config.catchment,
+    )[0];
+    if (start.min === "" || start.min !== catchment.min) {
+      start.min = catchment.start;
+    }
+    if (start.max === "" || start.max !== catchment.max) {
+      start.max = catchment.end;
+    }
+    if (start.value === "") {
+      start.value =
+        model.config.start === null ? catchment.start : model.config.start;
+    }
+    if (end.min === "" || end.min !== catchment.min) {
+      end.min = catchment.start;
+    }
+    if (end.max === "" || end.max !== catchment.max) {
+      end.max = catchment.end;
+    }
+    if (end.value === "") {
+      end.value = model.config.end === null ? catchment.end : model.config.end;
+    }
+    if (model.config.start !== null && start.value !== model.config.start) {
+      start.value = model.config.start;
+    }
+    if (model.config.end !== null && start.end !== model.config.end) {
+      end.value = model.config.end;
+    }
+  }
+}
+
+function snowConfigView(model) {
+  if (model.availableConfig !== null && model.config.catchment !== null) {
+    const label = document.querySelector(
+      "label[for='calibration__snow-model']",
+    );
+    const select = document.getElementById("calibration__snow-model");
+    const catchment = model.availableConfig.catchment.filter(
+      (c) => c.name == model.config.catchment,
+    )[0];
+    if (catchment.snow) {
+      label.removeAttribute("disabled");
+      select.removeAttribute("disabled");
+    } else {
+      label.setAttribute("disabled", true);
+      select.setAttribute("disabled", true);
+    }
+  }
+}
+
+function calibrationSettingsView(model) {
+  const manualConfig = document.getElementById("calibration__manual-config");
+  const automaticConfig = document.getElementById(
+    "calibration__automatic-config",
+  );
+
+  if (model.config.algorithm === null || model.config.algorithm === "manual") {
+    manualConfig.removeAttribute("hidden");
+    automaticConfig.setAttribute("hidden", true);
+  } else {
+    manualConfig.setAttribute("hidden", true);
+    automaticConfig.removeAttribute("hidden");
+  }
+
+  manualCalibrationSettingsView(model);
+  automaticCalibrationSettingsView(model);
+}
+
+function manualCalibrationSettingsView(model) {
+  if (model.availableConfig !== null && model.config.hydroModel !== null) {
+    const hydro = model.availableConfig.hydroModel.filter(
+      (h) => h.name == model.config.hydroModel,
+    )[0];
+    const div = document.querySelector("#calibration__manual-config > div");
+    if (
+      hydro.params.some(
+        (param) =>
+          document.getElementById(
+            `calibration__manual-config__${param.name}`,
+          ) === null,
+      )
+    ) {
+      clear(div);
+      hydro.params.forEach((param) => {
+        div.appendChild(
+          createSlider(
+            `calibration__manual-config__${param.name}`,
+            param.min,
+            param.max,
+            false,
+            [],
+            param.default,
+          ),
+        );
+      });
+    }
+  }
+}
+
+function automaticCalibrationSettingsView(model) {
+  if (
+    model.availableConfig !== null &&
+    model.config.hydroModel !== null &&
+    model.config.algorithm !== null &&
+    model.config.algorithm !== "manual"
+  ) {
+    const algo = model.availableConfig.algorithm.filter(
+      (a) => a.name == model.config.algorithm,
+    )[0];
+    const automaticConfig = document.getElementById(
+      "calibration__automatic-config",
+    );
+    automaticConfig.querySelector("h3").textContent =
+      `Automatic - ${algo.name.toUpperCase()} calibration settings`;
+    const div = document.querySelector("#calibration__automatic-config > div");
+    if (
+      algo.params.some(
+        (param) =>
+          document.getElementById(
+            `calibration__automatic-config__${param.name}`,
+          ) === null,
+      )
+    ) {
+      clear(div);
+      algo.params.forEach((param) => {
+        div.appendChild(
+          create(
+            "label",
+            { for: `calibration__automatic-config__${param.name}` },
+            [param.name],
+          ),
+        );
+        div.appendChild(
+          create("input", {
+            id: `calibration__automatic-config__${param.name}`,
+            type: "number",
+            value: param.default,
+            step: param.integer ? 1 : 0.001,
+            ...(param.min === null ? {} : { min: param.min }),
+            ...(param.max === null ? {} : { max: param.max }),
+          }),
+        );
+      });
+    }
+
+    if (model.running) {
+      document
+        .getElementById("calibration__automatic__start")
+        .setAttribute("hidden", true);
+      document
+        .getElementById("calibration__automatic__stop")
+        .removeAttribute("hidden");
+    } else {
+      document
+        .getElementById("calibration__automatic__start")
+        .removeAttribute("hidden");
+      document
+        .getElementById("calibration__automatic__stop")
+        .setAttribute("hidden", true);
+    }
+  }
+}
+
+function resultsView(model) {
+  if (model.availableConfig !== null && model.config.hydroModel !== null) {
+    let div = document.getElementById("calibration__results");
+    const hydro = model.availableConfig.hydroModel.filter(
+      (h) => h.name == model.config.hydroModel,
+    )[0];
+    if (
+      hydro.params.some(
+        (param) =>
+          document.getElementById(
+            `calibration__results__${param.name}-plot`,
+          ) === null,
+      )
+    ) {
+      clear(div);
+      hydro.params.forEach((param) => {
+        div.appendChild(
+          create("svg", {
+            id: `calibration__results__${param.name}-plot`,
+            class: "plot",
+          }),
+        );
+      });
+      div.appendChild(
+        create("svg", { id: "calibration__results__objective", class: "plot" }),
+      );
+      div.appendChild(
+        create("svg", {
+          id: "calibration__results__streamflow",
+          class: "plot",
+        }),
+      );
+      div.appendChild(
+        create("div", { id: "calibration__results__legend", class: "plot" }),
+      );
+    }
+
+    streamflowView(model);
+    legendView(model);
+    objectiveView(model);
+    hydro.params.forEach((param, i) => {
+      metricView(model, param.name, i);
+    });
+
+    if (model.results === null) {
+      [...document.querySelectorAll(".calibration__export-params")].forEach(
+        (e) => e.setAttribute("disabled", true),
+      );
+      [...document.querySelectorAll(".calibration__export-data")].forEach((e) =>
+        e.setAttribute("disabled", true),
+      );
+    } else {
+      [...document.querySelectorAll(".calibration__export-params")].forEach(
+        (e) => e.removeAttribute("disabled"),
+      );
+      [...document.querySelectorAll(".calibration__export-data")].forEach((e) =>
+        e.removeAttribute("disabled"),
+      );
+    }
+  }
+}
+
+function streamflowView(model) {
+  const _svg = document.getElementById("calibration__results__streamflow");
+  clear(_svg);
+  if (model.observations === null) {
+    _svg.setAttribute("hidden", true);
+  } else {
+    _svg.removeAttribute("hidden");
+    const width = _svg.clientWidth;
+    const height = _svg.clientHeight;
+    _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const boundaries = {
+      l: 50,
+      r: width - 25,
+      t: 5,
+      b: height - 20,
+    };
+
+    const svg = d3.select(_svg);
+
+    const observations = model.observations;
+
+    const xScale = d3
+      .scaleTime()
+      .domain(d3.extent(observations, (d) => new Date(d.date)))
+      .range([boundaries.l, boundaries.r]);
+    const yScale = d3
+      .scaleLinear()
+      .domain([
+        d3.min(observations, (d) => d.streamflow),
+        d3.max(observations, (d) => d.streamflow),
+      ])
+      .range([boundaries.b, boundaries.t]);
+
+    // grid
+    svg
+      .selectAll(".grid-vertical")
+      .data(xScale.ticks())
+      .join("line")
+      .attr("class", "grid-vertical")
+      .attr("x1", (d) => xScale(d))
+      .attr("x2", (d) => xScale(d))
+      .attr("y1", yScale.range()[0])
+      .attr("y2", yScale.range()[1]);
+    svg
+      .selectAll(".grid-horizontal")
+      .data(yScale.ticks(5))
+      .join("line")
+      .attr("class", "grid-horizontal")
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+
+    // x axis
+    svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${boundaries.b})`)
+      .call(d3.axisBottom(xScale).ticks(5).tickSize(0))
+      .call((g) => g.select(".domain").remove());
+    // y axis
+    svg
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${boundaries.l}, 0)`)
+      .call(
+        d3
+          .axisLeft(yScale)
+          .ticks(5)
+          .tickSize(0)
+          .tickFormat((x) => formatNumber(x)),
+      )
+      .call((g) => g.select(".domain").remove());
+    svg
+      .append("text")
+      .attr("x", 15)
+      .attr("y", (boundaries.t + boundaries.b) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr(
+        "transform",
+        `rotate(-90, 15, ${(boundaries.t + boundaries.b) / 2})`,
+      )
+      .attr("font-size", "0.9rem")
+      .text("Streamflow");
+
+    // warmup
+    if (observations[0].date !== model.config.start) {
+      svg
+        .append("rect")
+        .attr("class", colours[0])
+        .attr("x", xScale(new Date(observations[0].date)))
+        .attr("y", yScale.range()[1])
+        .attr(
+          "width",
+          xScale(new Date(model.config.start)) -
+            xScale(new Date(observations[0].date)),
+        )
+        .attr("height", yScale.range()[0] - yScale.range()[1]);
+      svg
+        .append("text")
+        .attr("class", `warmup ${colours[0]}`)
+        .attr("text-anchor", "start")
+        .attr("dominant-baseline", "hanging")
+        .attr("x", xScale.range()[0])
+        .attr("y", yScale.range()[1])
+        .attr("dx", 5)
+        .attr("dy", 1)
+        .text("Warmup");
+    }
+
+    // observations
+    svg
+      .append("path")
+      .attr("class", colours[0])
+      .datum(observations)
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((d) => xScale(new Date(d.date)))
+          .y((d) => yScale(d.streamflow)),
+      );
+
+    // simulation
+    if (model.simulation !== null) {
+      svg
+        .append("path")
+        .attr("class", colours[2])
+        .datum(model.simulation)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => xScale(new Date(d.date)))
+            .y((d) => yScale(d.streamflow)),
+        );
+    }
+  }
+}
+
+function legendView(model) {
+  const legend = document.getElementById("calibration__results__legend");
+  clear(legend);
+
+  if (model.observations !== null) {
+    legend.appendChild(
+      create("div", {}, [
+        create("span", {}, ["observations"]),
+        create("span", { class: colours[0] }),
+      ]),
+    );
+  }
+
+  if (model.simulation !== null) {
+    legend.appendChild(
+      create("div", {}, [
+        create("span", {}, ["simulation"]),
+        create("span", { class: colours[2] }),
+      ]),
+    );
+  }
+}
+
+function metricView(model, param, i) {
+  const _svg = document.getElementById(`calibration__results__${param}-plot`);
+  clear(_svg);
+  if (model.results === null) {
+    _svg.setAttribute("hidden", true);
+  } else {
+    _svg.removeAttribute("hidden");
+    const width = _svg.clientWidth;
+    const height = _svg.clientHeight;
+    _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const boundaries = {
+      l: 60,
+      r: width - 25,
+      t: 5,
+      b: height - 20,
+    };
+
+    const svg = d3.select(_svg);
+
+    const values = model.results.map((r) => r.params[i]);
+
+    const xScale = d3
+      .scalePoint()
+      .domain(d3.range(1, values.length + 1))
+      .range([boundaries.l, boundaries.r])
+      .padding(0.25);
+    const yScale = d3
+      .scaleLinear()
+      .domain([d3.min(values) - 1, d3.max(values) + 1])
+      .range([boundaries.b, boundaries.t])
+      .nice();
+    const yTicks = yScale.ticks(5);
+
+    // grid
+    svg
+      .selectAll(".grid-vertical")
+      .data(d3.range(1, values.length + 1))
+      .join("line")
+      .attr("class", "grid-vertical")
+      .attr("x1", (d) => xScale(d))
+      .attr("x2", (d) => xScale(d))
+      .attr("y1", yScale.range()[0])
+      .attr("y2", yScale.range()[1]);
+    svg
+      .selectAll(".grid-horizontal")
+      .data(yTicks.slice(1, yTicks.length - 1))
+      .join("line")
+      .attr("class", "grid-horizontal")
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+
+    // x axis
+    const xAxis = svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${boundaries.b})`)
+      .call(d3.axisBottom(xScale).tickSize(0))
+      .call((g) => g.select(".domain").remove());
+    xAxis.selectAll("text").attr("dy", 10);
+    // y axis
+    const yAxis = svg
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${boundaries.l}, 0)`)
+      .call(d3.axisLeft(yScale).tickSize(0).ticks(5))
+      .call((g) => g.select(".domain").remove());
+    yAxis.selectAll("text").attr("dx", -5);
+    svg
+      .append("text")
+      .attr("x", 15)
+      .attr("y", (boundaries.t + boundaries.b) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr(
+        "transform",
+        `rotate(-90, 15, ${(boundaries.t + boundaries.b) / 2})`,
+      )
+      .attr("font-size", "0.9rem")
+      .text(param);
+
+    // markers
+    svg
+      .selectAll("circle")
+      .data(values)
+      .join("circle")
+      .attr("class", colours[2])
+      .attr("cx", (_, i) => xScale(i + 1))
+      .attr("cy", (d) => yScale(d))
+      .attr("r", 2);
+    // line
+    svg
+      .append("path")
+      .attr("class", colours[2])
+      .datum(values)
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((_, i) => xScale(i + 1))
+          .y((d) => yScale(d)),
+      );
+  }
+}
+
+function objectiveView(model) {
+  const _svg = document.getElementById("calibration__results__objective");
+  clear(_svg);
+  if (model.results === null) {
+    _svg.setAttribute("hidden", true);
+  } else {
+    _svg.removeAttribute("hidden");
+    const width = _svg.clientWidth;
+    const height = _svg.clientHeight;
+    _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const boundaries = {
+      l: 50,
+      r: width - 25,
+      t: 5,
+      b: height - 20,
+    };
+
+    const svg = d3.select(_svg);
+
+    const objective = model.results.map((r) => r.objective);
+    const optimal = model.config.objective == "rmse" ? 0 : 1;
+
+    const xScale = d3
+      .scalePoint()
+      .domain(d3.range(1, objective.length + 1))
+      .range([boundaries.l, boundaries.r])
+      .padding(0.25);
+    const yScale = d3
+      .scaleLinear()
+      .domain([
+        Math.min(0, Math.floor(d3.min(objective))),
+        Math.max(1, Math.ceil(d3.max(objective))),
+      ])
+      .range([boundaries.b, boundaries.t])
+      .nice();
+    const yTicks = yScale.ticks(5);
+
+    // grid
+    svg
+      .selectAll(".grid-vertical")
+      .data(d3.range(1, objective.length + 1))
+      .join("line")
+      .attr("class", "grid-vertical")
+      .attr("x1", (d) => xScale(d))
+      .attr("x2", (d) => xScale(d))
+      .attr("y1", yScale.range()[0])
+      .attr("y2", yScale.range()[1]);
+    svg
+      .selectAll(".grid-horizontal")
+      .data(yTicks.slice(1, yTicks.length - 1))
+      .join("line")
+      .attr("class", "grid-horizontal")
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+
+    // x axis
+    const xAxis = svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${boundaries.b})`)
+      .call(d3.axisBottom(xScale).tickSize(0))
+      .call((g) => g.select(".domain").remove());
+    xAxis.selectAll("text").attr("dy", 10);
+    // y axis
+    const yAxis = svg
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${boundaries.l}, 0)`)
+      .call(d3.axisLeft(yScale).tickSize(0).ticks(5))
+      .call((g) => g.select(".domain").remove());
+    yAxis.selectAll("text").attr("dx", -5);
+    svg
+      .append("text")
+      .attr("x", 15)
+      .attr("y", (boundaries.t + boundaries.b) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr(
+        "transform",
+        `rotate(-90, 15, ${(boundaries.t + boundaries.b) / 2})`,
+      )
+      .attr("font-size", "0.9rem")
+      .text(model.config.objective);
+
+    // markers
+    svg
+      .selectAll("circle")
+      .data(objective)
+      .join("circle")
+      .attr("class", colours[2])
+      .attr("cx", (_, i) => xScale(i + 1))
+      .attr("cy", (d) => yScale(d))
+      .attr("r", 2);
+    // line
+    svg
+      .append("path")
+      .attr("class", colours[2])
+      .datum(objective)
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((_, i) => xScale(i + 1))
+          .y((d) => yScale(d)),
+      );
+
+    // optimal
+    svg
+      .append("line")
+      .attr("class", `optimal ${colours[1]}`)
+      .attr("y1", yScale(optimal))
+      .attr("y2", yScale(optimal))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+    svg
+      .append("text")
+      .attr("class", `optimal ${colours[1]}`)
+      .attr("text-anchor", "end")
+      .attr(
+        "dominant-baseline",
+        model.config.objective == "rmse" ? "auto" : "hanging",
+      )
+      .attr("x", xScale.range()[1])
+      .attr("y", yScale(optimal))
+      .attr("dy", model.config.objective == "rmse" ? -3 : 3)
+      .text("Optimal");
+  }
 }

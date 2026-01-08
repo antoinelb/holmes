@@ -8,3 +8,6 @@ test:
 
 publish:
 	rm -r dist && uv build && uv publish
+
+build-rs:
+	uv run maturin develop --manifest-path src/holmes-rs/Cargo.toml --release

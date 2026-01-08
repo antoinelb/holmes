@@ -19,7 +19,6 @@ def get_routes() -> list[BaseRoute]:
         Route("/", endpoint=_index, methods=["GET"]),
         Route("/ping", endpoint=_ping, methods=["GET"]),
         Route("/version", endpoint=_get_version, methods=["GET"]),
-        Route("/precompile", endpoint=_precompile_functions, methods=["GET"]),
         Mount(
             "/static",
             app=StaticFiles(directory=str(static_dir.absolute())),
@@ -50,8 +49,3 @@ async def _index(_: Request) -> Response:
     with open(static_dir / "index.html") as f:
         index = f.read()
     return HTMLResponse(index)
-
-
-async def _precompile_functions(_: Request) -> Response:
-    await calibration.precompile_functions()
-    return PlainTextResponse("")

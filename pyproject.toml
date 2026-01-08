@@ -1,6 +1,6 @@
 [project]
 name = "holmes-hydro"
-version = "3.2.5"
+version = "3.3.0"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
 authors = [
@@ -16,17 +16,10 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "jaxtyping>=0.3.3",
-    "kaleido>=1.2.0",
-    "numba>=0.62.1",
-    "numpy>=2.3.3",
-    "pandas>=2.3.3",
-    "plotly>=6.3.0",
-    "polars>=1.33.1",
-    "python-dotenv>=1.1.1",
-    "scipy>=1.16.2",
-    "starlette>=0.48.0",
-    "tqdm>=4.67.1",
+    "holmes-rs",
+    "numpy>=2.4.0",
+    "polars>=1.36.0",
+    "starlette>=0.50.0",
     "uvicorn>=0.36.0",
     "websockets>=15.0.1",
 ]
@@ -34,12 +27,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.9.0",
-    "httpx>=0.28.1",
     "isort>=6.0.1",
-    "pytest>=8.4.2",
-    "pytest-asyncio>=1.2.0",
-    "pytest-cov>=7.0.0",
-    "pytest-mock>=3.15.1",
+    "maturin>=1.10.2",
     "ruff>=0.13.1",
     "ty>=0.0.1a21",
 ]
@@ -47,6 +36,9 @@ dev = [
 [project.urls]
 Homepage = "https://gitlab.com/antoinelb/holmes"
 Repository = "https://gitlab.com/antoinelb/holmes"
+
+[tool.uv.sources]
+holmes-rs = { path = "./src/holmes-rs", editable = true }
 
 [build-system]
 requires = ["hatchling"]

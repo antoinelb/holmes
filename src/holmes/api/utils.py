@@ -2,10 +2,12 @@ import json
 from datetime import date, datetime, timezone
 from typing import Any, Awaitable, Callable
 
+import numpy as np
 import polars as pl
 from starlette.requests import Request
 from starlette.responses import JSONResponse as _JSONResponse
 from starlette.responses import PlainTextResponse, Response
+from starlette.websockets import WebSocket
 
 #########
 # types #
@@ -229,19 +231,14 @@ def with_headers(
 
 
 def JSONResponse(data: Any, *args: Any, **kwargs: Any) -> _JSONResponse:
-    return _JSONResponse(_convert_for_json(data), *args, **kwargs)
+    return _JSONResponse(convert_for_json(data), *args, **kwargs)
 
 
-###########
-# private #
-###########
-
-
-def _convert_for_json(data: Any) -> Any:
+def convert_for_json(data: Any) -> Any:
     if isinstance(data, dict):
-        return {key: _convert_for_json(val) for key, val in data.items()}
+        return {key: convert_for_json(val) for key, val in data.items()}
     elif isinstance(data, (list, tuple)):
-        return [_convert_for_json(val) for val in data]
+        return [convert_for_json(val) for val in data]
     elif isinstance(data, datetime):
         return int(data.replace(tzinfo=timezone.utc).timestamp())
     elif isinstance(data, date):
@@ -252,13 +249,26 @@ def _convert_for_json(data: Any) -> Any:
         )
     elif isinstance(data, pl.DataFrame):
         return [
-            _convert_for_json(d)
+            convert_for_json(d)
             for d in data.with_columns(
                 pl.when(pl.col(NumericType).is_infinite())
                 .then(None)
                 .otherwise(pl.col(NumericType))
-                .name.keep()
+                .name.keep(),
+                pl.col(pl.Date).dt.strftime("%Y-%m-%d"),
+                pl.col(pl.Datetime).dt.strftime("%Y-%m-%d %H:%M:%S"),
             ).to_dicts()
         ]
+    elif isinstance(data, np.ndarray):
+        return data.tolist()
+    elif isinstance(data, float):
+        if np.isnan(data):
+            return None
+        else:
+            return data
     else:
         return data
+
+
+async def send(ws: WebSocket, event: str, data: Any) -> None:
+    await ws.send_json({"type": event, "data": convert_for_json(data)})

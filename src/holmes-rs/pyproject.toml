@@ -1,0 +1,15 @@
+[project]
+name = "holmes-rs"
+version = "3.3.0"
+description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada. These are the models written in rust."
+requires-python = ">=3.13"
+
+[build-system]
+requires = ["maturin>=1.10.2"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+python-source = "python"
+module-name = "holmes_rs"
+

@@ -1,0 +1,161 @@
+stages:
+  - build-rs
+  - publish-rs
+  - publish-python
+
+variables:
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip"
+
+# Cache Rust dependencies
+.rust-cache: &rust-cache
+  cache:
+    key: rust-$CI_JOB_NAME
+    paths:
+      - .cargo/
+      - src/holmes-rs/target/
+
+# =============================================================================
+# Build holmes-rs wheels for each platform
+# =============================================================================
+
+build-rs:linux-x86_64:
+  stage: build-rs
+  image: ghcr.io/pyo3/maturin:v1.8.6
+  <<: *rust-cache
+  script:
+    - cd src/holmes-rs
+    - maturin build --release --strip -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.whl
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+
+build-rs:linux-aarch64:
+  stage: build-rs
+  image: ghcr.io/pyo3/maturin:v1.8.6
+  tags:
+    - linux-arm64
+  <<: *rust-cache
+  script:
+    - cd src/holmes-rs
+    - maturin build --release --strip -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.whl
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+  allow_failure: true  # ARM runners may not be available
+
+build-rs:macos-x86_64:
+  stage: build-rs
+  tags:
+    - saas-macos-medium-m1
+  <<: *rust-cache
+  before_script:
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - source "$HOME/.cargo/env"
+    - rustup target add x86_64-apple-darwin
+    - pip3 install maturin
+  script:
+    - cd src/holmes-rs
+    - maturin build --release --strip --target x86_64-apple-darwin -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.whl
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+
+build-rs:macos-arm64:
+  stage: build-rs
+  tags:
+    - saas-macos-medium-m1
+  <<: *rust-cache
+  before_script:
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - source "$HOME/.cargo/env"
+    - pip3 install maturin
+  script:
+    - cd src/holmes-rs
+    - maturin build --release --strip -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.whl
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+
+build-rs:windows:
+  stage: build-rs
+  tags:
+    - saas-windows-medium-amd64
+  <<: *rust-cache
+  before_script:
+    - choco install -y rustup.install
+    - rustup default stable
+    - pip install maturin
+  script:
+    - cd src/holmes-rs
+    - maturin build --release --strip -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.whl
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+
+# Also build source distribution for users with Rust installed
+build-rs:sdist:
+  stage: build-rs
+  image: ghcr.io/pyo3/maturin:v1.8.6
+  script:
+    - cd src/holmes-rs
+    - maturin sdist -o dist
+  artifacts:
+    paths:
+      - src/holmes-rs/dist/*.tar.gz
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+
+# =============================================================================
+# Publish holmes-rs to PyPI
+# =============================================================================
+
+publish-rs:
+  stage: publish-rs
+  image: python:3.13-slim
+  dependencies:
+    - build-rs:linux-x86_64
+    - build-rs:linux-aarch64
+    - build-rs:macos-x86_64
+    - build-rs:macos-arm64
+    - build-rs:windows
+    - build-rs:sdist
+  before_script:
+    - pip install twine
+  script:
+    - twine upload src/holmes-rs/dist/*
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+  when: manual  # Require manual approval to publish
+
+# =============================================================================
+# Publish holmes-hydro to PyPI
+# =============================================================================
+
+publish-python:
+  stage: publish-python
+  image: python:3.13-slim
+  before_script:
+    - pip install build twine
+  script:
+    - python -m build
+    - twine upload dist/*
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]/
+  when: manual  # Require manual approval to publish

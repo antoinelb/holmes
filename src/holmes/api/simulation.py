@@ -1,13 +1,18 @@
-import polars as pl
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse, Response
-from starlette.routing import BaseRoute, Route
+from typing import Any
 
-from holmes import hydro
-from holmes.utils import plotting
+import numpy as np
+import numpy.typing as npt
+import polars as pl
+from starlette.routing import BaseRoute, WebSocketRoute
+from starlette.websockets import WebSocket, WebSocketDisconnect
+
+from holmes import data
+from holmes.logging import logger
+from holmes.models import hydro, snow
+from holmes.models.utils import evaluate
 from holmes.utils.print import format_list
 
-from .utils import JSONResponse, with_json_params
+from .utils import send
 
 ##########
 # public #
@@ -16,12 +21,186 @@ from .utils import JSONResponse, with_json_params
 
 def get_routes() -> list[BaseRoute]:
     return [
-        Route(
-            "/run",
-            endpoint=_run_simulation,
-            methods=["POST"],
-        ),
+        WebSocketRoute("/", endpoint=_websocket_handler),
     ]
+
+
+##########
+# routes #
+##########
+
+
+async def _websocket_handler(ws: WebSocket) -> None:
+    await ws.accept()
+    try:
+        while True:
+            msg = await ws.receive_json()
+            await _handle_message(ws, msg)
+    except WebSocketDisconnect:
+        pass
+
+
+async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
+    logger.info(f"Websocket {msg.get('type')} message")
+    match msg.get("type"):
+        case "config":
+            if "data" not in msg:
+                await send(ws, "error", "The catchment must be provided.")
+            await _handle_config_message(ws, msg["data"])
+        case "observations":
+            await _handle_observations_message(ws, msg.get("data", {}))
+        case "simulation":
+            await _handle_simulation_message(ws, msg.get("data", {}))
+        case _:
+            await send(ws, "error", f"Unknown message type {msg['type']}.")
+
+
+async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
+    try:
+        catchment = next(
+            c for c in data.get_available_catchments() if c[0] == msg_data
+        )
+    except StopIteration:
+        await send(ws, "error", f"Unknown catchment {msg_data}.")
+        return
+
+    config = {"start": catchment[2][0], "end": catchment[2][1]}
+    await send(ws, "config", config)
+
+
+async def _handle_observations_message(
+    ws: WebSocket, msg_data: dict[str, Any]
+) -> None:
+    needed_keys = [
+        "catchment",
+        "start",
+        "end",
+    ]
+    if any(key not in msg_data for key in needed_keys):
+        await send(
+            ws,
+            "error",
+            format_list(needed_keys, surround="`") + " must be provided.",
+        )
+        return
+
+    _data = data.read_data(
+        msg_data["catchment"], msg_data["start"], msg_data["end"]
+    )
+
+    await send(ws, "observations", _data.select("date", "streamflow"))
+
+
+async def _handle_simulation_message(
+    ws: WebSocket, msg_data: dict[str, Any]
+) -> None:
+    needed_keys = [
+        "config",
+        "calibration",
+    ]
+    if any(key not in msg_data for key in needed_keys):
+        await send(
+            ws,
+            "error",
+            format_list(needed_keys, surround="`") + " must be provided.",
+        )
+        return
+    if len(msg_data["calibration"]) == 0:
+        await send(
+            ws, "error", "At least one calibration config must be provided."
+        )
+        return
+    if (
+        msg_data["config"]["start"] is None
+        or msg_data["config"]["end"] is None
+    ):
+        await send(
+            ws, "error", "`start` or `end` must be provided in the config."
+        )
+        return
+
+    catchment = msg_data["calibration"][0]["catchment"]
+    start = msg_data["config"]["start"]
+    end = msg_data["config"]["end"]
+
+    _data = data.read_data(catchment, start, end)
+    metadata = data.read_cemaneige_info(catchment)
+
+    precipitation = _data["precipitation"].to_numpy()
+    temperature = _data["temperature"].to_numpy()
+    pet = _data["pet"].to_numpy()
+    day_of_year = (
+        _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
+            "date"
+        ]
+        .to_numpy()
+        .astype(np.uintp)
+    )
+    elevation_layers = np.array(metadata["altitude_layers"])
+    median_elevation = metadata["median_altitude"]
+    qnbv = metadata["qnbv"]
+
+    observations = _data["streamflow"].to_numpy()
+
+    simulations = [
+        _run_simulation(
+            precipitation,
+            temperature,
+            pet,
+            day_of_year,
+            elevation_layers,
+            median_elevation,
+            qnbv,
+            observations,
+            calibration["hydroModel"],
+            calibration["snowModel"],
+            calibration["hydroParams"],
+        )
+        for calibration in msg_data["calibration"]
+    ]
+
+    simulation = _data.select("date").with_columns(
+        *[
+            pl.Series(f"simulation_{i+1}", simulation)
+            for i, (simulation, _) in enumerate(simulations)
+        ]
+    )
+    results = [
+        {"name": f"simulation_{i+1}", **results}
+        for i, (_, results) in enumerate(simulations)
+    ]
+
+    if msg_data["config"]["multimodel"]:
+        simulation = simulation.with_columns(
+            pl.mean_horizontal(pl.exclude("date")).alias("multimodel")
+        )
+        streamflow = simulation["multimodel"].to_numpy()
+        results.append(
+            {
+                "name": "multimodel",
+                "nse_none": evaluate(observations, streamflow, "nse", "none"),
+                "nse_sqrt": evaluate(observations, streamflow, "nse", "sqrt"),
+                "nse_log": evaluate(observations, streamflow, "nse", "log"),
+                "mean_bias": evaluate(
+                    observations, streamflow, "mean_bias", "none"
+                ),
+                "deviation_bias": evaluate(
+                    observations, streamflow, "deviation_bias", "none"
+                ),
+                "correlation": evaluate(
+                    observations, streamflow, "correlation", "none"
+                ),
+            }
+        )
+
+    await send(
+        ws,
+        "simulation",
+        {
+            "simulation": simulation,
+            "results": results,
+        },
+    )
 
 
 ###########
@@ -29,161 +208,48 @@ def get_routes() -> list[BaseRoute]:
 ###########
 
 
-@with_json_params(args=["configs", "multimodel", "theme"])
-async def _run_simulation(
-    _: Request,
-    configs: list[dict[str, str | dict[str, float]]],
-    multimodel: bool,
-    theme: str,
-) -> Response:
-    if len(configs) == 0:
-        return PlainTextResponse(
-            "At least one config must be given.", status_code=400
-        )
-    try:
-        [_validate_config(config) for config in configs]
-    except ValueError as exc:
-        return PlainTextResponse(str(exc), status_code=400)
+def _run_simulation(
+    precipitation: npt.NDArray[np.float64],
+    temperature: npt.NDArray[np.float64],
+    pet: npt.NDArray[np.float64],
+    day_of_year: npt.NDArray[np.uintp],
+    elevation_layers: npt.NDArray[np.float64],
+    median_elevation: float,
+    qnbv: float,
+    observations: npt.NDArray[np.float64],
+    hydro_model: str,
+    snow_model: str | None,
+    hydro_params: dict[str, float],
+) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
 
-    if len(set([config["catchment"] for config in configs])) != 1:
-        return PlainTextResponse(
-            "You can't compare multiple catchments together.", status_code=400
-        )
+    hydro_simulate = hydro.get_model(hydro_model)
+    hydro_params = np.array(list(hydro_params.values()))
 
-    _simulations = [
-        _run_single_simulation(
-            config["hydrological_model"],  # type: ignore
-            config["catchment"],  # type: ignore
-            config["snow_model"],  # type: ignore
-            config["simulation_start"],  # type: ignore
-            config["simulation_end"],  # type: ignore
-            {param["name"]: param["value"] for param in config["params"]},  # type: ignore
-        )
-        for config in configs
-    ]
-
-    simulations = pl.concat(
-        [
-            _simulations[0].select(
-                "date", "flow", pl.col("simulation").alias("simulation_1")
-            ),
-            *[
-                simulation.select(
-                    pl.col("simulation").alias(f"simulation_{i+2}")
-                )
-                for i, simulation in enumerate(_simulations[1:])
-            ],
-        ],
-        how="horizontal",
-    )
-
-    if multimodel:
-        simulations = simulations.with_columns(
-            pl.mean_horizontal(r"^simulation_\d+$").alias("multimodel")
+    if snow_model is not None:
+        snow_simulate = snow.get_model(snow_model)
+        snow_params = np.array([0.25, 3.74, qnbv])
+        precipitation = snow_simulate(
+            snow_params,
+            precipitation,
+            temperature,
+            day_of_year,
+            elevation_layers,
+            median_elevation,
         )
 
-    fig = hydro.simulation.plot_simulation(
-        simulations,
-        template=plotting.light_template if theme == "light" else None,
-    )
+    streamflow = hydro_simulate(hydro_params, precipitation, pet)
 
-    # Calculate metrics for export
-    n_simulations = simulations.drop(
-        "date", "flow", "multimodel", strict=False
-    ).shape[1]
-
-    metrics = []
-    for i in range(n_simulations):
-        flow = simulations["flow"].to_numpy()
-        simulation = simulations[f"simulation_{i+1}"].to_numpy()
-
-        metrics.append(
-            {
-                "simulation": f"simulation_{i+1}",
-                "nse_high": hydro.evaluate_simulation(
-                    flow, simulation, "nse", "none"
-                ),
-                "nse_medium": hydro.evaluate_simulation(
-                    flow, simulation, "nse", "sqrt"
-                ),
-                "nse_low": hydro.evaluate_simulation(
-                    flow, simulation, "nse", "log"
-                ),
-                "water_balance": hydro.evaluate_simulation(
-                    flow, simulation, "mean_bias", "none"
-                ),
-                "flow_variability": hydro.evaluate_simulation(
-                    flow, simulation, "deviation_bias", "none"
-                ),
-                "correlation": hydro.evaluate_simulation(
-                    flow, simulation, "correlation", "none"
-                ),
-            }
-        )
-
-    return JSONResponse(
-        {
-            "fig": fig.to_json(),
-            "timeseries": simulations.to_dicts(),
-            "metrics": metrics,
-        }
-    )
-
-
-def _validate_config(config: dict[str, str | dict[str, float]]) -> None:
-    needed_keys = [
-        "hydrological_model",
-        "catchment",
-        "snow_model",
-        "simulation_start",
-        "simulation_end",
-        "params",
-    ]
-    if not all(key in config for key in needed_keys):
-        raise ValueError(
-            "Missing key(s) : {}".format(
-                format_list([key for key in needed_keys if key not in config])
-            )
-        )
-
-
-def _run_single_simulation(
-    hydrological_model: str,
-    catchment: str,
-    snow_model: str,
-    simulation_start: str,
-    simulation_end: str,
-    params: dict[str, float],
-) -> pl.DataFrame:
-    data_ = hydro.read_transformed_hydro_data(
-        catchment, simulation_start, simulation_end, snow_model
-    )
-    simulation = hydro.run_model(data_, hydrological_model, params)
-    return data_.with_columns(pl.Series("simulation", simulation))
-
-
-def _combine_simulation_results(
-    simulations: list[dict[str, pl.DataFrame | dict[str, float]]],
-) -> tuple[pl.DataFrame, dict[str, dict[str, float | list[float]]]]:
-    data = pl.concat(
-        [
-            simulations[0]["data"].rename({"simulation": "simulation_1"}),  # type: ignore
-            *[
-                simulation["data"].select(  # type: ignore
-                    pl.col("simulation").alias(f"simulation_{i+2}")
-                )
-                for i, simulation in enumerate(simulations[1:])
-            ],
-        ],
-        how="horizontal",
-    )
     results = {
-        key: {
-            "optimal": hydro.get_optimal_for_criteria(key),  # type: ignore
-            "simulations": [
-                simulation["result"][key] for simulation in simulations
-            ],
-        }
-        for key in simulations[0]["result"].keys()  # type: ignore
+        "nse_none": evaluate(observations, streamflow, "nse", "none"),
+        "nse_sqrt": evaluate(observations, streamflow, "nse", "sqrt"),
+        "nse_log": evaluate(observations, streamflow, "nse", "log"),
+        "mean_bias": evaluate(observations, streamflow, "mean_bias", "none"),
+        "deviation_bias": evaluate(
+            observations, streamflow, "deviation_bias", "none"
+        ),
+        "correlation": evaluate(
+            observations, streamflow, "correlation", "none"
+        ),
     }
-    return data, results  # type: ignore
+
+    return streamflow, results

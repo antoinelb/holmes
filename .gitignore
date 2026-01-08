@@ -1,5 +1,6 @@
 *.egg-info
 *.py[oc]
+*.so
 .coverage
 __pycache__/
 build/
@@ -11,7 +12,7 @@ wheels/
 screenshots/
 v2
 
+target/
+
 CLAUDE.md
 .claude
-.playwright-mcp/
-.specify

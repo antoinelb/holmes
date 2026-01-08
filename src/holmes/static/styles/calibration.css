@@ -1,105 +1,106 @@
 #calibration {
-  flex-direction: column;
-  gap: 3em;
-
   & .config {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    font-size: 0.9rem;
-    grid-column-gap: 1em;
-    padding: 0 1em;
+    gap: 2em;
+    padding: 0 2em;
 
-    & #calibration__general-config {
+    & form {
+      column-gap: 1em;
       display: grid;
-      grid-template-columns: max-content 1fr;
-      grid-column-gap: 1em;
-      grid-row-gap: 0.5em;
-      align-items: center;
+      font-size: 1rem;
+      grid-auto-rows: 2em;
+      grid-template-columns: 1fr 1fr;
+      row-gap: 0.5em;
+
+      &[hidden] {
+        display: none;
+      }
 
       & h3 {
+        font-size: 1.1rem;
         grid-column: 1 / -1;
+        margin: 0;
+        padding: 0.25em 0.5em;
         text-align: center;
       }
 
-      & span {
-        grid-column: 1 / -1;
-      }
-
       & label {
-        grid-column: 1;
-
-        &.label-indent {
-          padding-left: 1em;
-        }
-
-        &.label-disabled {
-          color: oklch(var(--fg) / 0.5);
-        }
-      }
-
-      & input {
-        grid-column: 2;
-      }
-
-      & select {
-        grid-column: 2;
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+        justify-self: end;
+        text-align: right;
 
         &[disabled] {
           color: oklch(var(--fg) / 0.5);
-          border: none;
         }
-      }
 
-      & label[for='calibration__period-start'],
-      & label[for='calibration__period-end'] {
-        display: flex;
-        justify-content: flex-start;
-        gap: 0.25em;
-        align-items: center;
+        & span {
+          min-width: 7em;
+        }
 
         & button {
           background: oklch(var(--fg) / 0.1);
+          border-radius: 0.25em;
           box-shadow: none;
+          color: oklch(var(--fg));
           font-size: 0.75rem;
-          padding: 0.25em 0.5em;
           height: auto;
+          padding: 0.25em 0.5em;
           width: auto;
+
+          &:hover {
+            background: oklch(var(--fg) / 0.2);
+          }
+
+          &:active {
+            background: oklch(var(--fg) / 0.3);
+          }
+        }
+      }
+
+      & select {
+        background: none;
+        border: none;
+        border-bottom: 1px solid oklch(var(--theme) / 0.75);
+        border-radius: 0;
+        box-shadow: none;
+
+        &:focus {
+          border: none;
+          border-bottom: 1px solid oklch(var(--theme));
+          outline: none;
+        }
+
+        &[disabled] {
+          color: oklch(var(--fg) / 0.5);
+        }
+
+        & option {
+          background: oklch(var(--bg));
+          color: oklch(var(--fg));
+        }
+      }
+
+      & input:not([type="range"]) {
+        border: none;
+        border-bottom: 1px solid oklch(var(--theme) / 0.75);
+        border-radius: 0;
+        padding: 0 0.25em;
+
+        &:focus {
+          border-bottom: 1px solid oklch(var(--theme-most));
+          outline: none;
         }
       }
     }
 
     & #calibration__manual-config {
-      display: flex;
-      flex-direction: column;
-
-      &[hidden] {
-        display: none;
-      }
-
-      & .slider {
-        margin-bottom: 2em;
-      }
-
-      & .icon {
-        align-self: center;
-        margin: 1em 0;
-      }
-
-      & input[type='submit'] {
-        width: 100%;
-      }
-
-      & .loading {
-        justify-self: center;
-      }
-    }
-
-    & #calibration__automatic-config {
+      align-items: center;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-column-gap: 1em;
-      grid-row-gap: 0.5em;
-      align-items: center;
+      grid-template-rows: max-content 1fr max-content max-content;
+      height: 100%;
+      justify-items: center;
 
       &[hidden] {
         display: none;
@@ -107,68 +108,175 @@
 
       & h3 {
         grid-column: 1 / -1;
-        text-align: center;
       }
 
-      & span {
-        grid-column: 2;
-        text-align: center;
-      }
-
-      & label {
-        grid-column: 1;
-
-        &.label-indent {
-          padding-left: 1em;
-        }
-
-        &.label-disabled {
-          color: oklch(var(--fg) / 0.5);
-        }
-      }
-
-      & input {
-        grid-column: 2;
-      }
-
-      & input[type='submit'] {
+      & > div {
+        display: flex;
+        flex-direction: column;
         grid-column: 1 / -1;
+        height: 100%;
+        justify-content: space-between;
         width: 100%;
       }
 
-      & .loading {
-        grid-column: 1 / -1;
-        justify-self: center;
+      & > input {
+        border: none;
+        border-radius: 0.5em;
+        box-shadow: 0 0.25em 0.5em 0.125em oklch(var(--theme) / 0.25);
+        font-size: 0.9rem;
+        min-width: 10em;
+        padding: 0.5em 1em;
+        width: max-content;
+
+        &[type="submit"] {
+          grid-column: 1 / -1;
+        }
+
+        &.calibration__export-params {
+          justify-self: end;
+        }
+
+        &.calibration__export-data {
+          justify-self: start;
+        }
+
+        &[disabled] {
+          cursor: default;
+          opacity: 0;
+          user-select: none;
+        }
+      }
+    }
+
+    & #calibration__automatic-config {
+      align-items: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: max-content 1fr max-content max-content;
+      height: 100%;
+      justify-items: center;
+
+      &[hidden] {
+        display: none;
       }
 
+      & h3 {
+        grid-column: 1 / -1;
+      }
+
+      & > div {
+        column-gap: 1em;
+        display: grid;
+        font-size: 1rem;
+        grid-auto-rows: 2em;
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr 1fr;
+        row-gap: 0.5em;
+      }
+
+      & > input {
+        border: none;
+        border-radius: 0.5em;
+        font-size: 1rem;
+        min-width: 10em;
+        padding: 0.5em 1em;
+        width: max-content;
+
+        &#calibration__automatic__stop {
+          background: oklch(var(--error) / 0.5);
+          box-shadow: 0 0.5em 1em 0.25em oklch(var(--error) / 0.25);
+          grid-column: 1 / -1;
+        }
+
+        &[hidden] {
+          display: none;
+        }
+
+        &[type="submit"] {
+          grid-column: 1 / -1;
+        }
+
+        &.calibration__export-params {
+          justify-self: end;
+        }
+
+        &.calibration__export-data {
+          justify-self: start;
+        }
+
+        &[disabled] {
+          cursor: default;
+          opacity: 0;
+          user-select: none;
+        }
+      }
     }
   }
 
-  & .results {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    align-items: center;
+  & #calibration__results {
+    display: grid;
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(6, 1fr);
+    height: calc(100% - 1em);
+    min-height: 0;
+    padding: 0.5em 1em;
+    width: calc(100% - 2em);
 
-    & .results__export {
-      width: auto;
-      padding: 0.5em 1em;
-      font-size: 0.9rem;
-    }
-
-    & .results__fig {
+    & svg {
+      display: block;
+      grid-column: auto / span 2;
+      height: 100%;
+      min-height: 0;
       width: 100%;
-      min-height: 30em;
     }
-  }
-}
 
-body.light {
+    & #calibration__results__streamflow {
+      grid-column: 1 / 6;
 
-  & label[for="calibration__period-start"],
-  & label[for="calibration__period-end"] {
-    & button {
-      color: oklch(var(--fg));
+      & path {
+        stroke-width: 0.5px;
+      }
+
+      & rect {
+        opacity: 0.1;
+      }
+
+      & .warmup {
+        fill: oklch(var(--colour));
+        font-size: 0.9rem;
+      }
+    }
+
+    & #calibration__results__legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      grid-column: 6;
+      justify-content: center;
+      padding: 0 1em;
+
+      & div {
+        align-items: center;
+        display: flex;
+        justify-content: end;
+        gap: 0.5em;
+
+        & span:nth-child(2) {
+          background: oklch(var(--colour));
+          height: 2px;
+          width: 3em;
+        }
+      }
+    }
+
+    & #calibration__results__objective {
+      & line.optimal {
+        stroke-width: 1px;
+      }
+      & text.optimal {
+        fill: oklch(var(--colour));
+        font-size: 0.8rem;
+      }
     }
   }
 }

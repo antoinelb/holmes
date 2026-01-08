@@ -1,225 +1,29 @@
 <!doctype html>
 <html lang="en-CA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
+    />
 
-<head>
+    <title>HOLMES</title>
+    <link rel="icon" href="/static/assets/icons/favicon.svg" />
 
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description"
-    content="HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada." />
+    <link
+      rel="preload"
+      as="style"
+      href="/static/styles/index.css"
+      media="screen"
+    />
+    <link rel="modulepreload" href="/static/scripts/index.js" />
 
-  <title>HOLMES</title>
-  <link rel="icon" href="/static/assets/loading.svg" />
+    <script src="/static/scripts/libraries/d3.v7.min.js"></script>
 
-  <link rel="preload" as="style" href="/static/styles/index.css" media="screen" />
-  <link rel="modulepreload" href="/static/scripts/index.js" />
+    <link rel="stylesheet" href="/static/styles/index.css" media="screen" />
+    <script type="module" src="/static/scripts/index.js" defer></script>
+  </head>
 
-  <link rel="stylesheet" href="/static/styles/index.css" media="screen" />
-  <script type="module" src="/static/scripts/index.js" async></script>
-</head>
-
-<body>
-  <header>
-    <h1>HOLMES</h1>
-    <div id="nav">
-      <button title="Toggle navigation (N)">
-        <svg class="icon">
-          <use href="/static/assets/sprite.svg#grid" />
-        </svg>
-      </button>
-      <nav>
-        <button>Calibration</button>
-        <button>Simulation</button>
-        <button>Projection</button>
-      </nav>
-    </div>
-    <div id="settings">
-      <button title="Toggle settings (S)">
-        <svg class="icon">
-          <use href="/static/assets/sprite.svg#menu" />
-        </svg>
-      </button>
-      <div>
-        <button id="theme">
-          <svg id="theme__moon" class="icon">
-            <use href="/static/assets/sprite.svg#moon" />
-          </svg>
-          <svg id="theme__sun" class="icon">
-            <use href="/static/assets/sprite.svg#sun" />
-          </svg>
-          <span>Toggle theme</span>
-          <span class="hotkey">T</span>
-        </button>
-        <div id="version">
-          <span>Version: </span>
-          <span></span>
-        </div>
-      </div>
-    </div>
-    <div id="notifications"></div>
-  </header>
-  <main>
-    <svg class="icon loading">
-      <use href="/static/assets/sprite.svg#aperture" />
-    </svg>
-    <section id="calibration" hidden>
-      <h2>Calibration</h2>
-      <div class="config">
-        <form id="calibration__general-config">
-          <h3>General settings</h3>
-          <label for="calibration__hydrological-model">Hydrological model</label>
-          <select id="calibration__hydrological-model"></select>
-          <label for="calibration__catchment">Catchment</label>
-          <select id="calibration__catchment"></select>
-          <label for="calibration__snow-model">Snow model (optional)</label>
-          <select id="calibration__snow-model"></select>
-          <span>Objective function</span>
-          <label for="calibration__objective-criteria" class="label-indent">Criteria</label>
-          <select id="calibration__objective-criteria"></select>
-          <label for="calibration__streamflow-transformation" class="label-indent">Streamflow transformation</label>
-          <select id="calibration__streamflow-transformation"></select>
-          <span>Calibration period</span>
-          <label for="calibration__period-start">Start <button>Set to period start</button></label>
-          <input id="calibration__period-start" type="date" />
-          <label for="calibration__period-end">End <button>Set to period end</button></label>
-          <input id="calibration__period-end" type="date" />
-          <label for="calibration__algorithm">Calibration algorithm</label>
-          <select id="calibration__algorithm"></select>
-        </form>
-        <form id="calibration__manual-config">
-          <h3>Manual calibration settings</h3>
-        </form>
-        <form id="calibration__automatic-config" hidden>
-          <h3>Automatic - SCE calibration settings</h3>
-          <label for="calibration__ngs">ngs</label>
-          <input id="calibration__ngs" type="number" value="25" />
-          <label for="calibration__npg">npg</label>
-          <input id="calibration__npg" type="number" value="9" />
-          <label for="calibration__mings">mings</label>
-          <input id="calibration__mings" type="number" value="25" />
-          <label for="calibration__nspl">nspl</label>
-          <input id="calibration__nspl" type="number" value="9" />
-          <label for="calibration__maxn">maxn</label>
-          <input id="calibration__maxn" type="number" value="5000" />
-          <label for="calibration__kstop">kstop</label>
-          <input id="calibration__kstop" type="number" value="10" />
-          <label for="calibration__pcento">pcento</label>
-          <input id="calibration__pcento" type="number" value="0.001" step="0.001" />
-          <label for="calibration__peps">peps</label>
-          <input id="calibration__peps" type="number" value="0.1" step="0.1" />
-          <svg class="icon loading" hidden>
-            <use href="/static/assets/sprite.svg#aperture" />
-          </svg>
-          <input type="submit" value="Run" />
-        </form>
-      </div>
-      <div class="results">
-        <button class="results__export" hidden>Export calibrated parameters</button>
-        <div class="results__fig"></div>
-      </div>
-    </section>
-    <section id="simulation" hidden>
-      <h2>Simulation</h2>
-      <div class="config">
-        <form id="simulation__calibration">
-          <h3>Calibration results</h3>
-          <div class="file-upload">
-            <label for="simulation__import">Import model(s) parameters</label>
-            <input id="simulation__import" type="file" accept="application/json" multiple />
-          </div>
-          <div id="simulation__calibration-table">
-            <div>
-              <span></span>
-              <span>hydrological model</span>
-              <span>catchment</span>
-              <span>criteria</span>
-              <span>streamflow transformation</span>
-              <span>algorithm</span>
-              <span>date start</span>
-              <span>date end</span>
-              <span>warmup</span>
-              <span>snow model</span>
-              <span>data type</span>
-              <span>parameters</span>
-            </div>
-          </div>
-        </form>
-        <form id="simulation__period" hidden>
-          <h3>Simulation period</h3>
-          <label for="simulation__period-start">Start <button>Set to period start</button></label>
-          <input id="simulation__period-start" type="date" />
-          <label for="simulation__period-end">End <button>Set to period end</button></label>
-          <input id="simulation__period-end" type="date" />
-          <label for="simulation__multimodel">Multimodel simulation</label>
-          <div class="checkbox">
-            <input type="checkbox" id="simulation__multimodel" />
-            <span></span>
-          </div>
-          <svg class="icon loading" hidden>
-            <use href="/static/assets/sprite.svg#aperture" />
-          </svg>
-          <input type="submit" value="Run" />
-        </form>
-      </div>
-      <div class="results">
-        <svg class="icon loading" hidden>
-          <use href="/static/assets/sprite.svg#aperture" />
-        </svg>
-        <button class="results__export" hidden>Export simulation results</button>
-        <div class="results__fig"></div>
-      </div>
-    </section>
-    <section id="projection" hidden>
-      <h2>Projection</h2>
-      <div class="config">
-        <form id="projection__calibration">
-          <h3>Calibration results</h3>
-          <div class="file-upload">
-            <label for="projection__import">Import model(s) parameters</label>
-            <input id="projection__import" type="file" accept="application/json" />
-          </div>
-          <div id="projection__calibration-table">
-            <div>
-              <span>hydrological model</span>
-              <span>catchment</span>
-              <span>criteria</span>
-              <span>streamflow transformation</span>
-              <span>algorithm</span>
-              <span>date start</span>
-              <span>date end</span>
-              <span>warmup</span>
-              <span>snow model</span>
-              <span>data type</span>
-              <span>parameters</span>
-            </div>
-          </div>
-        </form>
-        <form id="projection__config" hidden>
-          <h3>Projection settings</h3>
-          <label for="projection__model">Climate model</label>
-          <select id="projection__model"></select>
-          <label for="projection__scenario">Climate scenario</label>
-          <select id="projection__scenario">
-            <option value="RCP4.5">RCP4.5</option>
-            <option value="RCP8.5">RCP8.5</option>
-          </select>
-          <label for="projection__horizon">Horizon</label>
-          <select id="projection__horizon"></select>
-          <svg class="icon loading" hidden>
-            <use href="/static/assets/sprite.svg#aperture" />
-          </svg>
-          <input type="submit" value="Run" />
-        </form>
-      </div>
-      <div class="results">
-        <svg class="icon loading" hidden>
-          <use href="/static/assets/sprite.svg#aperture" />
-        </svg>
-        <button class="results__export" hidden>Export projection results</button>
-        <div class="results__fig"></div>
-      </div>
-    </section>
-  </main>
-</body>
-
+  <body></body>
 </html>

@@ -1,423 +1,707 @@
-import { clear, round } from "./utils.js";
-import { toggleLoading, addNotification } from "./header.js";
-import "/static/assets/plotly-3.1.0.min.js";
-import "/static/assets/jszip-3.10.1.min.js";
+import { create, clear, createLoading } from "./utils/elements.js";
+import { connect } from "./utils/ws.js";
+import { round, colours, formatNumber, setEqual } from "./utils/misc.js";
 
 /*********/
 /* model */
 /*********/
 
-let model = {
-  config: null,
-  settings: {},
-  lastTimeseries: null,
+export function initModel() {
+  return {
+    loading: false,
+    ws: null,
+    running: false,
+    availableConfig: null,
+    calibration:
+      window.localStorage.getItem("holmes--projection--calibration") === null
+        ? null
+        : JSON.parse(
+            window.localStorage.getItem("holmes--projection--calibration"),
+          ),
+    config: {
+      model: window.localStorage.getItem("holmes--projection--model"),
+      scenario: window.localStorage.getItem("holmes--projection--scenario"),
+      horizon: window.localStorage.getItem("holmes--projection--horizon"),
+    },
+    projection: null,
+  };
+}
+
+export const initialMsg = {
+  type: "ProjectionMsg",
+  data: { type: "Connect" },
 };
 
-/********/
-/* init */
-/********/
-
-export async function init() {
-  addEventListeners();
-  await initView();
+function verifyCalibration(calibration) {
+  const keys = [
+    "hydroModel",
+    "catchment",
+    "objective",
+    "transformation",
+    "algorithm",
+    "algorithmParams",
+    "start",
+    "end",
+    "snowModel",
+    "hydroParams",
+  ];
+  if (!setEqual(new Set(Object.keys(calibration)), new Set(keys))) {
+    return [false, "This isn't a valid calibrated parameter file."];
+  } else {
+    return [true, ""];
+  }
 }
-
-async function initView() {
-}
-
-function addEventListeners() {
-  document.getElementById("projection__import").addEventListener(
-    "change", importCalibratedConfig
-  )
-  document.getElementById("projection__config").addEventListener("submit", runProjection);
-  document
-    .querySelector("#projection .results__export")
-    .addEventListener("click", exportProjectionResults);
-}
-
 
 /**********/
 /* update */
 /**********/
 
-
-async function importCalibratedConfig(event) {
-  const SIMULATION_KEYS = [
-    "hydrological model",
-    "catchment",
-    "criteria",
-    "streamflow transformation",
-    "algorithm",
-    "date start",
-    "date end",
-    "warmup",
-    "snow model",
-    "data type",
-    "parameters",
-  ];
-
-  const config = await readConfigFile(event.target.files[0])
-  const catchmentOk = await updateCatchment(config.catchment);
-  if (!catchmentOk) {
-    return;
-  }
-  model.config = config;
-
-  const table = document.getElementById("projection__calibration-table");
-
-  const div = table.children.length == 1 ? document.createElement("div") : table.getElementsByTagName("div")[1];
-  clear(div);
-
-  SIMULATION_KEYS.forEach(key => {
-    const val = model.config[key];
-    const span = document.createElement("span");
-    if (typeof val === "object" && val !== null) {
-      span.innerHTML = val.map(v => `${v.name}: ${round(v.value, 2)}`).join("<br />");
-    } else {
-      span.textContent = val ?? "";
-    }
-    div.appendChild(span);
-  });
-
-  table.appendChild(div);
-
-  table.style.setProperty("--n-columns", 2);
-
-  document.getElementById("projection__config").removeAttribute("hidden");
-}
-
-async function readConfigFile(file) {
-  const promise = new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(JSON.parse(e.target.result));
-    reader.onerror = reject;
-    reader.readAsText(file);
-  });
-  return await promise
-}
-
-async function updateCatchment(catchment) {
-  const resp = await fetch(`/projection/config?catchment=${catchment}`);
-  if (!resp.ok) {
-    addNotification(await resp.text(), true);
-    return false;
-  }
-  model.settings = await resp.json();
-
-  const climateModels = [...Object.keys(model.settings)].sort((a, b) => a > b)
-
-  const select = document.getElementById("projection__model");
-  clear(select);
-
-  climateModels.forEach(
-    (m, i) => {
-      const option = document.createElement("option");
-      option.value = m;
-      option.textContent = m;
-      option.selected = i === 0;
-      select.appendChild(option);
-    }
-  );
-
-  select.addEventListener("change", event => updateHorizons(event.target.value));
-
-  updateHorizons(climateModels[0]);
-
-  return true;
-}
-
-function updateHorizons(climateModel) {
-  const horizons = model.settings[climateModel];
-  const select = document.getElementById("projection__horizon");
-  clear(select);
-  horizons.forEach((h, i) => {
-    const option = document.createElement("option");
-    option.value = h;
-    option.textContent = h;
-    option.selected = i === 0;
-    select.appendChild(option);
-  })
-
-
-}
-
-function getPlotlyTemplate(theme) {
-  // Dark theme colors - vibrant colors for dark backgrounds
-  const darkColors = [
-    "#fd7f6f", "#7eb0d5", "#b2e061", "#bd7ebe", "#ffb55a",
-    "#ffee65", "#beb9db", "#fdcce5", "#8bd3c7",
-  ];
-
-  // Light theme colors - soft, muted palette for light backgrounds
-  const lightColors = [
-    "#d97373", "#5a9bc7", "#8fba4d", "#a866aa", "#e89a3c",
-    "#d4b83e", "#9b94c4", "#e5a8c8", "#6cb3a3",
-  ];
-
-  if (theme === "light") {
-    return {
-      font: { color: "rgb(50,50,50)" },
-      xaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
-      yaxis: { gridcolor: "#e5e5e5", linecolor: "rgb(80,80,80)" },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      colorway: lightColors,
-    };
-  } else {
-    return {
-      font: { color: "rgb(230,230,230)" },
-      xaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
-      yaxis: { gridcolor: "#2A3459", linecolor: "rgb(230,230,230)" },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      colorway: darkColors,
-    };
-  }
-}
-
-function updateProjectionPlotTheme(event) {
-  const fig = document.querySelector("#projection .results__fig");
-  if (!fig || !fig.data) return;
-
-  const theme = event.detail.theme;
-  const template = getPlotlyTemplate(theme);
-
-  // Build update object for all axes (including subplots)
-  const updates = {
-    'font.color': template.font.color,
-    'paper_bgcolor': template.paper_bgcolor,
-    'plot_bgcolor': template.plot_bgcolor,
-  };
-
-  // Update all xaxis and yaxis (handles subplots)
-  const layout = fig.layout;
-  Object.keys(layout).forEach(key => {
-    if (key.startsWith('xaxis') || key === 'xaxis') {
-      updates[`${key}.gridcolor`] = template.xaxis.gridcolor;
-      updates[`${key}.linecolor`] = template.xaxis.linecolor;
-    }
-    if (key.startsWith('yaxis') || key === 'yaxis') {
-      updates[`${key}.gridcolor`] = template.yaxis.gridcolor;
-      updates[`${key}.linecolor`] = template.yaxis.linecolor;
-    }
-  });
-
-  // Update trace colors
-  const dataUpdates = fig.data.map((trace, i) => ({
-    'marker.color': template.colorway[i % template.colorway.length],
-    'line.color': template.colorway[i % template.colorway.length],
-  }));
-
-  // Use Plotly.update to change both layout and traces
-  Plotly.update(fig, dataUpdates, updates);
-}
-
-async function runProjection(event) {
-  event.preventDefault();
-
-  const theme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
-
-  const loader = document.querySelector("#projection__config .loading");
-  const submit = document.querySelector("#projection__config input[type='submit']");
-
-  toggleLoading(true);
-  loader.removeAttribute("hidden");
-  submit.setAttribute("hidden", true);
-
-  const fig = document.querySelector("#projection .results__fig");
-
-  const resp = await fetch("/projection/run", {
-    method: "POST",
-    body: JSON.stringify({
-      hydrological_model: model.config["hydrological model"],
-      catchment: model.config.catchment,
-      snow_model: model.config["snow model"],
-      params: model.config.parameters,
-      climate_model: document.getElementById("projection__model").value,
-      climate_scenario: document.getElementById("projection__scenario").value,
-      horizon: document.getElementById("projection__horizon").value,
-      theme: theme,
-    }),
-    headers: {
-      "Content-type": "application/json",
-    },
-  });
-  if (!resp.ok) {
-    addNotification(await resp.text(), true);
-    loader.setAttribute("hidden", true);
-    submit.removeAttribute("hidden");
-    toggleLoading(false);
-    return;
-  }
-  const data = await resp.json();
-  const figData = JSON.parse(data.fig);
-
-  clear(fig);
-  Plotly.newPlot(fig, figData.data, figData.layout, {
-    displayLogo: false,
-    modeBarButtonsToRemove: [
-      "zoom",
-      "pan",
-      "select",
-      "lasso",
-      "zoomIn",
-      "zoomOut",
-      "autoScale",
-      "resetScale",
-    ],
-  });
-
-  // Add theme change listener for dynamic plot updates
-  window.addEventListener('themeChanged', updateProjectionPlotTheme);
-
-  // Store data for export
-  model.lastTimeseries = data.timeseries;
-
-  fig.scrollIntoView({ behavior: "smooth", block: "end" });
-
-  loader.setAttribute("hidden", true);
-  submit.removeAttribute("hidden");
-  toggleLoading(false);
-  document.querySelector("#projection .results__export").removeAttribute("hidden");
-}
-
-async function exportProjectionResults() {
-  if (!model.lastTimeseries) {
-    addNotification("No projection results to export", true);
-    return;
-  }
-
-  const loader = document.querySelector("#projection .results .loading");
-  const exportButton = document.querySelector("#projection .results__export");
-
-  toggleLoading(true);
-  loader.removeAttribute("hidden");
-  exportButton.setAttribute("hidden", true);
-
-  try {
-    const zip = new JSZip();
-
-    // Get the plotly figure element
-    const figElement = document.querySelector("#projection .results__fig");
-
-    // Save current theme and switch to light theme for export
-    const currentTheme = document.querySelector("body").classList.contains("light") ? "light" : "dark";
-    if (currentTheme === "dark") {
-      const lightTemplate = getPlotlyTemplate("light");
-
-      // Build update object for all axes (including subplots)
-      const updates = {
-        'font.color': lightTemplate.font.color,
-        'paper_bgcolor': lightTemplate.paper_bgcolor,
-        'plot_bgcolor': lightTemplate.plot_bgcolor,
+export async function update(model, msg, dispatch, createNotification) {
+  dispatch = createDispatch(dispatch);
+  switch (msg.type) {
+    case "Connect":
+      connect("projection/", handleMessage, dispatch, createNotification);
+      return { ...model, loading: true };
+    case "Connected":
+      if (model.availableConfig === null) {
+        dispatch({ type: "GetAvailableConfig" });
+      }
+      return { ...model, loading: false, ws: msg.data };
+    case "Disconnected":
+      setTimeout(() => dispatch({ type: "Connect" }), 3000);
+      return { ...model, ws: null };
+    case "GetAvailableConfig":
+      if (
+        model.ws?.readyState === WebSocket.OPEN &&
+        model.calibration !== null
+      ) {
+        model.ws.send(
+          JSON.stringify({
+            type: "config",
+            data: model.calibration.catchment,
+          }),
+        );
+      }
+      return { ...model, loading: true };
+    case "GotAvailableConfig":
+      dispatch({ type: "UpdateConfigFields" });
+      return { ...model, availableConfig: msg.data, loading: false };
+    case "Import":
+      [...msg.data.target.files].forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) =>
+          dispatch({ type: "ImportCalibration", data: event });
+        reader.readAsText(file);
+      });
+      return model;
+    case "ImportCalibration":
+      calibration = JSON.parse(msg.data.target.result);
+      const [valid, error] = verifyCalibration(calibration);
+      if (valid) {
+        window.localStorage.setItem(
+          "holmes--projection--calibration",
+          JSON.stringify(calibration),
+        );
+        dispatch({ type: "GetAvailableConfig" });
+        return {
+          ...model,
+          calibration: calibration,
+          availableConfig: null,
+        };
+      } else {
+        createNotification(error, true);
+        return model;
+      }
+    case "UpdateConfigFields":
+      if (model.availableConfig !== null) {
+        if (
+          model.config.model === null ||
+          model.availableConfig.every((c) => c.model !== model.config.model)
+        ) {
+          dispatch({
+            type: "UpdateConfigField",
+            data: { field: "model", value: model.availableConfig[0].model },
+          });
+        } else {
+          dispatch({
+            type: "UpdateConfigField",
+            data: { field: "model", value: model.config.model },
+          });
+        }
+      }
+      return model;
+    case "UpdateConfigField":
+      model = {
+        ...model,
+        config: {
+          ...model.config,
+          [msg.data.field]: msg.data.value,
+        },
+        projection: null,
       };
-
-      // Update all xaxis and yaxis (handles subplots)
-      const layout = figElement.layout;
-      Object.keys(layout).forEach(key => {
-        if (key.startsWith('xaxis') || key === 'xaxis') {
-          updates[`${key}.gridcolor`] = lightTemplate.xaxis.gridcolor;
-          updates[`${key}.linecolor`] = lightTemplate.xaxis.linecolor;
+      window.localStorage.setItem(
+        `holmes--projection--${msg.data.field}`,
+        msg.data.value,
+      );
+      if (model.availableConfig !== null) {
+        if (msg.data.field === "model") {
+          if (
+            model.config.horizon === null ||
+            model.availableConfig.every(
+              (c) =>
+                c.model !== model.config.model ||
+                c.horizon !== model.config.horizon,
+            )
+          ) {
+            dispatch({
+              type: "UpdateConfigField",
+              data: {
+                field: "horizon",
+                value: model.availableConfig.filter(
+                  (c) => c.model === model.config.model,
+                )[0].horizon,
+              },
+            });
+          } else {
+            dispatch({
+              type: "UpdateConfigField",
+              data: {
+                field: "horizon",
+                value: model.config.horizon,
+              },
+            });
+          }
+        } else if (msg.data.field === "horizon") {
+          if (
+            model.config.scenario === null ||
+            model.availableConfig.every(
+              (c) =>
+                c.model !== model.config.model ||
+                c.horizon !== model.config.horizon ||
+                c.scenario !== model.config.scenario,
+            )
+          ) {
+            dispatch({
+              type: "UpdateConfigField",
+              data: {
+                field: "scenario",
+                value: model.availableConfig.filter(
+                  (c) =>
+                    c.model === model.config.model &&
+                    c.horizon === model.config.horizon,
+                )[0].scenario,
+              },
+            });
+          }
         }
-        if (key.startsWith('yaxis') || key === 'yaxis') {
-          updates[`${key}.gridcolor`] = lightTemplate.yaxis.gridcolor;
-          updates[`${key}.linecolor`] = lightTemplate.yaxis.linecolor;
-        }
-      });
-
-      // Update trace colors
-      const dataUpdates = figElement.data.map((trace, i) => ({
-        'marker.color': lightTemplate.colorway[i % lightTemplate.colorway.length],
-        'line.color': lightTemplate.colorway[i % lightTemplate.colorway.length],
-      }));
-
-      await Plotly.update(figElement, dataUpdates, updates);
-    }
-
-    // Generate PNG using Plotly's built-in function
-    const pngBlob = await new Promise((resolve) => {
-      Plotly.toImage(figElement, {
-        format: "png",
-        width: 1200,
-        height: 800
-      }).then((dataUrl) => {
-        fetch(dataUrl).then(r => r.blob()).then(resolve);
-      });
-    });
-
-    const svgBlob = await new Promise((resolve) => {
-      Plotly.toImage(figElement, {
-        format: "svg",
-        width: 1200,
-        height: 800
-      }).then((dataUrl) => {
-        fetch(dataUrl).then(r => r.blob()).then(resolve);
-      });
-    });
-
-    // Restore original theme if it was dark
-    if (currentTheme === "dark") {
-      const darkTemplate = getPlotlyTemplate("dark");
-
-      // Build update object for all axes (including subplots)
-      const updates = {
-        'font.color': darkTemplate.font.color,
-        'paper_bgcolor': darkTemplate.paper_bgcolor,
-        'plot_bgcolor': darkTemplate.plot_bgcolor,
+      }
+      return model;
+    case "Run":
+      if (
+        model.ws?.readyState === WebSocket.OPEN &&
+        model.calibration !== null &&
+        model.config.model !== null &&
+        model.config.horizon !== null &&
+        model.config.scenario !== null
+      ) {
+        model.ws.send(
+          JSON.stringify({
+            type: "projection",
+            data: {
+              calibration: model.calibration,
+              config: model.config,
+            },
+          }),
+        );
+      }
+      return { ...model, loading: true, running: true };
+    case "GotProjection":
+      console.log(msg.data);
+      return {
+        ...model,
+        projection: msg.data,
+        loading: false,
+        running: false,
       };
+    case "Export":
+      downloadData(model);
+      return model;
+    default:
+      return model;
+  }
+}
 
-      // Update all xaxis and yaxis (handles subplots)
-      const layout = figElement.layout;
-      Object.keys(layout).forEach(key => {
-        if (key.startsWith('xaxis') || key === 'xaxis') {
-          updates[`${key}.gridcolor`] = darkTemplate.xaxis.gridcolor;
-          updates[`${key}.linecolor`] = darkTemplate.xaxis.linecolor;
-        }
-        if (key.startsWith('yaxis') || key === 'yaxis') {
-          updates[`${key}.gridcolor`] = darkTemplate.yaxis.gridcolor;
-          updates[`${key}.linecolor`] = darkTemplate.yaxis.linecolor;
-        }
-      });
+function createDispatch(dispatch) {
+  return (msg) => dispatch({ type: "ProjectionMsg", data: msg });
+}
 
-      // Update trace colors
-      const dataUpdates = figElement.data.map((trace, i) => ({
-        'marker.color': darkTemplate.colorway[i % darkTemplate.colorway.length],
-        'line.color': darkTemplate.colorway[i % darkTemplate.colorway.length],
-      }));
+function handleMessage(event, dispatch, createNotification) {
+  const msg = JSON.parse(event.data);
+  switch (msg.type) {
+    case "error":
+      createNotification(msg.data, true);
+      break;
+    case "config":
+      dispatch({ type: "GotAvailableConfig", data: msg.data });
+      break;
+    case "projection":
+      dispatch({ type: "GotProjection", data: msg.data });
+      break;
+    default:
+      createNotification("Unknown websocket message", true);
+      break;
+  }
+}
 
-      await Plotly.update(figElement, dataUpdates, updates);
-    }
+function downloadData(model) {
+  if (model.calibration !== null && model.projection !== null) {
+    const _data = model.projection.map((p) => ({
+      ...p,
+      model: model.config.model,
+      horizon: model.config.horizon,
+      scenario: model.config.scenario,
+    }));
+    const data = [
+      Object.keys(_data[0]).join(","),
+      ..._data.map((p) => Object.values(p).join(",")),
+    ].join("\n");
 
-    // Add plot images to ZIP
-    zip.file("plot.png", pngBlob);
-    zip.file("plot.svg", svgBlob);
-
-    // Create timeseries CSV
-    const timeseriesKeys = Object.keys(model.lastTimeseries[0]);
-    const timeseriesHeader = timeseriesKeys.join(",") + "\n";
-    const timeseriesRows = model.lastTimeseries.map(row =>
-      timeseriesKeys.map(key => row[key]).join(",")
-    ).join("\n");
-    zip.file("timeseries.csv", timeseriesHeader + timeseriesRows);
-
-    // Generate ZIP and trigger download
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = window.URL.createObjectURL(zipBlob);
+    const blob = new Blob([data], {
+      type: "text/csv",
+    });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "projection_results.zip";
-    document.body.appendChild(a);
+    a.download = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_data.csv`;
     a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
+  }
+}
 
-    addNotification("Export completed successfully", false);
-  } catch (error) {
-    console.error("Export error:", error);
-    addNotification("Export failed: " + error.message, true);
-  } finally {
-    loader.setAttribute("hidden", true);
-    exportButton.removeAttribute("hidden");
-    toggleLoading(false);
+/********/
+/* view */
+/********/
+
+export function initView(dispatch) {
+  dispatch = createDispatch(dispatch);
+  const results = initResultsView(dispatch);
+  let resizeTimeout;
+  const resizeObserver = new ResizeObserver(() => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => dispatch({ type: "Noop" }), 100);
+  });
+  resizeObserver.observe(results);
+  return create("section", { id: "projection" }, [
+    create("h2", {}, ["Projection"]),
+    initConfigView(dispatch),
+    results,
+  ]);
+}
+
+export function view(model, dispatch) {
+  dispatch = createDispatch(dispatch);
+  calibrationView(model);
+  configView(model);
+  projectionView(model);
+}
+
+function initConfigView(dispatch) {
+  return create("div", { class: "config" }, [
+    create("div", { id: "projection__calibration" }, [
+      create("h3", {}, ["Calibration result"]),
+      create("div", { class: "file-upload" }, [
+        create("label", { for: "projection__upload" }, [
+          "Import model parameters",
+        ]),
+        create(
+          "input",
+          {
+            id: "projection__upload",
+            type: "file",
+            accept: "application/json",
+          },
+          [],
+          [
+            {
+              event: "change",
+              fct: (event) => dispatch({ type: "Import", data: event }),
+            },
+          ],
+        ),
+      ]),
+      create("div", { id: "projection__calibrations-table", hidden: true }, [
+        create("div", {}, [
+          create("span", {}, ["hydrological model"]),
+          create("span", {}, ["catchment"]),
+          create("span", {}, ["objective"]),
+          create("span", {}, ["transformation"]),
+          create("span", {}, ["algorithm"]),
+          create("span", {}, ["date start"]),
+          create("span", {}, ["date end"]),
+          create("span", {}, ["snow model"]),
+          create("span", {}, ["parameters"]),
+        ]),
+      ]),
+    ]),
+    create(
+      "form",
+      { id: "projection__config" },
+      [
+        create("h3", {}, ["Projection settings"]),
+        create("label", { for: "projection__model" }, ["Climate model"]),
+        create(
+          "select",
+          { id: "projection__model" },
+          [],
+          [
+            {
+              event: "input",
+              fct: (event) => {
+                dispatch({
+                  type: "UpdateConfigField",
+                  data: { field: "model", value: event.target.value },
+                });
+              },
+            },
+          ],
+        ),
+        create("label", { for: "projection__horizon" }, ["Horizon"]),
+        create(
+          "select",
+          { id: "projection__horizon" },
+          [],
+          [
+            {
+              event: "input",
+              fct: (event) => {
+                dispatch({
+                  type: "UpdateConfigField",
+                  data: { field: "horizon", value: event.target.value },
+                });
+              },
+            },
+          ],
+        ),
+        create("label", { for: "projection__scenario" }, ["Climate scenario"]),
+        create(
+          "select",
+          { id: "projection__scenario" },
+          [],
+          [
+            {
+              event: "input",
+              fct: (event) => {
+                dispatch({
+                  type: "UpdateConfigField",
+                  data: { field: "scenario", value: event.target.value },
+                });
+              },
+            },
+          ],
+        ),
+        create(
+          "input",
+          {
+            id: "projection__export",
+            type: "button",
+            value: "Export data",
+            hidden: true,
+          },
+          [],
+          [{ event: "click", fct: () => dispatch({ type: "Export" }) }],
+        ),
+        create("input", { type: "submit", value: "Run" }),
+        createLoading(),
+      ],
+      [
+        {
+          event: "submit",
+          fct: () => dispatch({ type: "Run" }),
+        },
+      ],
+    ),
+  ]);
+}
+
+function initResultsView(dispatch) {
+  return create("div", { id: "projection__results" }, [
+    create("svg", { id: "projection__results__projection", class: "plot" }),
+  ]);
+}
+
+function calibrationView(model, dispatch) {
+  const div = document.getElementById("projection__calibrations-table");
+  [...div.querySelectorAll("div")]
+    .slice(1)
+    .forEach((d) => d.parentNode.removeChild(d));
+  if (model.calibration !== null) {
+    div.removeAttribute("hidden");
+    div.appendChild(
+      create("div", {}, [
+        create("span", {}, [model.calibration.hydroModel]),
+        create("span", {}, [model.calibration.catchment]),
+        create("span", {}, [model.calibration.objective]),
+        create("span", {}, [model.calibration.transformation]),
+        create("span", {}, [model.calibration.algorithm]),
+        create("span", {}, [model.calibration.start]),
+        create("span", {}, [model.calibration.end]),
+        create("span", {}, [model.calibration.snowModel]),
+        create(
+          "div",
+          {},
+          Object.entries(model.calibration.hydroParams)
+            .map(([name, value]) => [name, round(value, 2)])
+            .flat()
+            .map((x) => create("span", {}, [x])),
+        ),
+      ]),
+    );
+  } else {
+    div.setAttribute("hidden", true);
+  }
+}
+
+function configView(model, dispatch) {
+  const config = document.getElementById("projection__config");
+  if (
+    model.calibration === null ||
+    model.config.model === null ||
+    model.config.horizon === null ||
+    model.config.scnario === null
+  ) {
+    config.setAttribute("hidden", true);
+  } else {
+    config.removeAttribute("hidden");
+  }
+
+  const model_ = document.getElementById("projection__model");
+  const horizon = document.getElementById("projection__horizon");
+  const scenario = document.getElementById("projection__scenario");
+
+  clear(model_);
+  clear(horizon);
+  clear(scenario);
+
+  if (model.availableConfig !== null) {
+    const models = [...new Set(model.availableConfig.map((c) => c.model))];
+    models.forEach((m) => {
+      model_.appendChild(create("option", { value: m }, [m]));
+    });
+    if (model.config.model !== null) {
+      model_.value = model.config.model;
+    }
+  }
+  if (model.availableConfig !== null && model.config.model !== null) {
+    const horizons = [
+      ...new Set(
+        model.availableConfig
+          .filter((c) => c.model === model.config.model)
+          .map((c) => c.horizon),
+      ),
+    ];
+    horizons.forEach((h) => {
+      horizon.appendChild(create("option", { value: h }, [h]));
+    });
+    if (model.config.horizon !== null) {
+      horizon.value = model.config.horizon;
+    }
+  }
+  if (
+    model.availableConfig !== null &&
+    model.config.model !== null &&
+    model.config.horizon !== null
+  ) {
+    const scenarios = [
+      ...new Set(
+        model.availableConfig
+          .filter(
+            (c) =>
+              c.model === model.config.model &&
+              c.horizon === model.config.horizon,
+          )
+          .map((c) => c.scenario),
+      ),
+    ];
+    scenarios.forEach((s) => {
+      scenario.appendChild(create("option", { value: s }, [s]));
+    });
+    if (model.config.scenario !== null) {
+      scenario.value = model.config.scenario;
+    }
+  }
+
+  if (model.running) {
+    config.querySelector(".loading").removeAttribute("hidden");
+    config.querySelector("input[type='submit']").setAttribute("hidden", true);
+  } else {
+    config.querySelector(".loading").setAttribute("hidden", true);
+    config.querySelector("input[type='submit']").removeAttribute("hidden");
+  }
+
+  if (model.projection === null) {
+    document.getElementById("projection__export").setAttribute("hidden", true);
+  } else {
+    document.getElementById("projection__export").removeAttribute("hidden");
+  }
+}
+
+function projectionView(model) {
+  const _svg = document.getElementById("projection__results__projection");
+  clear(_svg);
+  if (model.projection !== null) {
+    const width = _svg.clientWidth;
+    const height = _svg.clientHeight;
+    _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const boundaries = {
+      l: 50,
+      r: width - 25,
+      t: 5,
+      b: height - 20,
+    };
+
+    const svg = d3.select(_svg);
+
+    const projection = model.projection;
+    const fields = Object.keys(model.projection[0]).filter((f) =>
+      f.startsWith("member"),
+    );
+    const yMin = d3.min(projection, (d) =>
+      Math.min(d.median, ...fields.map((f) => d[f])),
+    );
+    const yMax = d3.max(projection, (d) =>
+      Math.max(d.median, ...fields.map((f) => d[f])),
+    );
+
+    const xScale = d3
+      .scaleTime()
+      .domain(d3.extent(projection, (d) => new Date(d.date)))
+      .range([boundaries.l, boundaries.r]);
+    const yScale = d3
+      .scaleLinear()
+      .domain([yMin, yMax])
+      .range([boundaries.b, boundaries.t]);
+
+    // grid
+    svg
+      .append("g")
+      .attr("class", "grid-vertical")
+      .selectAll("line")
+      .data(xScale.ticks(12))
+      .join("line")
+      .attr("x1", (d) => xScale(d))
+      .attr("x2", (d) => xScale(d))
+      .attr("y1", yScale.range()[0])
+      .attr("y2", yScale.range()[1]);
+    svg
+      .append("g")
+      .attr("class", "grid-horizontal")
+      .selectAll("line")
+      .data(yScale.ticks(5))
+      .join("line")
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+
+    // x axis
+    svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${boundaries.b})`)
+      .call(
+        d3
+          .axisBottom(xScale)
+          .ticks(12)
+          .tickSize(0)
+          .tickFormat(d3.timeFormat("%B")),
+      )
+      .call((g) => g.select(".domain").remove());
+    // y axis
+    svg
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${boundaries.l}, 0)`)
+      .call(
+        d3
+          .axisLeft(yScale)
+          .ticks(5)
+          .tickSize(0)
+          .tickFormat((x) => formatNumber(x)),
+      )
+      .call((g) => g.select(".domain").remove());
+    svg
+      .append("text")
+      .attr("x", 15)
+      .attr("y", (boundaries.t + boundaries.b) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr(
+        "transform",
+        `rotate(-90, 15, ${(boundaries.t + boundaries.b) / 2})`,
+      )
+      .attr("font-size", "0.9rem")
+      .text("Streamflow");
+
+    // projections
+    fields.forEach((f) => {
+      svg
+        .append("path")
+        .attr("class", colours[2])
+        .datum(projection)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => xScale(new Date(d.date)))
+            .y((d) => yScale(d[f])),
+        );
+    });
+
+    // median
+    svg
+      .append("path")
+      .attr("class", `${colours[2]} projection__results__projection__median`)
+      .datum(projection)
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((d) => xScale(new Date(d.date)))
+          .y((d) => yScale(d.median)),
+      );
+
+    // legend
+    const legendData = [
+      {
+        label: "Median",
+        class: `${colours[2]} projection__results__projection__median`,
+      },
+      { label: "Members", class: colours[2] },
+    ];
+    const legend = svg
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${boundaries.r - 5}, ${boundaries.t + 5})`);
+    const legendItems = legend
+      .selectAll(".legend-item")
+      .data(legendData)
+      .join("g")
+      .attr("class", "legend-item")
+      .attr("transform", (_, i) => `translate(0, ${i * 20})`);
+    legendItems
+      .append("line")
+      .attr("class", (d) => d.class)
+      .attr("x1", -100)
+      .attr("x2", -70)
+      .attr("y1", 7)
+      .attr("y2", 7);
+    legendItems
+      .append("text")
+      .attr("x", 0)
+      .attr("y", 12)
+      .attr("text-anchor", "end")
+      .attr("font-size", "0.9rem")
+      .text((d) => d.label);
   }
 }

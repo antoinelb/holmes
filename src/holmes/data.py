@@ -1,7 +1,7 @@
 import csv
+from datetime import datetime, timedelta
 
 import numpy as np
-import pandas as pd
 import polars as pl
 
 from holmes.utils.paths import data_dir
@@ -9,6 +9,40 @@ from holmes.utils.paths import data_dir
 ##########
 # public #
 ##########
+
+
+def read_data(
+    catchment: str,
+    start: str,
+    end: str,
+    *,
+    warmup_length: int = 3,
+) -> pl.DataFrame:
+    warmup_length = 365 * warmup_length
+
+    data_ = read_catchment_data(catchment).rename(
+        {
+            "Date": "date",
+            "P": "precipitation",
+            "E0": "pet",
+            "Qo": "streamflow",
+            "T": "temperature",
+        },
+        strict=False,
+    )
+
+    # keep only wanted data plus a warmup period
+    data_ = data_.filter(
+        pl.col("date").is_between(
+            datetime.strptime(start, "%Y-%m-%d")
+            - timedelta(days=warmup_length),
+            datetime.strptime(end, "%Y-%m-%d"),
+        )
+    )
+
+    data_ = data_.collect()
+
+    return data_
 
 
 def get_available_catchments() -> list[tuple[str, bool, tuple[str, str]]]:
@@ -75,51 +109,9 @@ def read_cemaneige_info(catchment: str) -> dict:
     }
 
 
-def read_projection_info(catchment: str) -> dict[str, list[str]]:
-    data = pd.read_pickle(data_dir / f"{catchment}_Projections.pkl")
-    return {key: list(val.keys()) for key, val in data.items()}
-
-
-def read_projection_data(
-    catchment: str, climate_model: str, scenario: str, horizon: str
-) -> pl.DataFrame:
-    if horizon == "REF":
-        scenario = "REF"
-    else:
-        if scenario == "RCP4.5":
-            scenario = "R4"
-        elif scenario == "RCP8.5":
-            scenario = "R4"
-        else:
-            raise ValueError("`scenario` must be RCP4.5 or RCP8.5.")
-
-    _data = pd.read_pickle(data_dir / f"{catchment}_Projections.pkl")[
-        climate_model
-    ][horizon]
-
-    keys = sorted(
-        [
-            (key, int(key.replace(f"{scenario}_memb", "")))
-            for key in _data.keys()
-            if key.startswith(scenario)
-        ],
-        key=lambda key: key[1],
-    )
-
-    return pl.concat(
-        [
-            pl.from_pandas(_data["Date"]).rename("date").to_frame(),
-            *[
-                pl.from_pandas(_data[key]).rename(
-                    {
-                        "P": f"member_{member}_precipitation",
-                        "T": f"member_{member}_temperature",
-                    }
-                )
-                for key, member in keys
-            ],
-        ],
-        how="horizontal",
+def read_projection_data(catchment: str) -> pl.LazyFrame:
+    return pl.scan_csv(data_dir / f"{catchment}_Projections.csv").with_columns(
+        pl.col("date").str.strptime(pl.Date, "%Y-%m-%d")
     )
 
 

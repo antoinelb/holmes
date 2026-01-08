@@ -1,13 +1,18 @@
+import asyncio
+from typing import Any, get_args
+
+import numpy as np
+import numpy.typing as npt
 import polars as pl
-from starlette.requests import Request
-from starlette.responses import Response
-from starlette.routing import BaseRoute, Route, WebSocketRoute
+from starlette.routing import BaseRoute, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from holmes import data, hydro
-from holmes.utils import plotting
+from holmes import data
+from holmes.logging import logger
+from holmes.models import calibration, evaluate, hydro, snow
+from holmes.utils.print import format_list
 
-from .utils import JSONResponse, with_json_params
+from .utils import convert_for_json
 
 ##########
 # public #
@@ -16,25 +21,255 @@ from .utils import JSONResponse, with_json_params
 
 def get_routes() -> list[BaseRoute]:
     return [
-        Route(
-            "/config",
-            endpoint=_get_available_config,
-            methods=["GET"],
-        ),
-        Route(
-            "/run_manual",
-            endpoint=_run_manual,
-            methods=["POST"],
-        ),
-        WebSocketRoute(
-            "/run_automatic",
-            endpoint=_run_automatic,
-        ),
+        WebSocketRoute("/", endpoint=_websocket_handler),
     ]
 
 
-async def precompile_functions() -> None:
-    await hydro.precompile()
+async def _websocket_handler(ws: WebSocket) -> None:
+    await ws.accept()
+    try:
+        while True:
+            msg = await ws.receive_json()
+            await _handle_message(ws, msg)
+    except WebSocketDisconnect:
+        pass
+
+
+async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
+    logger.info(f"Websocket {msg.get('type')} message")
+    match msg.get("type"):
+        case "config":
+            await _handle_config_message(ws)
+        case "observations":
+            await _handle_observations_message(ws, msg.get("data", {}))
+        case "manual":
+            await _handle_manual_calibration_message(ws, msg.get("data", {}))
+        case "calibration_start":
+            stop_event = asyncio.Event()
+            setattr(ws.state, "stop_event", stop_event)
+            asyncio.create_task(
+                _handle_calibration_start_message(
+                    ws, msg.get("data", {}), stop_event
+                )
+            )
+        case "calibration_stop":
+            if hasattr(ws.state, "stop_event"):
+                getattr(ws.state, "stop_event").set()
+        case _:
+            await _send(ws, "error", f"Unknown message type {msg['type']}.")
+
+
+async def _handle_config_message(ws: WebSocket) -> None:
+    catchments = [
+        {
+            "name": c[0],
+            "snow": c[1],
+            "start": c[2][0],
+            "end": c[2][1],
+        }
+        for c in data.get_available_catchments()
+    ]
+    config = {
+        "hydro_model": [
+            {"name": model, "params": hydro.get_config(model)}
+            for model in get_args(hydro.HydroModel)
+        ],
+        "catchment": catchments,
+        "snow_model": [None, *get_args(snow.SnowModel)],
+        "objective": get_args(calibration.Objective),
+        "transformation": get_args(calibration.Transformation),
+        "algorithm": [
+            {"name": "manual"},
+            *[
+                {
+                    "name": algorithm,
+                    "params": calibration.get_config(algorithm),
+                }
+                for algorithm in get_args(calibration.Algorithm)
+            ],
+        ],
+    }
+    await _send(ws, "config", config)
+
+
+async def _handle_observations_message(
+    ws: WebSocket, msg_data: dict[str, Any]
+) -> None:
+    if any(key not in msg_data for key in ("catchment", "start", "end")):
+        await _send(
+            ws,
+            "error",
+            "`catchment`, `start` and `end` must be provided.",
+        )
+        return
+
+    _data = data.read_data(
+        msg_data["catchment"], msg_data["start"], msg_data["end"]
+    )
+
+    await _send(ws, "observations", _data.select("date", "streamflow"))
+
+
+async def _handle_manual_calibration_message(
+    ws: WebSocket, msg_data: dict[str, Any]
+) -> None:
+    needed_keys = [
+        "catchment",
+        "start",
+        "end",
+        "hydroModel",
+        "snowModel",
+        "hydroParams",
+        "objective",
+        "transformation",
+    ]
+    if any(key not in msg_data for key in needed_keys):
+        await _send(
+            ws,
+            "error",
+            format_list(needed_keys, surround="`") + " must be provided.",
+        )
+        return
+
+    _data = data.read_data(
+        msg_data["catchment"], msg_data["start"], msg_data["end"]
+    )
+    metadata = data.read_cemaneige_info(msg_data["catchment"])
+
+    hydro_simulate = hydro.get_model(msg_data["hydroModel"])
+    hydro_params = np.array(msg_data["hydroParams"])
+
+    precipitation = _data["precipitation"].to_numpy()
+    temperature = _data["temperature"].to_numpy()
+    pet = _data["pet"].to_numpy()
+    day_of_year = (
+        _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
+            "date"
+        ]
+        .to_numpy()
+        .astype(np.uintp)
+    )
+    elevation_layers = np.array(metadata["altitude_layers"])
+    median_elevation = metadata["median_altitude"]
+
+    observations = _data["streamflow"].to_numpy()
+
+    if msg_data["snowModel"] is not None:
+        snow_simulate = snow.get_model(msg_data["snowModel"])
+        snow_params = np.array([0.25, 3.74, metadata["qnbv"]])
+        precipitation = snow_simulate(
+            snow_params,
+            precipitation,
+            temperature,
+            day_of_year,
+            elevation_layers,
+            median_elevation,
+        )
+
+    streamflow = hydro_simulate(hydro_params, precipitation, pet)
+
+    _data = _data.select("date").with_columns(
+        pl.Series("streamflow", streamflow)
+    )
+
+    objective = evaluate(
+        observations,
+        streamflow,
+        msg_data["objective"],
+        msg_data["transformation"],
+    )
+
+    await _send(
+        ws,
+        "result",
+        {
+            "done": True,
+            "simulation": _data.select("date", "streamflow"),
+            "params": hydro_params,
+            "objective": objective,
+        },
+    )
+
+
+async def _handle_calibration_start_message(
+    ws: WebSocket, msg_data: dict[str, Any], stop_event: asyncio.Event
+) -> None:
+    needed_keys = [
+        "catchment",
+        "start",
+        "end",
+        "hydroModel",
+        "snowModel",
+        "objective",
+        "transformation",
+        "algorithm",
+        "algorithmParams",
+    ]
+    if any(key not in msg_data for key in needed_keys):
+        await _send(
+            ws,
+            "error",
+            format_list(needed_keys, surround="`") + " must be provided.",
+        )
+        return
+
+    _data = data.read_data(
+        msg_data["catchment"], msg_data["start"], msg_data["end"]
+    )
+    metadata = data.read_cemaneige_info(msg_data["catchment"])
+
+    precipitation = _data["precipitation"].to_numpy()
+    temperature = _data["temperature"].to_numpy()
+    pet = _data["pet"].to_numpy()
+    day_of_year = (
+        _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
+            "date"
+        ]
+        .to_numpy()
+        .astype(np.uintp)
+    )
+    elevation_layers = np.array(metadata["altitude_layers"])
+    median_elevation = metadata["median_altitude"]
+
+    observations = _data["streamflow"].to_numpy()
+
+    async def callback(
+        done: bool,
+        params: npt.NDArray[np.float64],
+        simulation: npt.NDArray[np.float64],
+        results: dict[str, float],
+    ) -> None:
+        await _send(
+            ws,
+            "result",
+            {
+                "done": done,
+                "simulation": _data.select("date").with_columns(
+                    pl.Series("streamflow", simulation)
+                ),
+                "params": params,
+                "objective": results[msg_data["objective"]],
+            },
+        )
+
+    await calibration.calibrate(
+        precipitation,
+        temperature,
+        pet,
+        observations,
+        day_of_year,
+        elevation_layers,
+        median_elevation,
+        metadata["qnbv"],
+        msg_data["hydroModel"],
+        msg_data["snowModel"],
+        msg_data["objective"],
+        msg_data["transformation"],
+        msg_data["algorithm"],
+        msg_data["algorithmParams"],
+        callback=callback,
+        stop_event=stop_event,
+    )
 
 
 ###########
@@ -42,217 +277,5 @@ async def precompile_functions() -> None:
 ###########
 
 
-async def _get_available_config(_: Request) -> Response:
-    catchments = data.get_available_catchments()
-    config = {
-        "hydrological_model": hydro.hydrological_models,
-        "catchment": catchments,
-        "snow_model": {"none": {}, **hydro.snow.snow_models},
-        "objective_criteria": ["RMSE", "NSE", "KGE"],
-        "streamflow_transformation": [
-            "Low Flows: log",
-            "Medium Flows: sqrt",
-            "High Flows: none",
-        ],
-        "algorithm": ["Manual", "Automatic - SCE"],
-    }
-    return JSONResponse(config)
-
-
-@with_json_params(
-    args=[
-        "hydrological_model",
-        "catchment",
-        "snow_model",
-        "objective_criteria",
-        "streamflow_transformation",
-        "calibration_start",
-        "calibration_end",
-        "params",
-        "prev_results",
-        "theme",
-    ]
-)
-async def _run_manual(
-    _: Request,
-    hydrological_model: str,
-    catchment: str,
-    snow_model: str,
-    objective_criteria: str,
-    streamflow_transformation: str,
-    calibration_start: str,
-    calibration_end: str,
-    params: dict[str, float | int],
-    prev_results: dict[str, dict[str, list[int | float]]] | None,
-    theme: str,
-) -> Response:
-    data_ = hydro.read_transformed_hydro_data(
-        catchment, calibration_start, calibration_end, snow_model
-    )
-    simulation = hydro.run_model(data_, hydrological_model, params)
-    objective = hydro.evaluate_simulation(
-        data_["flow"].to_numpy().squeeze(),
-        simulation,
-        objective_criteria.lower(),  # type: ignore
-        streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
-    )
-    optimal = hydro.get_optimal_for_criteria(
-        objective_criteria.lower(),  # type: ignore
-    )
-
-    results: hydro.Results = {
-        "params": {
-            param: (
-                [*prev_results["params"][param], val]
-                if prev_results is not None
-                else [val]
-            )
-            for param, val in params.items()
-        },
-        "objective": (
-            [*prev_results["objective"], objective]
-            if prev_results is not None
-            else [objective]
-        ),
-    }
-
-    fig = hydro.calibration.plot_calibration(
-        data_.with_columns(pl.Series("simulation", simulation)),
-        results,
-        objective_criteria.lower(),
-        optimal,
-        template=plotting.light_template if theme == "light" else None,
-    )
-
-    return JSONResponse(
-        {
-            "fig": fig.to_json(),
-            "results": results,
-        }
-    )
-
-
-async def _run_automatic(websocket: WebSocket) -> None:
-    """
-    WebSocket endpoint for automatic calibration with real-time progress.
-
-    Protocol:
-    1. Accept connection
-    2. Receive calibration config (JSON)
-    3. Run SCE with progress callback
-    4. Stream progress updates
-    5. Send final results
-    6. Close connection
-    """
-    await websocket.accept()
-
-    try:
-        # Receive configuration
-        config = await websocket.receive_json()
-
-        # Extract parameters
-        hydrological_model = config["hydrological_model"]
-        catchment = config["catchment"]
-        snow_model = config["snow_model"]
-        objective_criteria = config["objective_criteria"]
-        streamflow_transformation = config["streamflow_transformation"]
-        calibration_start = config["calibration_start"]
-        calibration_end = config["calibration_end"]
-        ngs = int(config["ngs"])
-        npg = int(config["npg"])
-        mings = int(config["mings"])
-        nspl = int(config["nspl"])
-        maxn = int(config["maxn"])
-        kstop = int(config["kstop"])
-        pcento = float(config["pcento"])
-        peps = float(config["peps"])
-        theme = config["theme"]
-
-        data_ = hydro.read_transformed_hydro_data(
-            catchment, calibration_start, calibration_end, snow_model
-        )
-
-        optimal = hydro.get_optimal_for_criteria(
-            objective_criteria.lower(),  # type: ignore
-        )
-
-        async def send_progress(update: dict):
-            current_results: hydro.Results = {
-                "params": update.pop("params_history"),
-                "objective": update.pop("objective_history"),
-            }
-
-            params = {
-                param: values[-1]
-                for param, values in current_results["params"].items()
-            }
-            simulation = hydro.run_model(data_, hydrological_model, params)
-
-            fig = hydro.calibration.plot_calibration(
-                data_.with_columns(pl.Series("simulation", simulation)),
-                current_results,
-                objective_criteria.lower(),
-                optimal,
-                template=plotting.light_template if theme == "light" else None,
-            )
-
-            await websocket.send_json(
-                {
-                    **update,
-                    "fig": fig.to_json(),
-                    "results": current_results,
-                }
-            )
-
-        results = await hydro.calibration.calibrate_model(
-            data_,
-            hydrological_model,
-            objective_criteria.lower(),  # type: ignore
-            streamflow_transformation.split(":")[1].strip().lower(),  # type: ignore
-            ngs,
-            npg,
-            mings,
-            nspl,
-            maxn,
-            kstop,
-            pcento,
-            peps,
-            send_progress,
-        )
-
-        params = {
-            param: values[-1] for param, values in results["params"].items()
-        }
-        simulation = hydro.run_model(data_, hydrological_model, params)
-        optimal = hydro.get_optimal_for_criteria(
-            objective_criteria.lower(),  # type: ignore
-        )
-        fig = hydro.calibration.plot_calibration(
-            data_.with_columns(pl.Series("simulation", simulation)),
-            results,
-            objective_criteria.lower(),
-            optimal,
-            template=plotting.light_template if theme == "light" else None,
-        )
-
-        await websocket.send_json(
-            {
-                "type": "complete",
-                "fig": fig.to_json(),
-                "results": results,
-            }
-        )
-
-    except WebSocketDisconnect:
-        pass
-    except Exception as e:
-        raise e
-        # try:
-        #     await websocket.send_json({"type": "error", "message": str(e)})
-        # except Exception:
-        #     pass
-    finally:
-        try:
-            await websocket.close()
-        except Exception:
-            pass
+async def _send(ws: WebSocket, event: str, data: Any) -> None:
+    await ws.send_json({"type": event, "data": convert_for_json(data)})
