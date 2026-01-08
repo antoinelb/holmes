@@ -65,14 +65,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
+        id: python
         with:
           python-version: "3.13"
+          architecture: x64
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64-pc-windows-msvc
-          args: --release --strip -o dist
+          args: --release --strip -o dist -i ${{ steps.python.outputs.python-path }}
           working-directory: src/holmes-rs
 
       - uses: actions/upload-artifact@v4
