@@ -34,8 +34,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://gitlab.com/antoinelb/holmes"
-Repository = "https://gitlab.com/antoinelb/holmes"
+Homepage = "https://github.com/antoinelb/holmes"
+Repository = "https://github.com/antoinelb/holmes"
 
 [tool.uv.sources]
 holmes-rs = { path = "./src/holmes-rs", editable = true }
