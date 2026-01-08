@@ -1,0 +1,112 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "holmes-rs-[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  # =============================================================================
+  # Build holmes-rs wheels for all platforms
+  # =============================================================================
+
+  build-rs:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --strip -o dist
+          working-directory: src/holmes-rs
+          manylinux: auto
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.target }}
+          path: src/holmes-rs/dist/*.whl
+
+  build-rs-sdist:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build source distribution
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: -o dist
+          working-directory: src/holmes-rs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: src/holmes-rs/dist/*.tar.gz
+
+  # =============================================================================
+  # Publish holmes-rs to PyPI
+  # =============================================================================
+
+  publish-rs:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [build-rs, build-rs-sdist]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  # =============================================================================
+  # Publish holmes-hydro to PyPI
+  # =============================================================================
+
+  publish-python:
+    if: "!startsWith(github.ref, 'refs/tags/holmes-rs-')"
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
