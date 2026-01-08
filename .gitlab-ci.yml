@@ -31,7 +31,7 @@ build-rs:linux-x86_64:
       - src/holmes-rs/dist/*.whl
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
 
 build-rs:linux-aarch64:
   stage: build-rs
@@ -47,7 +47,7 @@ build-rs:linux-aarch64:
       - src/holmes-rs/dist/*.whl
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
   allow_failure: true  # ARM runners may not be available
 
 build-rs:macos-x86_64:
@@ -68,7 +68,7 @@ build-rs:macos-x86_64:
       - src/holmes-rs/dist/*.whl
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
 
 build-rs:macos-arm64:
   stage: build-rs
@@ -87,7 +87,7 @@ build-rs:macos-arm64:
       - src/holmes-rs/dist/*.whl
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
 
 build-rs:windows:
   stage: build-rs
@@ -106,7 +106,7 @@ build-rs:windows:
       - src/holmes-rs/dist/*.whl
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
 
 # Also build source distribution for users with Rust installed
 build-rs:sdist:
@@ -120,7 +120,7 @@ build-rs:sdist:
       - src/holmes-rs/dist/*.tar.gz
     expire_in: 1 week
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
 
 # =============================================================================
 # Publish holmes-rs to PyPI
@@ -141,7 +141,7 @@ publish-rs:
   script:
     - twine upload src/holmes-rs/dist/*
   rules:
-    - if: $CI_COMMIT_TAG =~ /^holmes-rs-v/
+    - if: $CI_COMMIT_TAG =~ /^holmes-rs/
   when: manual  # Require manual approval to publish
 
 # =============================================================================
@@ -157,5 +157,5 @@ publish-python:
     - python -m build
     - twine upload dist/*
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]/
+    - if: $CI_COMMIT_TAG =~ /^[0-9]/
   when: manual  # Require manual approval to publish
