@@ -59,28 +59,4 @@ target-version = ['py311']
 
 [tool.isort]
 profile = "black"
-src_paths = ["src/holmes", "tests"]
-
-[tool.pytest.ini_options]
-minversion = "8.0"
-testpaths = ["tests"]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow running tests",
-    "requires_data: Tests that require data files",
-]
-
-[tool.coverage.run]
-source = ["src/holmes"]
-omit = [
-    "*/__pycache__/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__ == .__main__.:",
-]
-precision = 2
-show_missing = true
+src_paths = ["holmes", "holmes_rs"]
