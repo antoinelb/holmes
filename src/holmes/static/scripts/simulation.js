@@ -595,7 +595,9 @@ function calibrationView(model, dispatch) {
           create("span", {}, [calibration.algorithm]),
           create("span", {}, [calibration.start]),
           create("span", {}, [calibration.end]),
-          create("span", {}, [calibration.snowModel]),
+          create("span", {}, [
+            calibration.snowModel === null ? "none" : calibration.snowModel,
+          ]),
           create(
             "div",
             {},
@@ -793,16 +795,23 @@ function metricView(model, metric) {
       .attr("height", (d) => yScale.range()[0] - yScale(d.value));
 
     // optimal
-    const optimal =
-      metric === "mean_bias" || metric === "deviation_bias" ? 0 : 1;
     svg
       .append("line")
       .attr("class", colours[1])
       .attr("stroke-width", "1px")
-      .attr("y1", yScale(optimal))
-      .attr("y2", yScale(optimal))
+      .attr("y1", yScale(1))
+      .attr("y2", yScale(1))
       .attr("x1", xScale.range()[0])
       .attr("x2", xScale.range()[1]);
+    svg
+      .append("text")
+      .attr("class", `${colours[1]} optimal`)
+      .attr("font-size", "0.5rem")
+      .attr("text-anchor", "middle")
+      .attr("x", (xScale.range()[0] + xScale.range()[1]) / 2)
+      .attr("y", yScale(1))
+      .attr("dy", -3)
+      .text("Optimal");
   }
 }
 
@@ -950,15 +959,6 @@ function legendView(model) {
       create("div", {}, [
         create("span", {}, ["observations"]),
         create("span", { class: colours[0] }),
-      ]),
-    );
-  }
-
-  if (model.results !== null) {
-    legend.appendChild(
-      create("div", {}, [
-        create("span", {}, ["optimal"]),
-        create("span", { class: colours[1] }),
       ]),
     );
   }

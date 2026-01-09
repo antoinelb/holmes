@@ -52,9 +52,9 @@
 
             &:hover {
               & button {
+                cursor: pointer;
                 opacity: 1;
                 user-select: default;
-                cursor: pointer;
               }
             }
 
@@ -62,14 +62,14 @@
               background: none;
               border-radius: 0.25em;
               box-shadow: none;
-              opacity: 0;
-              user-select: none;
               cursor: default;
               display: flex;
               height: auto;
               height: 1em;
               left: -1em;
+              opacity: 0;
               padding: 0.1em;
+              user-select: none;
               /* position: absolute; */
               width: 1em;
               z-index: 1;
@@ -213,6 +213,10 @@
       height: 100%;
       min-height: 0;
       width: 100%;
+
+      & text.optimal {
+        fill: oklch(var(--colour));
+      }
     }
 
     & #simulation__results__streamflow {

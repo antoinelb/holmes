@@ -2,13 +2,13 @@ from typing import Callable, Literal, assert_never
 
 import numpy as np
 import numpy.typing as npt
-from holmes_rs.hydro import gr4j
+from holmes_rs.hydro import bucket, gr4j
 
 #########
 # types #
 #########
 
-HydroModel = Literal["gr4j"]
+HydroModel = Literal["bucket", "gr4j"]
 
 ##########
 # public #
@@ -17,22 +17,23 @@ HydroModel = Literal["gr4j"]
 
 def get_config(model: HydroModel) -> list[dict[str, str | float]]:
     match model:
+        case "bucket":
+            param_names = bucket.param_names
+            defaults, bounds = bucket.init()
         case "gr4j":
             param_names = gr4j.param_names
             defaults, bounds = gr4j.init()
-            return [
-                {
-                    "name": name,
-                    "default": default,
-                    "min": bounds_[0],
-                    "max": bounds_[1],
-                }
-                for name, default, bounds_ in zip(
-                    param_names, defaults, bounds
-                )
-            ]
         case _:
             assert_never(model)  # type: ignore
+    return [
+        {
+            "name": name,
+            "default": default,
+            "min": bounds_[0],
+            "max": bounds_[1],
+        }
+        for name, default, bounds_ in zip(param_names, defaults, bounds)
+    ]
 
 
 def get_model(
@@ -46,6 +47,8 @@ def get_model(
     npt.NDArray[np.float64],
 ]:
     match model:
+        case "bucket":
+            return bucket.simulate
         case "gr4j":
             return gr4j.simulate
         case _:

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -222,11 +222,11 @@ def _run_simulation(
     hydro_params: dict[str, float],
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
 
-    hydro_simulate = hydro.get_model(hydro_model)
-    hydro_params = np.array(list(hydro_params.values()))
+    hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
+    hydro_params_ = np.array(list(hydro_params.values()))
 
     if snow_model is not None:
-        snow_simulate = snow.get_model(snow_model)
+        snow_simulate = snow.get_model(cast(snow.SnowModel, snow_model))
         snow_params = np.array([0.25, 3.74, qnbv])
         precipitation = snow_simulate(
             snow_params,
@@ -237,7 +237,7 @@ def _run_simulation(
             median_elevation,
         )
 
-    streamflow = hydro_simulate(hydro_params, precipitation, pet)
+    streamflow = hydro_simulate(hydro_params_, precipitation, pet)
 
     results = {
         "nse_none": evaluate(observations, streamflow, "nse", "none"),

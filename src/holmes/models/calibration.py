@@ -21,7 +21,9 @@ Algorithm = Literal["sce"]
 ##########
 
 
-def get_config(model: Algorithm) -> list[dict[str, str | float]]:
+def get_config(
+    model: Algorithm,
+) -> list[dict[str, str | int | float | bool | None]]:
     match model:
         case "sce":
             return [
@@ -134,7 +136,7 @@ async def calibrate(
                 observations,
             )
             for _ in range(max_iter):
-                done, params, simulation, objectives = calibration.step(
+                done, params_, simulation, objectives = calibration.step(
                     precipitation,
                     temperature,
                     pet,
@@ -149,7 +151,7 @@ async def calibrate(
                     "kge": objectives[2],
                 }
                 if callback is not None:
-                    await callback(done, params, simulation, results)
+                    await callback(done, params_, simulation, results)
                 # Yield control to allow I/O processing (e.g., receiving stop message)
                 await asyncio.sleep(0.001)
                 if stop_event is not None and stop_event.is_set():
