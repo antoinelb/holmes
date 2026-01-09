@@ -42,7 +42,7 @@ PORT=8000           # Server port (default: 8000)
 
 2. Clone and install in development mode:
    ```bash
-   git clone https://gitlab.com/antoinelb/holmes.git
+   git clone https://github.com/antoinelb/holmes.git
    cd holmes
    uv sync
    ```
@@ -60,17 +60,11 @@ source .venv/bin/activate
 holmes
 ```
 
-### Testing
-
-```bash
-uv run pytest
-```
-
 ### Code Quality
 
 ```bash
-uv run black src/ tests/
-uv run ruff check src/ tests/
+uv run black src/ 
+uv run ruff check src/ 
 uv run ty check src/
 ```
 
