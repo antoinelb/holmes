@@ -100,13 +100,50 @@ jobs:
       - name: Run integration tests
         run: uv run pytest tests/integration -v
 
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Build Rust extension
+        uses: PyO3/maturin-action@v1
+        with:
+          command: develop
+          working-directory: src/holmes-rs
+
+      - name: Install Playwright browsers
+        run: uv run playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: uv run pytest tests/e2e -v --browser chromium
+
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
   # =============================================================================
   # Publish job - only run on tags, after tests pass
   # =============================================================================
 
   publish:
     if: startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/holmes-rs-')
-    needs: [lint, unit-tests, integration-tests]
+    needs: [lint, unit-tests, integration-tests, e2e-tests]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:

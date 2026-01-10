@@ -58,6 +58,7 @@ function verifyCalibration(calibration) {
 
 export async function update(model, msg, dispatch, createNotification) {
   dispatch = createDispatch(dispatch);
+  let calibration;
   switch (msg.type) {
     case "Connect":
       connect("projection/", handleMessage, dispatch, createNotification);
@@ -445,7 +446,7 @@ function calibrationView(model, dispatch) {
         create("span", {}, [model.calibration.algorithm]),
         create("span", {}, [model.calibration.start]),
         create("span", {}, [model.calibration.end]),
-        create("span", {}, [model.calibration.snowModel]),
+        create("span", {}, [model.calibration.snowModel ?? "none"]),
         create(
           "div",
           {},

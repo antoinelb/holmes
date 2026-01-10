@@ -47,6 +47,7 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
         case "config":
             if "data" not in msg:
                 await send(ws, "error", "The catchment must be provided.")
+                return
             await _handle_config_message(ws, msg["data"])
         case "projection":
             await _handle_projection_message(ws, msg.get("data", {}))
