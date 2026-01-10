@@ -27,16 +27,13 @@ class TestProjectionWebSocket:
             assert isinstance(response["data"], list)
 
     def test_websocket_config_missing_data(self):
-        """Config message without data sends error then raises KeyError."""
+        """Config message without data sends error."""
         client = TestClient(create_app())
-        # Source code has a bug: sends error but doesn't return,
-        # then tries to access msg["data"] causing KeyError
-        with pytest.raises(KeyError):
-            with client.websocket_connect("/projection/") as ws:
-                ws.send_json({"type": "config"})
-                response = ws.receive_json()
-                assert response["type"] == "error"
-                assert "catchment must be provided" in response["data"]
+        with client.websocket_connect("/projection/") as ws:
+            ws.send_json({"type": "config"})
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment must be provided" in response["data"]
 
     def test_websocket_projection_message(self):
         """Projection message returns climate projection results."""

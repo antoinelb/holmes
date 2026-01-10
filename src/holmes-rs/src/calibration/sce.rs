@@ -34,7 +34,7 @@ struct SceParams {
     pub max_evaluations: usize,
 }
 
-#[pyclass(module = "hydro_rs.calibration.sce", unsendable)]
+#[pyclass(module = "hydro_rs.calibration.sce")]
 pub struct Sce {
     calibration_params: CalibrationParams,
     sce_params: SceParams,
