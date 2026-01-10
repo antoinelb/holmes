@@ -336,6 +336,7 @@ impl Sce {
     }
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pymethods]
 impl Sce {
     #[new]
@@ -861,6 +862,7 @@ fn merge_complexes(
     (population, objectives)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "sce")?;
     m.add_class::<Sce>()?;

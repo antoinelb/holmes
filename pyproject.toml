@@ -8,8 +8,11 @@ authors = [
 ]
 license = {text = "MIT"}
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Education",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering :: Hydrology",
@@ -29,6 +32,10 @@ dev = [
     "black>=25.9.0",
     "isort>=6.0.1",
     "maturin>=1.10.2",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
     "ruff>=0.13.1",
     "ty>=0.0.1a21",
 ]
@@ -55,8 +62,31 @@ holmes = "holmes.app:run_server"
 
 [tool.black]
 line_length = 79
-target-version = ['py311']
+target-version = ['py313']
 
 [tool.isort]
 profile = "black"
-src_paths = ["holmes", "holmes_rs"]
+src_paths = ["holmes", "holmes_rs", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+
+[tool.coverage.run]
+source = ["src/holmes"]
+omit = [
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
+precision = 2
+show_missing = true

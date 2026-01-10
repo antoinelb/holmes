@@ -10,6 +10,7 @@ pub enum MetricsError {
     LengthMismatch(usize, usize),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<MetricsError> for PyErr {
     fn from(err: MetricsError) -> PyErr {
         PyValueError::new_err(err.to_string())
@@ -97,6 +98,7 @@ fn check_lengths(
     }
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "calculate_rmse")]
 pub fn py_calculate_rmse<'py>(
@@ -109,6 +111,7 @@ pub fn py_calculate_rmse<'py>(
     )?)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "calculate_nse")]
 pub fn py_calculate_nse<'py>(
@@ -121,6 +124,7 @@ pub fn py_calculate_nse<'py>(
     )?)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "calculate_kge")]
 pub fn py_calculate_kge<'py>(
@@ -133,6 +137,7 @@ pub fn py_calculate_kge<'py>(
     )?)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "metrics")?;
     m.add_function(wrap_pyfunction!(py_calculate_rmse, &m)?)?;

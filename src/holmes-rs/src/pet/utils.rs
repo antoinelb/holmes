@@ -13,6 +13,7 @@ pub enum PetError {
     WrongModel(String),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<PetError> for PyErr {
     fn from(err: PetError) -> PyErr {
         PyValueError::new_err(err.to_string())

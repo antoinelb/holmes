@@ -23,6 +23,7 @@ pub enum HydroError {
     WrongModel(String),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<HydroError> for PyErr {
     fn from(err: HydroError) -> PyErr {
         PyValueError::new_err(err.to_string())

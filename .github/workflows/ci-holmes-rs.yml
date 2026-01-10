@@ -1,0 +1,215 @@
+name: ci holmes-rs
+
+on:
+  push:
+    paths:
+      - "src/holmes-rs/**"
+    tags:
+      - "holmes-rs-*.*.*"
+  pull_request:
+    paths:
+      - "src/holmes-rs/**"
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKING_DIR: src/holmes-rs
+
+jobs:
+  # =============================================================================
+  # Test jobs - run on all triggers
+  # =============================================================================
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run clippy
+        working-directory: ${{ env.WORKING_DIR }}
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        working-directory: ${{ env.WORKING_DIR }}
+        run: cargo fmt --check
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Run unit tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: cargo test --lib
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Run integration tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: echo "No integration tests yet"
+
+  python-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest pytest-cov
+
+      - name: Build and install wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: develop
+          working-directory: ${{ env.WORKING_DIR }}
+
+      - name: Run Python integration tests with coverage
+        working-directory: ${{ env.WORKING_DIR }}
+        run: pytest tests/python_integration --cov=holmes_rs --cov-fail-under=100
+
+  # =============================================================================
+  # Build jobs - only run on tags, after tests pass
+  # =============================================================================
+
+  build-linux:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [clippy, rustfmt, unit-tests, integration-tests, python-integration-tests]
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --strip -o dist -i python3.11 -i python3.12 -i python3.13 -i python3.14
+          working-directory: ${{ env.WORKING_DIR }}
+          manylinux: 2_28
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}
+          path: ${{ env.WORKING_DIR }}/dist/*.whl
+
+  build-macos:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [clippy, rustfmt, unit-tests, integration-tests, python-integration-tests]
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --strip -o dist
+          working-directory: ${{ env.WORKING_DIR }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}-py${{ matrix.python }}
+          path: ${{ env.WORKING_DIR }}/dist/*.whl
+
+  build-windows:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [clippy, rustfmt, unit-tests, integration-tests, python-integration-tests]
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+          allow-prereleases: true
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64-pc-windows-msvc
+          args: --release --strip -o dist -i ${{ steps.python.outputs.python-path }}
+          working-directory: ${{ env.WORKING_DIR }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-py${{ matrix.python }}
+          path: ${{ env.WORKING_DIR }}/dist/*.whl
+
+  build-sdist:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [clippy, rustfmt, unit-tests, integration-tests, python-integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build source distribution
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: -o dist
+          working-directory: ${{ env.WORKING_DIR }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: ${{ env.WORKING_DIR }}/dist/*.tar.gz
+
+  # =============================================================================
+  # Publish job - only run on tags, after builds complete
+  # =============================================================================
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/holmes-rs-')
+    needs: [build-linux, build-macos, build-windows, build-sdist]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

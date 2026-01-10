@@ -26,6 +26,7 @@ pub enum SnowError {
     WrongModel(String),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<SnowError> for PyErr {
     fn from(err: SnowError) -> PyErr {
         PyValueError::new_err(err.to_string())

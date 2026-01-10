@@ -1,0 +1,6 @@
+{
+  "hydro_model": "gr4j",
+  "snow_model": null,
+  "expected_nse": 0.5,
+  "tolerance": 0.3
+}

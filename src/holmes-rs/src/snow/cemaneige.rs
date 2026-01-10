@@ -112,6 +112,7 @@ pub fn simulate(
     Ok(Array1::from_vec(effective_precipitation))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "init")]
 pub fn py_init<'py>(
@@ -121,6 +122,7 @@ pub fn py_init<'py>(
     (default_values.to_pyarray(py), bounds.to_pyarray(py))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "simulate")]
 pub fn py_simulate<'py>(
@@ -143,6 +145,7 @@ pub fn py_simulate<'py>(
     Ok(simulation.to_pyarray(py))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "cemaneige")?;
     m.add("param_names", param_names)?;

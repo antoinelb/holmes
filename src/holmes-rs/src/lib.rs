@@ -1,14 +1,16 @@
 #![allow(non_upper_case_globals)]
-mod calibration;
-mod hydro;
-mod metrics;
-mod pet;
-mod snow;
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+pub mod calibration;
+pub mod hydro;
+pub mod metrics;
+pub mod pet;
+pub mod snow;
 mod utils;
 
 use pyo3::prelude::*;
 use utils::register_submodule;
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pymodule]
 fn holmes_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     let py = m.py();
