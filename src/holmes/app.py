@@ -53,7 +53,9 @@ def run_server() -> None:
         webbrowser.open(url)
 
     if not config.DEBUG and "PYTEST_CURRENT_TEST" not in os.environ:
-        threading.Thread(target=open_browser, daemon=True).start()  # pragma: no cover
+        threading.Thread(
+            target=open_browser, daemon=True
+        ).start()  # pragma: no cover
 
     uvicorn.run(
         "holmes.app:create_app",

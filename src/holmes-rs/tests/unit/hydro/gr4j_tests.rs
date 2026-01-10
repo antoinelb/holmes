@@ -326,14 +326,11 @@ fn test_gr4j_nan_in_precipitation() {
     let pet = array![2.0, 2.0, 2.0];
 
     let result = simulate(defaults.view(), precip.view(), pet.view());
-    match result {
-        Ok(streamflow) => {
-            assert!(
-                streamflow.iter().all(|&q| q.is_finite()),
-                "NaN should not propagate"
-            );
-        }
-        Err(_) => {} // Error is acceptable
+    if let Ok(streamflow) = result {
+        assert!(
+            streamflow.iter().all(|&q| q.is_finite()),
+            "NaN should not propagate"
+        );
     }
 }
 
@@ -350,7 +347,8 @@ fn test_precipitation_equals_pet() {
     let precip = Array1::from_elem(n, 5.0);
     let pet = Array1::from_elem(n, 5.0);
 
-    let streamflow = simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(defaults.view(), precip.view(), pet.view()).unwrap();
 
     assert_eq!(streamflow.len(), n);
     assert!(
@@ -367,7 +365,8 @@ fn test_high_pet_low_precipitation() {
     let precip = Array1::from_elem(n, 1.0); // Low precipitation
     let pet = Array1::from_elem(n, 5.0); // High PET
 
-    let streamflow = simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(defaults.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -383,7 +382,8 @@ fn test_high_precipitation_low_pet() {
     let precip = Array1::from_elem(n, 50.0); // High precipitation
     let pet = Array1::from_elem(n, 1.0); // Low PET
 
-    let streamflow = simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(defaults.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -404,7 +404,8 @@ fn test_percolation_branch() {
     let precip = Array1::from_elem(n, 20.0); // Consistent high precipitation
     let pet = Array1::from_elem(n, 1.0); // Low PET
 
-    let streamflow = simulate(params.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(params.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -421,12 +422,14 @@ fn test_unit_hydrograph_edge_cases() {
 
     // x4 = 0.8 (minimum bound) - very short unit hydrograph
     let params_min = array![300.0, 0.0, 100.0, 0.8];
-    let flow_min = simulate(params_min.view(), precip.view(), pet.view()).unwrap();
+    let flow_min =
+        simulate(params_min.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_min.iter().all(|&q| q.is_finite() && q >= 0.0));
 
     // x4 = 10.0 (maximum bound) - very long unit hydrograph
     let params_max = array![300.0, 0.0, 100.0, 10.0];
-    let flow_max = simulate(params_max.view(), precip.view(), pet.view()).unwrap();
+    let flow_max =
+        simulate(params_max.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_max.iter().all(|&q| q.is_finite() && q >= 0.0));
 }
 
@@ -438,7 +441,8 @@ fn test_x2_negative_exchange() {
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
 
     let params = array![300.0, -5.0, 100.0, 2.0]; // Negative x2
-    let streamflow = simulate(params.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(params.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -454,7 +458,8 @@ fn test_x2_positive_exchange() {
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
 
     let params = array![300.0, 3.0, 100.0, 2.0]; // Positive x2
-    let streamflow = simulate(params.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(params.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),

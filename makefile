@@ -5,6 +5,11 @@ static-analysis:
 	cargo fmt --manifest-path src/holmes-rs/Cargo.toml
 	cargo clippy --manifest-path src/holmes-rs/Cargo.toml --all-targets --all-features -- -D warnings
 
+test:
+	cd src/holmes-rs && pytest
+	cargo test --manifest-path src/holmes-rs/Cargo.toml
+	pytest
+
 build-rs:
 	uv run maturin develop --manifest-path src/holmes-rs/Cargo.toml --release
 

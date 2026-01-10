@@ -624,7 +624,10 @@ fn test_sce_geometric_range_convergence() {
     }
 
     // Should have converged
-    assert!(done || iterations == 50, "Should converge or reach max iterations");
+    assert!(
+        done || iterations == 50,
+        "Should converge or reach max iterations"
+    );
 }
 
 #[test]
@@ -707,7 +710,8 @@ fn test_sce_with_snow_model_calibration() {
     let temp = helpers::generate_temperature(n, 5.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = helpers::generate_elevation_layers(3, 500.0, 1500.0);
+    let elevation_layers =
+        helpers::generate_elevation_layers(3, 500.0, 1500.0);
     let median_elevation = 1000.0;
 
     // Generate observations using snow + hydro chain
@@ -805,25 +809,22 @@ fn test_sce_sqrt_transform_negative() {
     );
 
     // Should either handle gracefully or return error
-    match init_result {
-        Ok(_) => {
-            let step_result = sce.step(
-                precip.view(),
-                temp.view(),
-                pet.view(),
-                doy.view(),
-                elevation_layers.view(),
-                1000.0,
-                obs.view(),
+    if init_result.is_ok() {
+        let step_result = sce.step(
+            precip.view(),
+            temp.view(),
+            pet.view(),
+            doy.view(),
+            elevation_layers.view(),
+            1000.0,
+            obs.view(),
+        );
+        if let Ok((_, _, _, objectives)) = step_result {
+            assert!(
+                objectives.iter().all(|&o| o.is_finite()),
+                "Objectives should not be NaN"
             );
-            if let Ok((_, _, _, objectives)) = step_result {
-                assert!(
-                    objectives.iter().all(|&o| o.is_finite()),
-                    "Objectives should not be NaN"
-                );
-            }
         }
-        Err(_) => {} // Error is acceptable
     }
 }
 
@@ -863,27 +864,24 @@ fn test_sce_constant_observations() {
         obs.view(),
     );
 
-    match init_result {
-        Ok(_) => {
-            let (_, _, _, objectives) = sce
-                .step(
-                    precip.view(),
-                    temp.view(),
-                    pet.view(),
-                    doy.view(),
-                    elevation_layers.view(),
-                    1000.0,
-                    obs.view(),
-                )
-                .unwrap();
+    if init_result.is_ok() {
+        let (_, _, _, objectives) = sce
+            .step(
+                precip.view(),
+                temp.view(),
+                pet.view(),
+                doy.view(),
+                elevation_layers.view(),
+                1000.0,
+                obs.view(),
+            )
+            .unwrap();
 
-            // NSE should be handled (not NaN)
-            assert!(
-                objectives[1].is_finite(),
-                "NSE should be finite even with constant observations"
-            );
-        }
-        Err(_) => {} // Error is acceptable
+        // NSE should be handled (not NaN)
+        assert!(
+            objectives[1].is_finite(),
+            "NSE should be finite even with constant observations"
+        );
     }
 }
 
@@ -1019,8 +1017,12 @@ fn test_convergence_with_perfect_match() {
 
     // Use default GR4J params to generate observations
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
-    let obs = holmes_rs::hydro::gr4j::simulate(defaults.view(), precip.view(), pet.view())
-        .unwrap();
+    let obs = holmes_rs::hydro::gr4j::simulate(
+        defaults.view(),
+        precip.view(),
+        pet.view(),
+    )
+    .unwrap();
 
     sce.init(
         precip.view(),
@@ -1047,15 +1049,15 @@ fn test_convergence_with_perfect_match() {
             obs.view(),
         );
 
-        assert!(result.is_ok(), "Step should succeed even with perfect match");
+        assert!(
+            result.is_ok(),
+            "Step should succeed even with perfect match"
+        );
         let (d, _, _, objectives) = result.unwrap();
         done = d;
         iterations += 1;
 
         // RMSE should be very small (possibly 0) when params are close
-        assert!(
-            objectives[0].is_finite(),
-            "RMSE should be finite"
-        );
+        assert!(objectives[0].is_finite(), "RMSE should be finite");
     }
 }

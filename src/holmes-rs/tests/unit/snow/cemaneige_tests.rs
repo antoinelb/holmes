@@ -472,7 +472,10 @@ fn test_melt_conditions() {
 
     // During melt period, should see meltwater contribution
     let melt_period_sum: f64 = effective_precip.slice(ndarray::s![30..]).sum();
-    assert!(melt_period_sum > 0.0, "Should have meltwater during warm period");
+    assert!(
+        melt_period_sum > 0.0,
+        "Should have meltwater during warm period"
+    );
 }
 
 #[test]
@@ -497,7 +500,10 @@ fn test_no_melt_cold_conditions() {
 
     // All precipitation should accumulate as snow, very low effective precip
     let total_effective: f64 = effective_precip.sum();
-    assert!(total_effective < precip.sum(), "Cold conditions should accumulate snow");
+    assert!(
+        total_effective < precip.sum(),
+        "Cold conditions should accumulate snow"
+    );
 }
 
 #[test]
@@ -690,12 +696,11 @@ fn test_cemaneige_doy_zero() {
     );
 
     // Should either handle gracefully or return an error
-    match result {
-        Ok(precip) => assert!(
+    if let Ok(precip) = result {
+        assert!(
             precip[0].is_finite(),
             "DOY=0 should be handled without panic"
-        ),
-        Err(_) => {} // Error is acceptable
+        );
     }
 }
 
@@ -719,12 +724,11 @@ fn test_cemaneige_zero_qnbv() {
         1000.0,
     );
 
-    match result {
-        Ok(precip) => assert!(
+    if let Ok(precip) = result {
+        assert!(
             precip.iter().all(|&p| p.is_finite()),
             "Should handle zero qnbv without NaN/Inf"
-        ),
-        Err(_) => {} // Error is acceptable
+        );
     }
 }
 

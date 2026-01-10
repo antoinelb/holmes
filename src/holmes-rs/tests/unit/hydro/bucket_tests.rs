@@ -304,7 +304,8 @@ fn test_wet_conditions_p_greater_than_e() {
     let precip = Array1::from_elem(n, 20.0); // High precipitation
     let pet = Array1::from_elem(n, 5.0); // Low PET
 
-    let streamflow = simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(defaults.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -324,7 +325,8 @@ fn test_dry_conditions_p_less_than_e() {
     let precip = Array1::from_elem(n, 1.0); // Low precipitation
     let pet = Array1::from_elem(n, 10.0); // High PET
 
-    let streamflow = simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(defaults.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -341,17 +343,20 @@ fn test_alpha_routing_split() {
 
     // alpha = 0: all infiltration goes to slow routing
     let params_alpha_0 = array![300.0, 0.0, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_0 = simulate(params_alpha_0.view(), precip.view(), pet.view()).unwrap();
+    let flow_alpha_0 =
+        simulate(params_alpha_0.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_alpha_0.iter().all(|&q| q.is_finite() && q >= 0.0));
 
     // alpha = 1: all infiltration goes to fast routing
     let params_alpha_1 = array![300.0, 1.0, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_1 = simulate(params_alpha_1.view(), precip.view(), pet.view()).unwrap();
+    let flow_alpha_1 =
+        simulate(params_alpha_1.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_alpha_1.iter().all(|&q| q.is_finite() && q >= 0.0));
 
     // alpha = 0.5: split between both
     let params_alpha_half = array![300.0, 0.5, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_half = simulate(params_alpha_half.view(), precip.view(), pet.view()).unwrap();
+    let flow_alpha_half =
+        simulate(params_alpha_half.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_alpha_half.iter().all(|&q| q.is_finite() && q >= 0.0));
 }
 
@@ -364,12 +369,14 @@ fn test_delta_routing_delay() {
 
     // delta = 2 (minimum - short delay)
     let params_short = array![300.0, 0.5, 50.0, 2.0, 0.3, 100.0];
-    let flow_short = simulate(params_short.view(), precip.view(), pet.view()).unwrap();
+    let flow_short =
+        simulate(params_short.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_short.iter().all(|&q| q.is_finite() && q >= 0.0));
 
     // delta = 10 (maximum - long delay)
     let params_long = array![300.0, 0.5, 50.0, 10.0, 0.3, 100.0];
-    let flow_long = simulate(params_long.view(), precip.view(), pet.view()).unwrap();
+    let flow_long =
+        simulate(params_long.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_long.iter().all(|&q| q.is_finite() && q >= 0.0));
 }
 
@@ -382,7 +389,8 @@ fn test_soil_moisture_overflow() {
 
     // Small c_soil to force overflow quickly
     let params = array![50.0, 0.5, 50.0, 3.0, 0.3, 100.0];
-    let streamflow = simulate(params.view(), precip.view(), pet.view()).unwrap();
+    let streamflow =
+        simulate(params.view(), precip.view(), pet.view()).unwrap();
 
     assert!(
         streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
@@ -399,12 +407,14 @@ fn test_k_r_and_k_t_extreme() {
 
     // Low k_r and k_t (fast routing)
     let params_fast = array![300.0, 0.5, 1.0, 3.0, 0.3, 1.0];
-    let flow_fast = simulate(params_fast.view(), precip.view(), pet.view()).unwrap();
+    let flow_fast =
+        simulate(params_fast.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_fast.iter().all(|&q| q.is_finite() && q >= 0.0));
 
     // High k_r and k_t (slow routing)
     let params_slow = array![300.0, 0.5, 200.0, 3.0, 0.3, 400.0];
-    let flow_slow = simulate(params_slow.view(), precip.view(), pet.view()).unwrap();
+    let flow_slow =
+        simulate(params_slow.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_slow.iter().all(|&q| q.is_finite() && q >= 0.0));
 }
 
@@ -433,13 +443,10 @@ fn test_bucket_nan_input() {
     let pet = array![2.0, 2.0, 2.0];
 
     let result = simulate(defaults.view(), precip.view(), pet.view());
-    match result {
-        Ok(streamflow) => {
-            assert!(
-                streamflow.iter().all(|&q| q.is_finite()),
-                "NaN should not propagate"
-            );
-        }
-        Err(_) => {} // Error is acceptable
+    if let Ok(streamflow) = result {
+        assert!(
+            streamflow.iter().all(|&q| q.is_finite()),
+            "NaN should not propagate"
+        );
     }
 }
