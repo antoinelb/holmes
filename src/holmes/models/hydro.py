@@ -23,8 +23,8 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
         case "gr4j":
             param_names = gr4j.param_names
             defaults, bounds = gr4j.init()
-        case _:
-            assert_never(model)  # type: ignore
+        case _:  # pragma: no cover
+            assert_never(model)
     return [
         {
             "name": name,
@@ -51,5 +51,5 @@ def get_model(
             return bucket.simulate
         case "gr4j":
             return gr4j.simulate
-        case _:
-            assert_never(model)  # type: ignore
+        case _:  # pragma: no cover
+            assert_never(model)

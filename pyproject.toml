@@ -30,12 +30,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.9.0",
+    "httpx>=0.28.0",
+    "hypothesis>=6.0.0",
     "isort>=6.0.1",
     "maturin>=1.10.2",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
     "pytest-cov>=7.0.0",
-    "pytest-mock>=3.15.1",
     "ruff>=0.13.1",
     "ty>=0.0.1a21",
 ]
@@ -71,16 +72,12 @@ src_paths = ["holmes", "holmes_rs", "tests"]
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow running tests",
-]
 
 [tool.coverage.run]
 source = ["src/holmes"]
 omit = [
     "*/__pycache__/*",
+    "*/__main__.py",
 ]
 
 [tool.coverage.report]

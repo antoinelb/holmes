@@ -2,6 +2,7 @@
 *.py[oc]
 *.so
 .coverage
+.hypothesis
 __pycache__/
 build/
 dist/

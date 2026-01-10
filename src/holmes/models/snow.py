@@ -31,5 +31,5 @@ def get_model(
     match model:
         case "cemaneige":
             return cemaneige.simulate
-        case _:
-            assert_never(model)  # type: ignore
+        case _:  # pragma: no cover
+            assert_never(model)

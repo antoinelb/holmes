@@ -63,8 +63,8 @@ def get_config(
                     "integer": True,
                 },
             ]
-        case _:
-            assert_never(model)  # type: ignore
+        case _:  # pragma: no cover
+            assert_never(model)
 
 
 async def calibrate(
@@ -161,5 +161,5 @@ async def calibrate(
 
             return np.array(params)
 
-        case _:
-            assert_never(algorithm)  # type: ignore
+        case _:  # pragma: no cover
+            assert_never(algorithm)
