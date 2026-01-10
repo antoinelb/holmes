@@ -10,7 +10,6 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
-from starlette.testclient import TestClient
 from starlette.websockets import WebSocket
 
 from holmes.api.utils import (
@@ -362,9 +361,7 @@ class TestGetPathParams:
         request = AsyncMock(spec=Request)
         request.path_params = {"id": "123", "slug": "my-slug"}
 
-        result = await get_path_params(
-            request, args=["id"], opt_args=["slug"]
-        )
+        result = await get_path_params(request, args=["id"], opt_args=["slug"])
 
         assert result == {"id": "123", "slug": "my-slug"}
 
@@ -374,9 +371,7 @@ class TestGetPathParams:
         request = AsyncMock(spec=Request)
         request.path_params = {"id": "123"}
 
-        result = await get_path_params(
-            request, args=["id"], opt_args=["slug"]
-        )
+        result = await get_path_params(request, args=["id"], opt_args=["slug"])
 
         assert result == {"id": "123"}
 
@@ -410,17 +405,28 @@ class TestGetHeaders:
     async def test_get_headers_valid(self):
         """Valid headers returns dict."""
         request = AsyncMock(spec=Request)
-        request.headers = {"authorization": "Bearer token", "content-type": "application/json"}
+        request.headers = {
+            "authorization": "Bearer token",
+            "content-type": "application/json",
+        }
 
-        result = await get_headers(request, args=["authorization", "content-type"])
+        result = await get_headers(
+            request, args=["authorization", "content-type"]
+        )
 
-        assert result == {"authorization": "Bearer token", "content-type": "application/json"}
+        assert result == {
+            "authorization": "Bearer token",
+            "content-type": "application/json",
+        }
 
     @pytest.mark.asyncio
     async def test_get_headers_with_optional(self):
         """Optional headers are included when present."""
         request = AsyncMock(spec=Request)
-        request.headers = {"authorization": "Bearer token", "x-custom": "value"}
+        request.headers = {
+            "authorization": "Bearer token",
+            "x-custom": "value",
+        }
 
         result = await get_headers(
             request, args=["authorization"], opt_args=["x-custom"]
@@ -469,6 +475,7 @@ class TestWithJsonParams:
     @pytest.mark.asyncio
     async def test_with_json_params_list_args(self):
         """Decorator with list args extracts params."""
+
         @with_json_params(args=["name", "value"])
         async def handler(request, name=None, value=None):
             return PlainTextResponse(f"{name}:{value}")
@@ -483,6 +490,7 @@ class TestWithJsonParams:
     @pytest.mark.asyncio
     async def test_with_json_params_string_arg(self):
         """Decorator with string arg extracts single param."""
+
         @with_json_params(args="name")
         async def handler(request, name=None):
             return PlainTextResponse(f"{name}")
@@ -497,6 +505,7 @@ class TestWithJsonParams:
     @pytest.mark.asyncio
     async def test_with_json_params_string_opt_arg(self):
         """Decorator with string opt_arg extracts optional param."""
+
         @with_json_params(opt_args="optional")
         async def handler(request, optional=None):
             return PlainTextResponse(f"{optional}")
@@ -511,6 +520,7 @@ class TestWithJsonParams:
     @pytest.mark.asyncio
     async def test_with_json_params_hyphen_to_underscore(self):
         """Decorator converts hyphens to underscores in param names."""
+
         @with_json_params(args=["my-param"])
         async def handler(request, my_param=None):
             return PlainTextResponse(f"{my_param}")
@@ -525,6 +535,7 @@ class TestWithJsonParams:
     @pytest.mark.asyncio
     async def test_with_json_params_returns_error(self):
         """Decorator returns error response when params missing."""
+
         @with_json_params(args=["name"])
         async def handler(request, name=None):
             return PlainTextResponse(f"{name}")
@@ -543,6 +554,7 @@ class TestWithQueryStringParams:
     @pytest.mark.asyncio
     async def test_with_query_string_params_list_args(self):
         """Decorator with list args extracts params."""
+
         @with_query_string_params(args=["name", "value"])
         async def handler(request, name=None, value=None):
             return PlainTextResponse(f"{name}:{value}")
@@ -557,6 +569,7 @@ class TestWithQueryStringParams:
     @pytest.mark.asyncio
     async def test_with_query_string_params_string_arg(self):
         """Decorator with string arg extracts single param."""
+
         @with_query_string_params(args="name")
         async def handler(request, name=None):
             return PlainTextResponse(f"{name}")
@@ -571,6 +584,7 @@ class TestWithQueryStringParams:
     @pytest.mark.asyncio
     async def test_with_query_string_params_string_opt_arg(self):
         """Decorator with string opt_arg extracts optional param."""
+
         @with_query_string_params(opt_args="optional")
         async def handler(request, optional=None):
             return PlainTextResponse(f"{optional}")
@@ -585,6 +599,7 @@ class TestWithQueryStringParams:
     @pytest.mark.asyncio
     async def test_with_query_string_params_hyphen_to_underscore(self):
         """Decorator converts hyphens to underscores in param names."""
+
         @with_query_string_params(args=["my-param"])
         async def handler(request, my_param=None):
             return PlainTextResponse(f"{my_param}")
@@ -599,6 +614,7 @@ class TestWithQueryStringParams:
     @pytest.mark.asyncio
     async def test_with_query_string_params_returns_error(self):
         """Decorator returns error response when params missing."""
+
         @with_query_string_params(args=["name"])
         async def handler(request, name=None):
             return PlainTextResponse(f"{name}")
@@ -617,6 +633,7 @@ class TestWithPathParams:
     @pytest.mark.asyncio
     async def test_with_path_params_list_args(self):
         """Decorator with list args extracts params."""
+
         @with_path_params(args=["id", "name"])
         async def handler(request, id=None, name=None):
             return PlainTextResponse(f"{id}:{name}")
@@ -631,6 +648,7 @@ class TestWithPathParams:
     @pytest.mark.asyncio
     async def test_with_path_params_string_arg(self):
         """Decorator with string arg extracts single param."""
+
         @with_path_params(args="id")
         async def handler(request, id=None):
             return PlainTextResponse(f"{id}")
@@ -645,6 +663,7 @@ class TestWithPathParams:
     @pytest.mark.asyncio
     async def test_with_path_params_string_opt_arg(self):
         """Decorator with string opt_arg extracts optional param."""
+
         @with_path_params(opt_args="slug")
         async def handler(request, slug=None):
             return PlainTextResponse(f"{slug}")
@@ -659,6 +678,7 @@ class TestWithPathParams:
     @pytest.mark.asyncio
     async def test_with_path_params_hyphen_to_underscore(self):
         """Decorator converts hyphens to underscores in param names."""
+
         @with_path_params(args=["my-id"])
         async def handler(request, my_id=None):
             return PlainTextResponse(f"{my_id}")
@@ -673,6 +693,7 @@ class TestWithPathParams:
     @pytest.mark.asyncio
     async def test_with_path_params_returns_error(self):
         """Decorator returns error response when params missing."""
+
         @with_path_params(args=["id"])
         async def handler(request, id=None):
             return PlainTextResponse(f"{id}")
@@ -691,6 +712,7 @@ class TestWithHeaders:
     @pytest.mark.asyncio
     async def test_with_headers_list_args(self):
         """Decorator with list args extracts headers."""
+
         @with_headers(args=["authorization", "content-type"])
         async def handler(request, authorization=None, content_type=None):
             return PlainTextResponse(f"{authorization}:{content_type}")
@@ -705,6 +727,7 @@ class TestWithHeaders:
     @pytest.mark.asyncio
     async def test_with_headers_string_arg(self):
         """Decorator with string arg extracts single header."""
+
         @with_headers(args="authorization")
         async def handler(request, authorization=None):
             return PlainTextResponse(f"{authorization}")
@@ -719,6 +742,7 @@ class TestWithHeaders:
     @pytest.mark.asyncio
     async def test_with_headers_string_opt_arg(self):
         """Decorator with string opt_arg extracts optional header."""
+
         @with_headers(opt_args="x-custom")
         async def handler(request, x_custom=None):
             return PlainTextResponse(f"{x_custom}")
@@ -733,6 +757,7 @@ class TestWithHeaders:
     @pytest.mark.asyncio
     async def test_with_headers_hyphen_to_underscore(self):
         """Decorator converts hyphens to underscores in header names."""
+
         @with_headers(args=["x-api-key"])
         async def handler(request, x_api_key=None):
             return PlainTextResponse(f"{x_api_key}")
@@ -747,6 +772,7 @@ class TestWithHeaders:
     @pytest.mark.asyncio
     async def test_with_headers_returns_error(self):
         """Decorator returns error response when headers missing."""
+
         @with_headers(args=["authorization"])
         async def handler(request, authorization=None):
             return PlainTextResponse(f"{authorization}")
@@ -789,10 +815,12 @@ class TestSend:
 
         await send(ws, "test_event", {"value": 42})
 
-        ws.send_json.assert_called_once_with({
-            "type": "test_event",
-            "data": {"value": 42},
-        })
+        ws.send_json.assert_called_once_with(
+            {
+                "type": "test_event",
+                "data": {"value": 42},
+            }
+        )
 
     @pytest.mark.asyncio
     async def test_send_with_conversion(self):
@@ -801,7 +829,9 @@ class TestSend:
 
         await send(ws, "data", {"array": np.array([1, 2])})
 
-        ws.send_json.assert_called_once_with({
-            "type": "data",
-            "data": {"array": [1, 2]},
-        })
+        ws.send_json.assert_called_once_with(
+            {
+                "type": "data",
+                "data": {"array": [1, 2]},
+            }
+        )

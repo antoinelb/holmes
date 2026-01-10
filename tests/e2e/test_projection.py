@@ -48,7 +48,7 @@ class TestProjectionWorkflow:
 
         projection_page.page.wait_for_function(
             f"document.querySelector('{projection_page.HORIZON_SELECT}').options.length > 0",
-            timeout=5000
+            timeout=5000,
         )
 
         horizons = projection_page.get_horizon_options()
@@ -70,14 +70,14 @@ class TestProjectionWorkflow:
 
         projection_page.page.wait_for_function(
             f"document.querySelector('{projection_page.HORIZON_SELECT}').options.length > 0",
-            timeout=5000
+            timeout=5000,
         )
         horizons = projection_page.get_horizon_options()
         projection_page.select_horizon(horizons[0])
 
         projection_page.page.wait_for_function(
             f"document.querySelector('{projection_page.SCENARIO_SELECT}').options.length > 0",
-            timeout=5000
+            timeout=5000,
         )
         scenarios = projection_page.get_scenario_options()
         projection_page.select_scenario(scenarios[0])

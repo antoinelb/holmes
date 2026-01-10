@@ -14,7 +14,9 @@ class TestCalibrationWorkflow:
         """Get calibration page object."""
         return CalibrationPage(app_page)
 
-    def test_initial_config_loads(self, calibration_page: CalibrationPage) -> None:
+    def test_initial_config_loads(
+        self, calibration_page: CalibrationPage
+    ) -> None:
         """Config dropdowns are populated from WebSocket."""
         calibration_page.wait_for_loading_complete()
 
@@ -84,7 +86,8 @@ class TestCalibrationWorkflow:
         calibration_page.start_automatic_calibration()
         # Wait for stop button to appear (indicates running)
         calibration_page.page.wait_for_selector(
-            f"{calibration_page.STOP_CALIBRATION_BTN}:not([hidden])", timeout=5000
+            f"{calibration_page.STOP_CALIBRATION_BTN}:not([hidden])",
+            timeout=5000,
         )
 
         assert calibration_page.is_automatic_running()
@@ -92,7 +95,8 @@ class TestCalibrationWorkflow:
         calibration_page.stop_automatic_calibration()
         # Wait for start button to reappear (indicates stopped)
         calibration_page.page.wait_for_selector(
-            f"{calibration_page.START_CALIBRATION_BTN}:not([hidden])", timeout=5000
+            f"{calibration_page.START_CALIBRATION_BTN}:not([hidden])",
+            timeout=5000,
         )
 
         assert not calibration_page.is_automatic_running()
@@ -127,7 +131,9 @@ class TestCalibrationWorkflow:
             calibration_page.page.locator(calibration_page.CATCHMENT_SELECT)
         ).to_have_value("Au Saumon")
 
-    def test_date_reset_buttons(self, calibration_page: CalibrationPage) -> None:
+    def test_date_reset_buttons(
+        self, calibration_page: CalibrationPage
+    ) -> None:
         """Reset buttons restore dates to catchment bounds."""
         calibration_page.wait_for_loading_complete()
         calibration_page.select_catchment("Au Saumon")
@@ -140,11 +146,13 @@ class TestCalibrationWorkflow:
         )
 
         # Use evaluate to change value and trigger input event
-        calibration_page.page.evaluate("""
+        calibration_page.page.evaluate(
+            """
             const input = document.querySelector('#calibration__start');
             input.value = '2000-06-01';
             input.dispatchEvent(new Event('input', { bubbles: true }));
-        """)
+        """
+        )
         calibration_page.page.wait_for_timeout(100)
 
         calibration_page.reset_start_date()

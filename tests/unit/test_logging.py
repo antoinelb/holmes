@@ -3,7 +3,6 @@
 import logging
 from unittest.mock import patch
 
-import pytest
 
 from holmes.logging import RouteFilter, init_logging
 

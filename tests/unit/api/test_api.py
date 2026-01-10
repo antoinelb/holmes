@@ -27,7 +27,9 @@ class TestHTTPEndpoints:
 
     def test_version_unknown(self):
         """Version endpoint returns 500 when package not found."""
-        with patch("holmes.api.api.importlib.metadata.version") as mock_version:
+        with patch(
+            "holmes.api.api.importlib.metadata.version"
+        ) as mock_version:
             mock_version.side_effect = Exception("Package not found")
             client = TestClient(create_app())
             response = client.get("/version")

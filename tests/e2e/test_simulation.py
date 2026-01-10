@@ -32,8 +32,10 @@ class TestSimulationWorkflow:
         ).to_be_visible()
 
     def test_upload_multiple_files_for_multimodel(
-        self, simulation_page: SimulationPage, tmp_path: Path,
-        valid_calibration_json: dict
+        self,
+        simulation_page: SimulationPage,
+        tmp_path: Path,
+        valid_calibration_json: dict,
     ) -> None:
         """Can upload multiple files for multimodel simulation."""
         file1 = tmp_path / "cal1.json"
@@ -75,11 +77,13 @@ class TestSimulationWorkflow:
 
         # Change the date to a known value
         changed_value = "2000-06-01"
-        simulation_page.page.evaluate(f"""
+        simulation_page.page.evaluate(
+            f"""
             const input = document.querySelector('#simulation__start');
             input.value = '{changed_value}';
             input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-        """)
+        """
+        )
         simulation_page.page.wait_for_timeout(100)
 
         # Verify the change took effect

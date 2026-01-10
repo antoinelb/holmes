@@ -1,6 +1,5 @@
 """Unit tests for holmes.api.calibration module."""
 
-import pytest
 from starlette.testclient import TestClient
 
 from holmes.app import create_app
@@ -11,11 +10,15 @@ class TestCalibrationWebSocket:
 
     def test_get_routes(self):
         """get_routes returns WebSocket routes."""
+        from starlette.routing import WebSocketRoute
+
         from holmes.api.calibration import get_routes
 
         routes = get_routes()
         assert len(routes) == 1
-        assert routes[0].path == "/"
+        route = routes[0]
+        assert isinstance(route, WebSocketRoute)
+        assert route.path == "/"
 
     def test_websocket_config_message(self):
         """Config message returns catchments and model options."""
@@ -35,14 +38,16 @@ class TestCalibrationWebSocket:
         """Observations message returns streamflow data."""
         client = TestClient(create_app())
         with client.websocket_connect("/calibration/") as ws:
-            ws.send_json({
-                "type": "observations",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-12-31",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "observations",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "observations"
             assert "data" in response
@@ -62,19 +67,21 @@ class TestCalibrationWebSocket:
         """Manual calibration returns simulation results."""
         client = TestClient(create_app())
         with client.websocket_connect("/calibration/") as ws:
-            ws.send_json({
-                "type": "manual",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-12-31",
-                    "hydroModel": "gr4j",
-                    "snowModel": "cemaneige",
-                    "hydroParams": [100.0, 0.0, 50.0, 2.0],
-                    "objective": "nse",
-                    "transformation": "none",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "manual",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "hydroParams": [100.0, 0.0, 50.0, 2.0],
+                        "objective": "nse",
+                        "transformation": "none",
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "result"
             assert response["data"]["done"] is True
@@ -86,19 +93,21 @@ class TestCalibrationWebSocket:
         """Manual calibration works without snow model."""
         client = TestClient(create_app())
         with client.websocket_connect("/calibration/") as ws:
-            ws.send_json({
-                "type": "manual",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-12-31",
-                    "hydroModel": "bucket",
-                    "snowModel": None,
-                    "hydroParams": [100.0, 0.5, 100.0, 6.0, 0.5, 200.0],
-                    "objective": "rmse",
-                    "transformation": "sqrt",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "manual",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                        "hydroModel": "bucket",
+                        "snowModel": None,
+                        "hydroParams": [100.0, 0.5, 100.0, 6.0, 0.5, 200.0],
+                        "objective": "rmse",
+                        "transformation": "sqrt",
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "result"
             assert response["data"]["done"] is True
@@ -125,26 +134,28 @@ class TestCalibrationWebSocket:
         """Calibration start initiates calibration and returns results."""
         client = TestClient(create_app())
         with client.websocket_connect("/calibration/") as ws:
-            ws.send_json({
-                "type": "calibration_start",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-06-30",
-                    "hydroModel": "gr4j",
-                    "snowModel": "cemaneige",
-                    "objective": "nse",
-                    "transformation": "none",
-                    "algorithm": "sce",
-                    "algorithmParams": {
-                        "n_complexes": 2,
-                        "k_stop": 3,
-                        "p_convergence_threshold": 0.1,
-                        "geometric_range_threshold": 0.001,
-                        "max_evaluations": 50,
+            ws.send_json(
+                {
+                    "type": "calibration_start",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-06-30",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "objective": "nse",
+                        "transformation": "none",
+                        "algorithm": "sce",
+                        "algorithmParams": {
+                            "n_complexes": 2,
+                            "k_stop": 3,
+                            "p_convergence_threshold": 0.1,
+                            "geometric_range_threshold": 0.001,
+                            "max_evaluations": 50,
+                        },
                     },
-                },
-            })
+                }
+            )
             # Should receive at least one result message
             response = ws.receive_json()
             assert response["type"] == "result"
@@ -164,26 +175,28 @@ class TestCalibrationWebSocket:
         client = TestClient(create_app())
         with client.websocket_connect("/calibration/") as ws:
             # Start calibration
-            ws.send_json({
-                "type": "calibration_start",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-06-30",
-                    "hydroModel": "gr4j",
-                    "snowModel": "cemaneige",
-                    "objective": "nse",
-                    "transformation": "none",
-                    "algorithm": "sce",
-                    "algorithmParams": {
-                        "n_complexes": 2,
-                        "k_stop": 2,
-                        "p_convergence_threshold": 0.1,
-                        "geometric_range_threshold": 0.001,
-                        "max_evaluations": 1000,
+            ws.send_json(
+                {
+                    "type": "calibration_start",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-06-30",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "objective": "nse",
+                        "transformation": "none",
+                        "algorithm": "sce",
+                        "algorithmParams": {
+                            "n_complexes": 2,
+                            "k_stop": 2,
+                            "p_convergence_threshold": 0.1,
+                            "geometric_range_threshold": 0.001,
+                            "max_evaluations": 1000,
+                        },
                     },
-                },
-            })
+                }
+            )
             # Immediately send stop
             ws.send_json({"type": "calibration_stop"})
             # Should receive some results

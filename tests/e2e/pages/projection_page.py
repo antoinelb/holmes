@@ -73,7 +73,9 @@ class ProjectionPage(BasePage):
 
     def get_scenario_options(self) -> list[str]:
         """Get available scenario options."""
-        options = self.page.query_selector_all(f"{self.SCENARIO_SELECT} option")
+        options = self.page.query_selector_all(
+            f"{self.SCENARIO_SELECT} option"
+        )
         return [opt.get_attribute("value") or "" for opt in options]
 
     def run_projection(self) -> None:

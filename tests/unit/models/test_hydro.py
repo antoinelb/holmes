@@ -45,10 +45,13 @@ class TestGetConfig:
 
     def test_defaults_within_bounds(self):
         """Default values are within min/max bounds."""
-        for model in ["gr4j", "bucket"]:
+        for model in ("gr4j", "bucket"):
             config = hydro.get_config(model)
             for param in config:
-                assert param["min"] <= param["default"] <= param["max"]
+                min_val = float(param["min"])
+                default_val = float(param["default"])
+                max_val = float(param["max"])
+                assert min_val <= default_val <= max_val
 
 
 class TestGetModel:

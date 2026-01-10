@@ -11,11 +11,15 @@ class TestSimulationWebSocket:
 
     def test_get_routes(self):
         """get_routes returns WebSocket routes."""
+        from starlette.routing import WebSocketRoute
+
         from holmes.api.simulation import get_routes
 
         routes = get_routes()
         assert len(routes) == 1
-        assert routes[0].path == "/"
+        route = routes[0]
+        assert isinstance(route, WebSocketRoute)
+        assert route.path == "/"
 
     def test_websocket_config_message(self):
         """Config message returns date range for catchment."""
@@ -52,14 +56,16 @@ class TestSimulationWebSocket:
         """Observations message returns streamflow data."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "observations",
-                "data": {
-                    "catchment": "Au Saumon",
-                    "start": "2000-01-01",
-                    "end": "2000-12-31",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "observations",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "observations"
             assert isinstance(response["data"], list)
@@ -77,24 +83,31 @@ class TestSimulationWebSocket:
         """Simulation message returns streamflow simulation."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "simulation",
-                "data": {
-                    "config": {
-                        "start": "2000-01-01",
-                        "end": "2000-12-31",
-                        "multimodel": False,
-                    },
-                    "calibration": [
-                        {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "gr4j",
-                            "snowModel": "cemaneige",
-                            "hydroParams": {"x1": 100.0, "x2": 0.0, "x3": 50.0, "x4": 2.0},
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "2000-01-01",
+                            "end": "2000-12-31",
+                            "multimodel": False,
                         },
-                    ],
-                },
-            })
+                        "calibration": [
+                            {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "gr4j",
+                                "snowModel": "cemaneige",
+                                "hydroParams": {
+                                    "x1": 100.0,
+                                    "x2": 0.0,
+                                    "x3": 50.0,
+                                    "x4": 2.0,
+                                },
+                            },
+                        ],
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "simulation"
             assert "simulation" in response["data"]
@@ -104,24 +117,33 @@ class TestSimulationWebSocket:
         """Simulation works without snow model."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "simulation",
-                "data": {
-                    "config": {
-                        "start": "2000-01-01",
-                        "end": "2000-12-31",
-                        "multimodel": False,
-                    },
-                    "calibration": [
-                        {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "bucket",
-                            "snowModel": None,
-                            "hydroParams": {"c_soil": 100.0, "alpha": 0.5, "k_r": 100.0, "delta": 6.0, "beta": 0.5, "k_t": 200.0},
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "2000-01-01",
+                            "end": "2000-12-31",
+                            "multimodel": False,
                         },
-                    ],
-                },
-            })
+                        "calibration": [
+                            {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "bucket",
+                                "snowModel": None,
+                                "hydroParams": {
+                                    "c_soil": 100.0,
+                                    "alpha": 0.5,
+                                    "k_r": 100.0,
+                                    "delta": 6.0,
+                                    "beta": 0.5,
+                                    "k_t": 200.0,
+                                },
+                            },
+                        ],
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "simulation"
 
@@ -129,30 +151,44 @@ class TestSimulationWebSocket:
         """Simulation with multimodel averages simulations."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "simulation",
-                "data": {
-                    "config": {
-                        "start": "2000-01-01",
-                        "end": "2000-12-31",
-                        "multimodel": True,
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "2000-01-01",
+                            "end": "2000-12-31",
+                            "multimodel": True,
+                        },
+                        "calibration": [
+                            {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "gr4j",
+                                "snowModel": "cemaneige",
+                                "hydroParams": {
+                                    "x1": 100.0,
+                                    "x2": 0.0,
+                                    "x3": 50.0,
+                                    "x4": 2.0,
+                                },
+                            },
+                            {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "bucket",
+                                "snowModel": "cemaneige",
+                                "hydroParams": {
+                                    "c_soil": 100.0,
+                                    "alpha": 0.5,
+                                    "k_r": 100.0,
+                                    "delta": 6.0,
+                                    "beta": 0.5,
+                                    "k_t": 200.0,
+                                },
+                            },
+                        ],
                     },
-                    "calibration": [
-                        {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "gr4j",
-                            "snowModel": "cemaneige",
-                            "hydroParams": {"x1": 100.0, "x2": 0.0, "x3": 50.0, "x4": 2.0},
-                        },
-                        {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "bucket",
-                            "snowModel": "cemaneige",
-                            "hydroParams": {"c_soil": 100.0, "alpha": 0.5, "k_r": 100.0, "delta": 6.0, "beta": 0.5, "k_t": 200.0},
-                        },
-                    ],
-                },
-            })
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "simulation"
             # Should have multimodel result
@@ -173,35 +209,55 @@ class TestSimulationWebSocket:
         """Simulation with empty calibration list returns error."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "simulation",
-                "data": {
-                    "config": {"start": "2000-01-01", "end": "2000-12-31", "multimodel": False},
-                    "calibration": [],
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "2000-01-01",
+                            "end": "2000-12-31",
+                            "multimodel": False,
+                        },
+                        "calibration": [],
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "error"
-            assert "At least one calibration config must be provided" in response["data"]
+            assert (
+                "At least one calibration config must be provided"
+                in response["data"]
+            )
 
     def test_websocket_simulation_missing_dates(self):
         """Simulation without start/end dates returns error."""
         client = TestClient(create_app())
         with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({
-                "type": "simulation",
-                "data": {
-                    "config": {"start": None, "end": None, "multimodel": False},
-                    "calibration": [
-                        {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "gr4j",
-                            "snowModel": None,
-                            "hydroParams": {"x1": 100, "x2": 0, "x3": 50, "x4": 2},
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": None,
+                            "end": None,
+                            "multimodel": False,
                         },
-                    ],
-                },
-            })
+                        "calibration": [
+                            {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "gr4j",
+                                "snowModel": None,
+                                "hydroParams": {
+                                    "x1": 100,
+                                    "x2": 0,
+                                    "x3": 50,
+                                    "x4": 2,
+                                },
+                            },
+                        ],
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] == "error"
             assert "start" in response["data"] or "end" in response["data"]

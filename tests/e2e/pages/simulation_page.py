@@ -59,7 +59,9 @@ class SimulationPage(BasePage):
 
     def remove_calibration(self, index: int = 0) -> None:
         """Remove a calibration from the table."""
-        self.page.locator(f"{self.CALIBRATIONS_TABLE} button").nth(index).click()
+        self.page.locator(f"{self.CALIBRATIONS_TABLE} button").nth(
+            index
+        ).click()
 
     def set_date_range(self, start: str, end: str) -> None:
         """Set simulation date range."""
@@ -85,7 +87,7 @@ class SimulationPage(BasePage):
 
     def toggle_multimodel(self) -> None:
         """Toggle the multimodel checkbox."""
-        self.page.click(f"label[for='simulation__multimodel']")
+        self.page.click("label[for='simulation__multimodel']")
 
     def run_simulation(self) -> None:
         """Click the Run button."""

@@ -85,7 +85,9 @@ class TestErrorHandling:
         ).count()
         assert initial_count > 0
 
-        simulation_page.page.locator("#notifications .notification").first.click()
+        simulation_page.page.locator(
+            "#notifications .notification"
+        ).first.click()
         simulation_page.page.wait_for_timeout(500)
 
         final_count = simulation_page.page.locator(

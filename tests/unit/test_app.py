@@ -1,9 +1,8 @@
 """Unit tests for holmes.app module."""
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import pytest
 from starlette.applications import Starlette
 
 from holmes.app import create_app
@@ -43,7 +42,9 @@ class TestRunServer:
     @patch("holmes.app.uvicorn.run")
     @patch("holmes.app.init_logging")
     @patch("holmes.app.config")
-    def test_run_server_calls_uvicorn(self, mock_config, mock_init_logging, mock_uvicorn_run):
+    def test_run_server_calls_uvicorn(
+        self, mock_config, mock_init_logging, mock_uvicorn_run
+    ):
         """run_server starts uvicorn with correct parameters."""
         mock_config.DEBUG = False
         mock_config.HOST = "127.0.0.1"
@@ -67,7 +68,9 @@ class TestRunServer:
     @patch("holmes.app.uvicorn.run")
     @patch("holmes.app.init_logging")
     @patch("holmes.app.config")
-    def test_run_server_debug_mode(self, mock_config, mock_init_logging, mock_uvicorn_run):
+    def test_run_server_debug_mode(
+        self, mock_config, mock_init_logging, mock_uvicorn_run
+    ):
         """run_server uses debug log level in debug mode."""
         mock_config.DEBUG = True
         mock_config.HOST = "127.0.0.1"
@@ -88,7 +91,9 @@ class TestRunServer:
     @patch("holmes.app.uvicorn.run")
     @patch("holmes.app.init_logging")
     @patch("holmes.app.config")
-    def test_run_server_production_mode(self, mock_config, mock_init_logging, mock_uvicorn_run):
+    def test_run_server_production_mode(
+        self, mock_config, mock_init_logging, mock_uvicorn_run
+    ):
         """run_server uses info log level in production mode."""
         mock_config.DEBUG = False
         mock_config.HOST = "0.0.0.0"

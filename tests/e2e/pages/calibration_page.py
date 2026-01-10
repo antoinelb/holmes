@@ -80,10 +80,12 @@ class CalibrationPage(BasePage):
         for slider in sliders:
             number_input = slider.query_selector("input[type='number']")
             if number_input:
-                params.append({
-                    "id": number_input.get_attribute("id"),
-                    "value": float(number_input.input_value()),
-                })
+                params.append(
+                    {
+                        "id": number_input.get_attribute("id"),
+                        "value": float(number_input.input_value()),
+                    }
+                )
         return params
 
     def set_parameter(self, param_id: str, value: float) -> None:
@@ -138,10 +140,14 @@ class CalibrationPage(BasePage):
 
     def get_hydro_model_options(self) -> list[str]:
         """Get available hydro model options."""
-        options = self.page.query_selector_all(f"{self.HYDRO_MODEL_SELECT} option")
+        options = self.page.query_selector_all(
+            f"{self.HYDRO_MODEL_SELECT} option"
+        )
         return [opt.text_content() or "" for opt in options]
 
     def get_catchment_options(self) -> list[str]:
         """Get available catchment options."""
-        options = self.page.query_selector_all(f"{self.CATCHMENT_SELECT} option")
+        options = self.page.query_selector_all(
+            f"{self.CATCHMENT_SELECT} option"
+        )
         return [opt.text_content() or "" for opt in options]

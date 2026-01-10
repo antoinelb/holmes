@@ -54,7 +54,9 @@ class TestDataPersistence:
             calibration_page.page.locator(calibration_page.OBJECTIVE_SELECT)
         ).to_have_value("nse")
         expect(
-            calibration_page.page.locator(calibration_page.TRANSFORMATION_SELECT)
+            calibration_page.page.locator(
+                calibration_page.TRANSFORMATION_SELECT
+            )
         ).to_have_value("sqrt")
         expect(
             calibration_page.page.locator(calibration_page.ALGORITHM_SELECT)
@@ -73,7 +75,9 @@ class TestDataPersistence:
         calibration_page.page.wait_for_selector("header h1")
         calibration_page.wait_for_loading_complete()
 
-        expect(calibration_page.page.locator("section#calibration")).to_be_visible()
+        expect(
+            calibration_page.page.locator("section#calibration")
+        ).to_be_visible()
 
     def test_date_range_persists(
         self, calibration_page: CalibrationPage

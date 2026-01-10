@@ -1,6 +1,5 @@
 """Unit tests for holmes.api.projection module."""
 
-import pytest
 from starlette.testclient import TestClient
 
 from holmes.app import create_app
@@ -11,11 +10,15 @@ class TestProjectionWebSocket:
 
     def test_get_routes(self):
         """get_routes returns WebSocket routes."""
+        from starlette.routing import WebSocketRoute
+
         from holmes.api.projection import get_routes
 
         routes = get_routes()
         assert len(routes) == 1
-        assert routes[0].path == "/"
+        route = routes[0]
+        assert isinstance(route, WebSocketRoute)
+        assert route.path == "/"
 
     def test_websocket_config_message(self):
         """Config message returns available projections."""
@@ -46,22 +49,29 @@ class TestProjectionWebSocket:
             if len(config_response["data"]) > 0:
                 # Use first available config
                 first_config = config_response["data"][0]
-                ws.send_json({
-                    "type": "projection",
-                    "data": {
-                        "config": {
-                            "model": first_config["model"],
-                            "horizon": first_config["horizon"],
-                            "scenario": first_config["scenario"],
+                ws.send_json(
+                    {
+                        "type": "projection",
+                        "data": {
+                            "config": {
+                                "model": first_config["model"],
+                                "horizon": first_config["horizon"],
+                                "scenario": first_config["scenario"],
+                            },
+                            "calibration": {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "gr4j",
+                                "snowModel": "cemaneige",
+                                "hydroParams": {
+                                    "x1": 100.0,
+                                    "x2": 0.0,
+                                    "x3": 50.0,
+                                    "x4": 2.0,
+                                },
+                            },
                         },
-                        "calibration": {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "gr4j",
-                            "snowModel": "cemaneige",
-                            "hydroParams": {"x1": 100.0, "x2": 0.0, "x3": 50.0, "x4": 2.0},
-                        },
-                    },
-                })
+                    }
+                )
                 response = ws.receive_json()
                 assert response["type"] == "projection"
                 assert isinstance(response["data"], list)
@@ -75,22 +85,31 @@ class TestProjectionWebSocket:
 
             if len(config_response["data"]) > 0:
                 first_config = config_response["data"][0]
-                ws.send_json({
-                    "type": "projection",
-                    "data": {
-                        "config": {
-                            "model": first_config["model"],
-                            "horizon": first_config["horizon"],
-                            "scenario": first_config["scenario"],
+                ws.send_json(
+                    {
+                        "type": "projection",
+                        "data": {
+                            "config": {
+                                "model": first_config["model"],
+                                "horizon": first_config["horizon"],
+                                "scenario": first_config["scenario"],
+                            },
+                            "calibration": {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "bucket",
+                                "snowModel": None,
+                                "hydroParams": {
+                                    "c_soil": 100.0,
+                                    "alpha": 0.5,
+                                    "k_r": 100.0,
+                                    "delta": 6.0,
+                                    "beta": 0.5,
+                                    "k_t": 200.0,
+                                },
+                            },
                         },
-                        "calibration": {
-                            "catchment": "Au Saumon",
-                            "hydroModel": "bucket",
-                            "snowModel": None,
-                            "hydroParams": {"c_soil": 100.0, "alpha": 0.5, "k_r": 100.0, "delta": 6.0, "beta": 0.5, "k_t": 200.0},
-                        },
-                    },
-                })
+                    }
+                )
                 response = ws.receive_json()
                 assert response["type"] == "projection"
 

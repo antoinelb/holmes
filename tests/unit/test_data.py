@@ -24,6 +24,8 @@ class TestReadData:
 
     def test_read_data_with_warmup(self):
         """Verify warmup period calculation (3 years by default)."""
+        from datetime import date
+
         start = "2005-01-01"
         end = "2005-12-31"
         result = data.read_data("Au Saumon", start, end)
@@ -31,6 +33,7 @@ class TestReadData:
             days=365 * 3
         )
         min_date = result["date"].min()
+        assert isinstance(min_date, date)
         assert min_date <= expected_start.date()
 
     def test_read_data_custom_warmup(self):

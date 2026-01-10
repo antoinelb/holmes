@@ -130,7 +130,7 @@ def calculate_doy_median_baseline_nse(
     return 1.0 - numerator / denominator
 
 
-def get_model_defaults(model: str) -> npt.NDArray[np.float64]:
+def get_model_defaults(model: hydro.HydroModel) -> npt.NDArray[np.float64]:
     """Get default parameters for a hydro model."""
     config = hydro.get_config(model)
     return np.array([p["default"] for p in config])
