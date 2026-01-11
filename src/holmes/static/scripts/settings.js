@@ -1,5 +1,6 @@
 import { create } from "./utils/elements.js";
 import { onKey } from "./utils/listeners.js";
+import { range } from "./utils/misc.js";
 
 /*********/
 /* model */
@@ -46,6 +47,15 @@ export async function update(model, msg, dispatch) {
       const theme = model.theme === "dark" ? "light" : "dark";
       window.localStorage.setItem("holmes--settings--theme", theme);
       return { ...model, theme: theme };
+    case "Reset":
+      range(window.localStorage.length)
+        .map((i) => window.localStorage.key(i))
+        .filter((key) => key.substring(0, 6) === "holmes")
+        .forEach((key) => {
+          window.localStorage.removeItem(key);
+        });
+      window.location.reload();
+      return model;
     default:
       return model;
   }
@@ -116,6 +126,25 @@ export function initView(dispatch) {
             fct: async () =>
               await dispatch({
                 type: "ToggleTheme",
+              }),
+          },
+        ],
+      ),
+      create(
+        "button",
+        { id: "reset" },
+        [
+          create("svg", { class: "icon" }, [
+            create("use", { href: "#icon-refresh-cw" }),
+          ]),
+          create("span", {}, ["Reset all"]),
+        ],
+        [
+          {
+            event: "click",
+            fct: async () =>
+              await dispatch({
+                type: "Reset",
               }),
           },
         ],

@@ -149,6 +149,7 @@ async function initView(model, dispatch) {
   document.body.addEventListener("keydown", (event) =>
     dispatch({ type: "CheckEscape", data: event }),
   );
+  loadingView(model);
 }
 
 async function injectSvgSprite() {
@@ -194,16 +195,14 @@ function loadingView(model) {
     model.projection.loading;
   if (loading) {
     if (
-      document.querySelector("link[rel~='icon']").href !==
-      "/static/assets/icons/loading.svg"
+      !document.querySelector("link[rel~='icon']").href.endsWith("/loading.svg")
     ) {
       document.querySelector("link[rel~='icon']").href =
         "/static/assets/icons/loading.svg";
     }
   } else {
     if (
-      document.querySelector("link[rel~='icon']").href !==
-      "/static/assets/icons/favicon.svg"
+      !document.querySelector("link[rel~='icon']").href.endsWith("/favicon.svg")
     ) {
       document.querySelector("link[rel~='icon']").href =
         "/static/assets/icons/favicon.svg";

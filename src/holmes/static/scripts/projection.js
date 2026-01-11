@@ -82,8 +82,10 @@ export async function update(model, msg, dispatch, createNotification) {
             data: model.calibration.catchment,
           }),
         );
+        return { ...model, loading: true };
+      } else {
+        return model;
       }
-      return { ...model, loading: true };
     case "GotAvailableConfig":
       dispatch({ type: "UpdateConfigFields" });
       return { ...model, availableConfig: msg.data, loading: false };

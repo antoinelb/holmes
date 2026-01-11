@@ -104,8 +104,10 @@ export async function update(model, msg, dispatch, createNotification) {
             data: model.calibration[0].catchment,
           }),
         );
+        return { ...model, loading: true };
+      } else {
+        return model;
       }
-      return { ...model, loading: true };
     case "GotAvailableConfig":
       if (model.config.start === null) {
         const end = new Date(msg.data.end);
