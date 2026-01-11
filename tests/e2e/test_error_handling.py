@@ -134,11 +134,11 @@ class TestErrorHandling:
             "typeof window.onunhandledrejection === 'function'"
         )
         assert has_onerror, "window.onerror handler should be registered"
-        assert has_unhandled, "window.onunhandledrejection handler should be registered"
+        assert (
+            has_unhandled
+        ), "window.onunhandledrejection handler should be registered"
 
-    def test_app_functional_after_reload(
-        self, app_page: Page
-    ) -> None:
+    def test_app_functional_after_reload(self, app_page: Page) -> None:
         """App remains functional after page reload (WebSocket reconnects)."""
         app_page.reload()
         app_page.wait_for_selector("header h1", state="visible")

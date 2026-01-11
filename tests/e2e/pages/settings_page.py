@@ -22,7 +22,9 @@ class SettingsPage(BasePage):
         """Open the settings menu."""
         if not self.is_open():
             self.page.click(self.TOGGLE_BUTTON)
-            self.page.wait_for_selector(f"{self.SETTINGS_CONTAINER}.settings--open")
+            self.page.wait_for_selector(
+                f"{self.SETTINGS_CONTAINER}.settings--open"
+            )
 
     def close_settings(self) -> None:
         """Close the settings menu."""
@@ -57,7 +59,9 @@ class SettingsPage(BasePage):
 
     def get_version(self) -> str:
         """Get the displayed version."""
-        version_span = self.page.query_selector(f"{self.VERSION_DISPLAY} span:last-child")
+        version_span = self.page.query_selector(
+            f"{self.VERSION_DISPLAY} span:last-child"
+        )
         if version_span is None:
             return ""
         return version_span.text_content() or ""

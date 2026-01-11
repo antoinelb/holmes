@@ -134,7 +134,9 @@ class TestResetAllButton:
         expect(fresh_page.locator("section#calibration")).to_be_visible()
         expect(fresh_page.locator("section#projection")).to_be_hidden()
 
-        stored_after = fresh_page.evaluate("localStorage.getItem('holmes--page')")
+        stored_after = fresh_page.evaluate(
+            "localStorage.getItem('holmes--page')"
+        )
         assert stored_after is None
 
     def test_reset_all_clears_theme_preference(self, app_page: Page) -> None:
@@ -195,11 +197,19 @@ class TestResetAllButton:
 
     def test_reset_all_removes_only_holmes_keys(self, app_page: Page) -> None:
         """Reset all button only removes localStorage keys with 'holmes' prefix."""
-        app_page.evaluate("localStorage.setItem('other-app-key', 'should-remain')")
-        app_page.evaluate("localStorage.setItem('holmes--test', 'should-be-removed')")
+        app_page.evaluate(
+            "localStorage.setItem('other-app-key', 'should-remain')"
+        )
+        app_page.evaluate(
+            "localStorage.setItem('holmes--test', 'should-be-removed')"
+        )
 
-        stored_other = app_page.evaluate("localStorage.getItem('other-app-key')")
-        stored_holmes = app_page.evaluate("localStorage.getItem('holmes--test')")
+        stored_other = app_page.evaluate(
+            "localStorage.getItem('other-app-key')"
+        )
+        stored_holmes = app_page.evaluate(
+            "localStorage.getItem('holmes--test')"
+        )
         assert stored_other == "should-remain"
         assert stored_holmes == "should-be-removed"
 
