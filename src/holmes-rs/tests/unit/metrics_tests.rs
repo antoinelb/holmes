@@ -1,6 +1,7 @@
 use approx::assert_relative_eq;
 use holmes_rs::metrics::{
-    calculate_kge, calculate_nse, calculate_rmse, MetricsError,
+    calculate_kge, calculate_nse, calculate_rmse, validate_result,
+    MetricsError,
 };
 use ndarray::array;
 use proptest::prelude::*;
@@ -196,79 +197,318 @@ proptest! {
 }
 
 // =============================================================================
-// Anti-Fragility Tests (expected to fail with current implementation)
-// These tests document known numerical issues
+// Anti-Fragility Tests - Now enabled with proper error handling
 // =============================================================================
 
 #[test]
-#[ignore = "R5-NUM-01: NSE division by zero when observations are constant"]
 fn test_nse_constant_observations() {
     let obs = array![5.0, 5.0, 5.0, 5.0, 5.0];
     let sim = array![4.0, 5.0, 6.0, 5.0, 4.0];
-    let nse = calculate_nse(obs.view(), sim.view()).unwrap();
-    // When observations are constant, denominator is 0, causing division by zero
-    // Proper implementation should return an error or handle gracefully
-    assert!(nse.is_finite(), "NSE should handle constant observations");
+    let result = calculate_nse(obs.view(), sim.view());
+    // When observations are constant, should return ZeroVarianceNSE error
+    assert!(
+        matches!(result, Err(MetricsError::ZeroVarianceNSE)),
+        "NSE should return ZeroVarianceNSE for constant observations"
+    );
 }
 
 #[test]
-#[ignore = "R5-NUM-02: KGE NaN when observation std is zero"]
 fn test_kge_zero_std_observations() {
     let obs = array![5.0, 5.0, 5.0, 5.0, 5.0];
     let sim = array![4.0, 5.0, 6.0, 5.0, 4.0];
-    let kge = calculate_kge(obs.view(), sim.view()).unwrap();
-    // Zero std in observations causes 0/0 in correlation calculation
-    assert!(kge.is_finite(), "KGE should handle zero std observations");
+    let result = calculate_kge(obs.view(), sim.view());
+    // Zero std in observations should return ZeroVarianceKGE error
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::ZeroVarianceKGE {
+                component: "observations"
+            })
+        ),
+        "KGE should return ZeroVarianceKGE for zero std observations"
+    );
 }
 
 #[test]
-#[ignore = "R5-NUM-03: KGE NaN when simulation std is zero"]
 fn test_kge_zero_std_simulations() {
     let obs = array![4.0, 5.0, 6.0, 5.0, 4.0];
     let sim = array![5.0, 5.0, 5.0, 5.0, 5.0];
-    let kge = calculate_kge(obs.view(), sim.view()).unwrap();
-    // Zero std in simulations causes NaN in alpha = sim_std / obs_std
-    assert!(kge.is_finite(), "KGE should handle zero std simulations");
+    let result = calculate_kge(obs.view(), sim.view());
+    // Zero std in simulations should return ZeroVarianceKGE error
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::ZeroVarianceKGE {
+                component: "simulations"
+            })
+        ),
+        "KGE should return ZeroVarianceKGE for zero std simulations"
+    );
 }
 
 #[test]
-#[ignore = "R5-NUM-04: KGE infinity when observation mean is zero"]
 fn test_kge_zero_mean_observations() {
     let obs = array![-2.0, -1.0, 0.0, 1.0, 2.0];
     let sim = array![1.0, 2.0, 3.0, 4.0, 5.0];
-    let kge = calculate_kge(obs.view(), sim.view()).unwrap();
-    // Zero mean causes infinity in beta = sim_mean / obs_mean
-    assert!(kge.is_finite(), "KGE should handle zero mean observations");
+    let result = calculate_kge(obs.view(), sim.view());
+    // Zero mean should return ZeroMeanKGE error
+    assert!(
+        matches!(result, Err(MetricsError::ZeroMeanKGE)),
+        "KGE should return ZeroMeanKGE for zero mean observations"
+    );
 }
 
 #[test]
-#[ignore = "R1-ERR-01: NaN input propagates silently"]
-fn test_metrics_nan_input() {
+fn test_metrics_nan_input_observations() {
     let obs = array![1.0, f64::NAN, 3.0];
     let sim = array![1.0, 2.0, 3.0];
 
-    let rmse = calculate_rmse(obs.view(), sim.view()).unwrap();
-    assert!(rmse.is_finite(), "RMSE should reject NaN input");
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NaNInInput {
+                array_name: "observations",
+                index: 1
+            })
+        ),
+        "RMSE should reject NaN in observations"
+    );
 
-    let nse = calculate_nse(obs.view(), sim.view()).unwrap();
-    assert!(nse.is_finite(), "NSE should reject NaN input");
+    let result = calculate_nse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NaNInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "NSE should reject NaN input"
+    );
 
-    let kge = calculate_kge(obs.view(), sim.view()).unwrap();
-    assert!(kge.is_finite(), "KGE should reject NaN input");
+    let result = calculate_kge(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NaNInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "KGE should reject NaN input"
+    );
 }
 
 #[test]
-#[ignore = "R1-ERR-01: Infinity input propagates silently"]
-fn test_metrics_infinity_input() {
+fn test_metrics_nan_input_simulations() {
+    let obs = array![1.0, 2.0, 3.0];
+    let sim = array![1.0, f64::NAN, 3.0];
+
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NaNInInput {
+                array_name: "simulations",
+                index: 1
+            })
+        ),
+        "RMSE should reject NaN in simulations"
+    );
+}
+
+#[test]
+fn test_metrics_infinity_input_observations() {
     let obs = array![1.0, f64::INFINITY, 3.0];
     let sim = array![1.0, 2.0, 3.0];
 
-    let rmse = calculate_rmse(obs.view(), sim.view()).unwrap();
-    assert!(rmse.is_finite(), "RMSE should reject Infinity input");
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "RMSE should reject Infinity in observations"
+    );
 
-    let nse = calculate_nse(obs.view(), sim.view()).unwrap();
-    assert!(nse.is_finite(), "NSE should reject Infinity input");
+    let result = calculate_nse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "NSE should reject Infinity in observations"
+    );
 
-    let kge = calculate_kge(obs.view(), sim.view()).unwrap();
-    assert!(kge.is_finite(), "KGE should reject Infinity input");
+    let result = calculate_kge(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "KGE should reject Infinity in observations"
+    );
+}
+
+#[test]
+fn test_metrics_infinity_input_simulations() {
+    let obs = array![1.0, 2.0, 3.0];
+    let sim = array![1.0, f64::INFINITY, 3.0];
+
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "simulations",
+                index: 1,
+                ..
+            })
+        ),
+        "RMSE should reject Infinity in simulations"
+    );
+
+    let result = calculate_nse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "simulations",
+                ..
+            })
+        ),
+        "NSE should reject Infinity in simulations"
+    );
+
+    let result = calculate_kge(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "simulations",
+                ..
+            })
+        ),
+        "KGE should reject Infinity in simulations"
+    );
+}
+
+#[test]
+fn test_metrics_neg_infinity_input() {
+    let obs = array![1.0, f64::NEG_INFINITY, 3.0];
+    let sim = array![1.0, 2.0, 3.0];
+
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::InfinityInInput {
+                array_name: "observations",
+                ..
+            })
+        ),
+        "RMSE should reject negative infinity"
+    );
+}
+
+#[test]
+fn test_metrics_empty_arrays() {
+    let obs: ndarray::Array1<f64> = array![];
+    let sim: ndarray::Array1<f64> = array![];
+
+    let result = calculate_rmse(obs.view(), sim.view());
+    assert!(
+        matches!(result, Err(MetricsError::EmptyArrays)),
+        "RMSE should reject empty arrays"
+    );
+
+    let result = calculate_nse(obs.view(), sim.view());
+    assert!(
+        matches!(result, Err(MetricsError::EmptyArrays)),
+        "NSE should reject empty arrays"
+    );
+
+    let result = calculate_kge(obs.view(), sim.view());
+    assert!(
+        matches!(result, Err(MetricsError::EmptyArrays)),
+        "KGE should reject empty arrays"
+    );
+}
+
+// =============================================================================
+// Direct Utility Function Tests
+// =============================================================================
+
+#[test]
+fn test_validate_result_nan() {
+    let result =
+        validate_result(f64::NAN, "test context", "detail".to_string());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NumericalError {
+                context: "test context",
+                ..
+            })
+        ),
+        "Should reject NaN result"
+    );
+}
+
+#[test]
+fn test_validate_result_infinity() {
+    let result =
+        validate_result(f64::INFINITY, "test", "infinity detail".to_string());
+    assert!(
+        matches!(
+            result,
+            Err(MetricsError::NumericalError {
+                context: "test",
+                ..
+            })
+        ),
+        "Should reject Infinity result"
+    );
+}
+
+#[test]
+fn test_validate_result_neg_infinity() {
+    let result =
+        validate_result(f64::NEG_INFINITY, "neg inf test", "neg".to_string());
+    assert!(
+        matches!(result, Err(MetricsError::NumericalError { .. })),
+        "Should reject negative infinity result"
+    );
+}
+
+#[test]
+fn test_validate_result_valid() {
+    let result = validate_result(42.0, "valid test", "detail".to_string());
+    assert!(result.is_ok(), "Should accept valid finite value");
+    assert_eq!(result.unwrap(), 42.0);
+}
+
+#[test]
+fn test_validate_result_zero() {
+    let result = validate_result(0.0, "zero test", "detail".to_string());
+    assert!(result.is_ok(), "Should accept zero");
+    assert_eq!(result.unwrap(), 0.0);
+}
+
+#[test]
+fn test_validate_result_negative() {
+    let result =
+        validate_result(-100.0, "negative test", "detail".to_string());
+    assert!(result.is_ok(), "Should accept negative finite values");
+    assert_eq!(result.unwrap(), -100.0);
 }

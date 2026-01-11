@@ -7,6 +7,7 @@ These tests verify that CemaNeige snow model works correctly from Python.
 import numpy as np
 import pytest
 
+from holmes_rs import HolmesValidationError
 from holmes_rs.snow import cemaneige
 
 
@@ -201,7 +202,7 @@ class TestCemaNeigeSimulate:
         """Should raise error for wrong parameter count."""
         wrong_params = np.array([0.5, 5.0])  # Only 2 params
 
-        with pytest.raises(ValueError, match="param"):
+        with pytest.raises(HolmesValidationError, match="param"):
             cemaneige.simulate(
                 wrong_params,
                 sample_precipitation,
@@ -218,7 +219,7 @@ class TestCemaNeigeSimulate:
         defaults, _ = cemaneige.init()
         short_temp = np.array([0.0, 0.0])
 
-        with pytest.raises(ValueError, match="length"):
+        with pytest.raises(HolmesValidationError, match="length"):
             cemaneige.simulate(
                 defaults,
                 sample_precipitation,

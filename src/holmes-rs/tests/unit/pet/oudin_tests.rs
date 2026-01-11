@@ -1,5 +1,9 @@
 use crate::helpers;
 use holmes_rs::pet::oudin::simulate;
+use holmes_rs::pet::utils::{
+    validate_day_of_year, validate_latitude, validate_output,
+    validate_temperature,
+};
 use holmes_rs::pet::PetError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -109,6 +113,183 @@ fn test_oudin_length_mismatch() {
 
     let result = simulate(temp.view(), doy.view(), 45.0);
     assert!(matches!(result, Err(PetError::LengthMismatch(3, 2))));
+}
+
+#[test]
+fn test_oudin_empty_temperature() {
+    let temp: Array1<f64> = array![];
+    let doy: Array1<usize> = array![];
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::EmptyInput {
+                name: "temperature"
+            })
+        ),
+        "Should reject empty temperature array"
+    );
+}
+
+#[test]
+fn test_oudin_nan_in_temperature() {
+    let temp = array![20.0, f64::NAN, 22.0];
+    let doy = array![180_usize, 181, 182];
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::NonFiniteInput {
+                name: "temperature",
+                index: 1,
+                ..
+            })
+        ),
+        "Should reject NaN in temperature"
+    );
+}
+
+#[test]
+fn test_oudin_infinity_in_temperature() {
+    let temp = array![20.0, f64::INFINITY, 22.0];
+    let doy = array![180_usize, 181, 182];
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::NonFiniteInput {
+                name: "temperature",
+                ..
+            })
+        ),
+        "Should reject infinity in temperature"
+    );
+}
+
+#[test]
+fn test_oudin_temperature_too_low() {
+    let temp = array![20.0, -150.0, 22.0]; // -150 is below -100 min
+    let doy = array![180_usize, 181, 182];
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::TemperatureOutOfRange {
+                index: 1,
+                min: -100.0,
+                max: 100.0,
+                ..
+            })
+        ),
+        "Should reject temperature below -100°C"
+    );
+}
+
+#[test]
+fn test_oudin_temperature_too_high() {
+    let temp = array![20.0, 150.0, 22.0]; // 150 is above 100 max
+    let doy = array![180_usize, 181, 182];
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::TemperatureOutOfRange {
+                index: 1,
+                min: -100.0,
+                max: 100.0,
+                ..
+            })
+        ),
+        "Should reject temperature above 100°C"
+    );
+}
+
+#[test]
+fn test_oudin_invalid_day_of_year_zero() {
+    let temp = array![20.0, 22.0, 24.0];
+    let doy = array![180_usize, 0, 182]; // 0 is invalid
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::InvalidDayOfYear { index: 1, value: 0 })
+        ),
+        "Should reject day of year 0"
+    );
+}
+
+#[test]
+fn test_oudin_invalid_day_of_year_367() {
+    let temp = array![20.0, 22.0, 24.0];
+    let doy = array![180_usize, 367, 182]; // 367 is invalid
+
+    let result = simulate(temp.view(), doy.view(), 45.0);
+    assert!(
+        matches!(
+            result,
+            Err(PetError::InvalidDayOfYear {
+                index: 1,
+                value: 367
+            })
+        ),
+        "Should reject day of year > 366"
+    );
+}
+
+#[test]
+fn test_oudin_latitude_too_low() {
+    let temp = array![20.0];
+    let doy = array![180_usize];
+
+    let result = simulate(temp.view(), doy.view(), -95.0); // below -90
+    assert!(
+        matches!(
+            result,
+            Err(PetError::LatitudeOutOfRange {
+                min: -90.0,
+                max: 90.0,
+                ..
+            })
+        ),
+        "Should reject latitude below -90"
+    );
+}
+
+#[test]
+fn test_oudin_latitude_too_high() {
+    let temp = array![20.0];
+    let doy = array![180_usize];
+
+    let result = simulate(temp.view(), doy.view(), 95.0); // above 90
+    assert!(
+        matches!(
+            result,
+            Err(PetError::LatitudeOutOfRange {
+                min: -90.0,
+                max: 90.0,
+                ..
+            })
+        ),
+        "Should reject latitude above 90"
+    );
+}
+
+#[test]
+fn test_oudin_latitude_nan() {
+    let temp = array![20.0];
+    let doy = array![180_usize];
+
+    let result = simulate(temp.view(), doy.view(), f64::NAN);
+    assert!(
+        matches!(result, Err(PetError::LatitudeOutOfRange { .. })),
+        "Should reject NaN latitude"
+    );
 }
 
 // =============================================================================
@@ -238,4 +419,96 @@ fn test_oudin_extreme_latitude() {
             "PET at 90°N should be handled gracefully"
         );
     }
+}
+
+// =============================================================================
+// Direct Utility Function Tests
+// =============================================================================
+
+#[test]
+fn test_validate_day_of_year_empty() {
+    let doy: Array1<usize> = array![];
+    let result = validate_day_of_year(doy.view());
+    assert!(
+        matches!(
+            result,
+            Err(PetError::EmptyInput {
+                name: "day_of_year"
+            })
+        ),
+        "Should reject empty day_of_year array"
+    );
+}
+
+#[test]
+fn test_validate_output_nan() {
+    let arr = array![1.0, f64::NAN, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(
+        matches!(
+            result,
+            Err(PetError::NumericalError {
+                context: "test",
+                ..
+            })
+        ),
+        "Should reject NaN in output"
+    );
+}
+
+#[test]
+fn test_validate_output_infinity() {
+    let arr = array![1.0, f64::INFINITY, 3.0];
+    let result = validate_output(arr.view(), "test context");
+    assert!(
+        matches!(
+            result,
+            Err(PetError::NumericalError {
+                context: "test context",
+                ..
+            })
+        ),
+        "Should reject Infinity in output"
+    );
+}
+
+#[test]
+fn test_validate_output_neg_infinity() {
+    let arr = array![f64::NEG_INFINITY, 2.0, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(
+        matches!(result, Err(PetError::NumericalError { .. })),
+        "Should reject negative infinity in output"
+    );
+}
+
+#[test]
+fn test_validate_output_valid() {
+    let arr = array![1.0, 2.0, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(result.is_ok(), "Should accept valid output");
+}
+
+#[test]
+fn test_validate_temperature_valid() {
+    let temp = array![-50.0, 0.0, 50.0];
+    let result = validate_temperature(temp.view());
+    assert!(result.is_ok(), "Should accept valid temperatures");
+}
+
+#[test]
+fn test_validate_latitude_valid() {
+    assert!(validate_latitude(0.0).is_ok());
+    assert!(validate_latitude(-90.0).is_ok());
+    assert!(validate_latitude(90.0).is_ok());
+    assert!(validate_latitude(45.0).is_ok());
+}
+
+#[test]
+fn test_validate_latitude_infinity() {
+    let result = validate_latitude(f64::INFINITY);
+    assert!(
+        matches!(result, Err(PetError::LatitudeOutOfRange { .. })),
+        "Should reject Infinity latitude"
+    );
 }

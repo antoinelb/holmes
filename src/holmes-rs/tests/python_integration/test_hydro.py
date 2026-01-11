@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal
 
+from holmes_rs import HolmesValidationError
 from holmes_rs.hydro import bucket, gr4j
 
 
@@ -89,7 +90,7 @@ class TestGr4jSimulate:
         """Should raise error for wrong parameter count."""
         wrong_params = np.array([100.0, 0.5, 50.0])  # Only 3 params
 
-        with pytest.raises(ValueError, match="param"):
+        with pytest.raises(HolmesValidationError, match="param"):
             gr4j.simulate(wrong_params, sample_precipitation, sample_pet)
 
     def test_length_mismatch_error(self, sample_precipitation):
@@ -97,7 +98,7 @@ class TestGr4jSimulate:
         defaults, _ = gr4j.init()
         short_pet = np.array([2.0, 2.0])
 
-        with pytest.raises(ValueError, match="length"):
+        with pytest.raises(HolmesValidationError, match="length"):
             gr4j.simulate(defaults, sample_precipitation, short_pet)
 
     def test_custom_params(self, sample_precipitation, sample_pet):
@@ -187,7 +188,7 @@ class TestBucketSimulate:
         """Should raise error for wrong parameter count."""
         wrong_params = np.array([100.0, 0.5, 50.0, 3.0])  # Only 4 params
 
-        with pytest.raises(ValueError, match="param"):
+        with pytest.raises(HolmesValidationError, match="param"):
             bucket.simulate(wrong_params, sample_precipitation, sample_pet)
 
 

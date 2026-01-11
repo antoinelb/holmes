@@ -1,4 +1,7 @@
-use crate::hydro::utils::{check_lengths, HydroError};
+use crate::hydro::utils::{
+    check_lengths, validate_inputs_finite, validate_non_negative,
+    validate_output, validate_parameter, HydroError,
+};
 use ndarray::{array, Array1, Array2, ArrayView1, Axis, Zip};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
@@ -6,15 +9,24 @@ use pyo3::prelude::*;
 pub const param_names: &[&str] =
     &["c_soil", "alpha", "k_r", "delta", "beta", "k_t"];
 
+const BOUNDS: [(&str, f64, f64); 6] = [
+    ("c_soil", 10.0, 1000.0),
+    ("alpha", 0.0, 1.0),
+    ("k_r", 1.0, 200.0),
+    ("delta", 2.0, 10.0),
+    ("beta", 0.0, 1.0),
+    ("k_t", 1.0, 400.0),
+];
+
 pub fn init() -> (Array1<f64>, Array2<f64>) {
     // corresponds to c_soil, alpha, k_r, delta, beta, k_t
     let bounds = array![
-        [10.0, 1000.0],
-        [0.0, 1.0],
-        [1.0, 200.0],
-        [2.0, 10.0],
-        [0.0, 1.0],
-        [1.0, 400.0]
+        [BOUNDS[0].1, BOUNDS[0].2],
+        [BOUNDS[1].1, BOUNDS[1].2],
+        [BOUNDS[2].1, BOUNDS[2].2],
+        [BOUNDS[3].1, BOUNDS[3].2],
+        [BOUNDS[4].1, BOUNDS[4].2],
+        [BOUNDS[5].1, BOUNDS[5].2],
     ];
     let default_values = bounds.sum_axis(Axis(1)) / 2.0;
     (default_values, bounds)
@@ -29,7 +41,19 @@ pub fn simulate(
         .as_slice()
         .and_then(|s| s.try_into().ok())
         .ok_or_else(|| HydroError::ParamsMismatch(6, params.len()))?;
+
+    for (i, &param_value) in
+        [c_soil, alpha, k_r, delta, beta, k_t].iter().enumerate()
+    {
+        let (name, lower, upper) = BOUNDS[i];
+        validate_parameter(param_value, name, lower, upper)?;
+    }
+
     check_lengths(precipitation, pet)?;
+    validate_inputs_finite(precipitation, "precipitation")?;
+    validate_inputs_finite(pet, "pet")?;
+    validate_non_negative(precipitation, "precipitation")?;
+    validate_non_negative(pet, "pet")?;
 
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
@@ -45,7 +69,11 @@ pub fn simulate(
             );
         });
 
-    Ok(Array1::from_vec(streamflow))
+    let result = Array1::from_vec(streamflow);
+
+    validate_output(result.view(), "Bucket simulation")?;
+
+    Ok(result)
 }
 
 fn initialize_state(

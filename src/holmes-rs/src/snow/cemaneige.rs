@@ -2,14 +2,27 @@ use ndarray::{array, Array1, Array2, ArrayView1, Zip};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 
-use crate::snow::utils::{check_lengths, SnowError};
+use crate::snow::utils::{
+    check_lengths, validate_day_of_year, validate_inputs_finite,
+    validate_non_negative, validate_output, validate_parameter,
+    validate_temperature, SnowError,
+};
 
 pub const param_names: &[&str] = &["ctg", "kf", "qnbv"];
+
+const BOUNDS: [(&str, f64, f64); 3] =
+    [("ctg", 0.0, 1.0), ("kf", 0.0, 20.0), ("qnbv", 50.0, 800.0)];
+
+const TOLERANCE: f64 = 1e-10;
 
 pub fn init() -> (Array1<f64>, Array2<f64>) {
     // corresponds to ctg, kf, qnbv
     let default_values = array![0.25, 3.74, 350.0];
-    let bounds = array![[0.0, 1.0], [0.0, 20.0], [50.0, 800.0]];
+    let bounds = array![
+        [BOUNDS[0].1, BOUNDS[0].2],
+        [BOUNDS[1].1, BOUNDS[1].2],
+        [BOUNDS[2].1, BOUNDS[2].2]
+    ];
     (default_values, bounds)
 }
 
@@ -25,7 +38,18 @@ pub fn simulate(
         .as_slice()
         .and_then(|s| s.try_into().ok())
         .ok_or_else(|| SnowError::ParamsMismatch(3, params.len()))?;
+
+    for (i, &param_value) in [ctg, kf, qnbv].iter().enumerate() {
+        let (name, lower, upper) = BOUNDS[i];
+        validate_parameter(param_value, name, lower, upper)?;
+    }
+
     check_lengths(precipitation, temperature, day_of_year)?;
+    validate_inputs_finite(precipitation, "precipitation")?;
+    validate_non_negative(precipitation, "precipitation")?;
+    validate_temperature(temperature)?;
+    validate_day_of_year(day_of_year)?;
+    validate_inputs_finite(elevation_layers, "elevation_layers")?;
 
     let beta = 0.0;
     let vmin = 0.1;
@@ -44,6 +68,13 @@ pub fn simulate(
         .map(|&z| (beta * (z - median_elevation)).exp())
         .collect();
     let normalization: f64 = precip_weights.iter().sum();
+
+    if normalization.abs() < TOLERANCE {
+        return Err(SnowError::NumericalError {
+            context: "CemaNeige precipitation normalization",
+            detail: "sum of precipitation weights is zero".to_string(),
+        });
+    }
 
     let mut effective_precipitation: Vec<f64> = vec![0.0; n_timesteps];
 
@@ -109,7 +140,11 @@ pub fn simulate(
             effective_precipitation[t] = total_liquid + total_melt;
         });
 
-    Ok(Array1::from_vec(effective_precipitation))
+    let result = Array1::from_vec(effective_precipitation);
+
+    validate_output(result.view(), "CemaNeige simulation")?;
+
+    Ok(result)
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]

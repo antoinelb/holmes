@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal
 
-from holmes_rs import metrics
+from holmes_rs import HolmesValidationError, metrics
 
 
 class TestCalculateRmse:
@@ -58,7 +58,7 @@ class TestCalculateRmse:
         obs = np.array([1.0, 2.0, 3.0])
         sim = np.array([1.0, 2.0])
 
-        with pytest.raises(ValueError, match="same length"):
+        with pytest.raises(HolmesValidationError, match="same length"):
             metrics.calculate_rmse(obs, sim)
 
 
@@ -108,7 +108,7 @@ class TestCalculateNse:
         obs = np.array([1.0, 2.0, 3.0])
         sim = np.array([1.0, 2.0])
 
-        with pytest.raises(ValueError, match="same length"):
+        with pytest.raises(HolmesValidationError, match="same length"):
             metrics.calculate_nse(obs, sim)
 
 
@@ -150,7 +150,7 @@ class TestCalculateKge:
         obs = np.array([1.0, 2.0, 3.0])
         sim = np.array([1.0, 2.0])
 
-        with pytest.raises(ValueError, match="same length"):
+        with pytest.raises(HolmesValidationError, match="same length"):
             metrics.calculate_kge(obs, sim)
 
 

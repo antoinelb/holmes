@@ -1,5 +1,6 @@
 use crate::helpers;
 use holmes_rs::hydro::gr4j::{init, param_names, simulate};
+use holmes_rs::hydro::utils::validate_output;
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -291,47 +292,73 @@ proptest! {
 }
 
 // =============================================================================
-// Anti-Fragility Tests (expected to fail with current implementation)
+// Anti-Fragility Tests - Input Validation
 // =============================================================================
 
 #[test]
-#[ignore = "R2-VAL-01: No parameter validation outside bounds"]
 fn test_gr4j_params_outside_bounds() {
     // Parameters outside valid bounds
     let params = array![5000.0, 10.0, 1.0, 0.1]; // All outside bounds
     let precip = array![10.0, 5.0, 0.0];
     let pet = array![2.0, 2.0, 2.0];
 
-    // Should return an error, but currently runs anyway
     let result = simulate(params.view(), precip.view(), pet.view());
-    assert!(result.is_err(), "Should reject out-of-bounds parameters");
+    assert!(
+        matches!(result, Err(HydroError::ParameterOutOfBounds { .. })),
+        "Should reject out-of-bounds parameters"
+    );
 }
 
 #[test]
-#[ignore = "R2-VAL-02: No validation for negative precipitation"]
 fn test_gr4j_negative_precipitation() {
     let (defaults, _) = init();
     let precip = array![10.0, -5.0, 0.0]; // Negative precipitation (physically invalid)
     let pet = array![2.0, 2.0, 2.0];
 
     let result = simulate(defaults.view(), precip.view(), pet.view());
-    assert!(result.is_err(), "Should reject negative precipitation");
+    assert!(
+        matches!(result, Err(HydroError::NegativeInput { .. })),
+        "Should reject negative precipitation"
+    );
 }
 
 #[test]
-#[ignore = "R1-ERR-04: NaN propagates through simulation"]
 fn test_gr4j_nan_in_precipitation() {
     let (defaults, _) = init();
     let precip = array![10.0, f64::NAN, 0.0];
     let pet = array![2.0, 2.0, 2.0];
 
     let result = simulate(defaults.view(), precip.view(), pet.view());
-    if let Ok(streamflow) = result {
-        assert!(
-            streamflow.iter().all(|&q| q.is_finite()),
-            "NaN should not propagate"
-        );
-    }
+    assert!(
+        matches!(result, Err(HydroError::NonFiniteInput { .. })),
+        "Should reject NaN in precipitation"
+    );
+}
+
+#[test]
+fn test_gr4j_infinity_in_pet() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, f64::INFINITY, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NonFiniteInput { .. })),
+        "Should reject infinity in PET"
+    );
+}
+
+#[test]
+fn test_gr4j_empty_arrays() {
+    let (defaults, _) = init();
+    let precip: Array1<f64> = array![];
+    let pet: Array1<f64> = array![];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::EmptyInput { .. })),
+        "Should reject empty input arrays"
+    );
 }
 
 // =============================================================================
@@ -481,4 +508,47 @@ fn test_gr4j_extreme_x1() {
         streamflow.iter().all(|&q| q.is_finite()),
         "Should handle extreme x1 without numerical issues"
     );
+}
+
+// =============================================================================
+// Direct Utility Function Tests
+// =============================================================================
+
+#[test]
+fn test_validate_output_nan() {
+    let arr = array![1.0, f64::NAN, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(
+        matches!(
+            result,
+            Err(HydroError::NumericalError {
+                context: "test",
+                ..
+            })
+        ),
+        "Should reject NaN in output"
+    );
+}
+
+#[test]
+fn test_validate_output_infinity() {
+    let arr = array![1.0, f64::INFINITY, 3.0];
+    let result = validate_output(arr.view(), "test context");
+    assert!(
+        matches!(
+            result,
+            Err(HydroError::NumericalError {
+                context: "test context",
+                ..
+            })
+        ),
+        "Should reject Infinity in output"
+    );
+}
+
+#[test]
+fn test_validate_output_valid() {
+    let arr = array![1.0, 2.0, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(result.is_ok(), "Should accept valid output");
 }

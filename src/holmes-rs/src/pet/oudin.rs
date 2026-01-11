@@ -1,4 +1,7 @@
-use crate::pet::utils::{check_lengths, PetError};
+use crate::pet::utils::{
+    check_lengths, validate_day_of_year, validate_latitude, validate_output,
+    validate_temperature, PetError,
+};
 use ndarray::{Array1, ArrayView1, Zip};
 use numpy::{PyArray1, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
@@ -10,6 +13,9 @@ pub fn simulate(
     latitude: f64,
 ) -> Result<Array1<f64>, PetError> {
     check_lengths(temperature, day_of_year)?;
+    validate_temperature(temperature)?;
+    validate_day_of_year(day_of_year)?;
+    validate_latitude(latitude)?;
 
     let gsc = 0.082; // solar constant (MJ m^-2 min^-1)
     let rho = 1000.; // water density (kg/m^3)
@@ -33,7 +39,11 @@ pub fn simulate(
         },
     );
 
-    Ok(Array1::from_vec(pet))
+    let result = Array1::from_vec(pet);
+
+    validate_output(result.view(), "Oudin PET")?;
+
+    Ok(result)
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]

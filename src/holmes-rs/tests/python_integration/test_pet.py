@@ -7,6 +7,7 @@ These tests verify that Oudin PET calculation works correctly from Python.
 import numpy as np
 import pytest
 
+from holmes_rs import HolmesValidationError
 from holmes_rs.pet import oudin
 
 
@@ -118,7 +119,7 @@ class TestOudinSimulate:
         temp = np.array([15.0, 16.0, 17.0])
         doy = np.array([1, 2], dtype=np.uint64)
 
-        with pytest.raises(ValueError, match="length"):
+        with pytest.raises(HolmesValidationError, match="length"):
             oudin.simulate(temp, doy, 45.0)
 
     def test_cold_temperature(self):

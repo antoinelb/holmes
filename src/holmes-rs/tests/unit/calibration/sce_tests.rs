@@ -1,7 +1,7 @@
 use crate::helpers;
-use holmes_rs::calibration::sce::Sce;
+use holmes_rs::calibration::sce::{sort_population, Sce};
 use holmes_rs::calibration::utils::Objective;
-use ndarray::{array, Array1};
+use ndarray::{array, Array1, Array2};
 use proptest::prelude::*;
 use std::str::FromStr;
 
@@ -1060,4 +1060,166 @@ fn test_convergence_with_perfect_match() {
         // RMSE should be very small (possibly 0) when params are close
         assert!(objectives[0].is_finite(), "RMSE should be finite");
     }
+}
+
+// =============================================================================
+// sort_population Unit Tests
+// =============================================================================
+
+#[test]
+fn test_sort_population_nan_at_end_minimization() {
+    // Test that NaN values are sorted to the end in minimization mode
+    let mut population =
+        Array2::from_shape_vec((3, 2), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+            .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (3, 1),
+        vec![
+            f64::NAN, // row 0: NaN should go to end
+            1.0,      // row 1: should be first (smallest)
+            2.0,      // row 2: should be second
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    // After sorting: row 1 (1.0), row 2 (2.0), row 0 (NaN)
+    assert_eq!(objectives[[0, 0]], 1.0);
+    assert_eq!(objectives[[1, 0]], 2.0);
+    assert!(objectives[[2, 0]].is_nan());
+}
+
+#[test]
+fn test_sort_population_nan_at_end_maximization() {
+    // Test that NaN values are sorted to the end in maximization mode
+    let mut population =
+        Array2::from_shape_vec((3, 2), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+            .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (3, 1),
+        vec![
+            f64::NAN, // row 0: NaN should go to end
+            2.0,      // row 1: should be second (descending)
+            1.0,      // row 2: should be last among finite (smallest)
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, false);
+
+    // After sorting in maximization (descending): row 1 (2.0), row 2 (1.0), row 0 (NaN)
+    assert_eq!(objectives[[0, 0]], 2.0);
+    assert_eq!(objectives[[1, 0]], 1.0);
+    assert!(objectives[[2, 0]].is_nan());
+}
+
+#[test]
+fn test_sort_population_multiple_nans() {
+    // Test sorting when multiple NaN values exist - covers (false, false) branch
+    let mut population = Array2::from_shape_vec(
+        (4, 2),
+        vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+    )
+    .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (4, 1),
+        vec![
+            f64::NAN, // row 0
+            1.0,      // row 1: finite, should be first
+            f64::NAN, // row 2
+            2.0,      // row 3: finite, should be second
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    // After sorting: finite values first (1.0, 2.0), then NaNs
+    assert_eq!(objectives[[0, 0]], 1.0);
+    assert_eq!(objectives[[1, 0]], 2.0);
+    assert!(objectives[[2, 0]].is_nan());
+    assert!(objectives[[3, 0]].is_nan());
+}
+
+#[test]
+fn test_sort_population_infinity_values() {
+    // Test sorting with infinity values - they should also go to end
+    let mut population = Array2::from_shape_vec(
+        (4, 2),
+        vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+    )
+    .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (4, 1),
+        vec![
+            f64::INFINITY,     // row 0: infinity should go to end
+            1.0,               // row 1
+            f64::NEG_INFINITY, // row 2: neg infinity also not finite
+            2.0,               // row 3
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    // After sorting: finite values first, then infinities
+    assert_eq!(objectives[[0, 0]], 1.0);
+    assert_eq!(objectives[[1, 0]], 2.0);
+    // Last two are infinities (order between them is Equal, so preserves original relative order)
+    assert!(!objectives[[2, 0]].is_finite());
+    assert!(!objectives[[3, 0]].is_finite());
+}
+
+#[test]
+fn test_sort_population_all_nans() {
+    // Test sorting when all values are NaN - covers (false, false) comparison branch
+    let mut population =
+        Array2::from_shape_vec((3, 2), vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+            .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (3, 1),
+        vec![
+            f64::NAN, // row 0
+            f64::NAN, // row 1
+            f64::NAN, // row 2
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    // All NaN values should maintain stable order (Equal comparison)
+    assert!(objectives[[0, 0]].is_nan());
+    assert!(objectives[[1, 0]].is_nan());
+    assert!(objectives[[2, 0]].is_nan());
+}
+
+#[test]
+fn test_sort_population_two_nans_at_start() {
+    // Force comparison between two NaN values by having them at positions
+    // that will be compared during sorting
+    let mut population = Array2::from_shape_vec(
+        (4, 2),
+        vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+    )
+    .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (4, 1),
+        vec![
+            f64::NAN, // row 0: first NaN
+            f64::NAN, // row 1: second NaN - will compare with first
+            3.0,      // row 2: finite
+            1.0,      // row 3: finite, smallest
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    // After sorting: 1.0, 3.0, NaN, NaN
+    assert_eq!(objectives[[0, 0]], 1.0);
+    assert_eq!(objectives[[1, 0]], 3.0);
+    assert!(objectives[[2, 0]].is_nan());
+    assert!(objectives[[3, 0]].is_nan());
 }

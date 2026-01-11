@@ -1,6 +1,9 @@
 use crate::helpers;
 use approx::assert_relative_eq;
 use holmes_rs::snow::cemaneige::{init, param_names, simulate};
+use holmes_rs::snow::utils::{
+    validate_day_of_year, validate_output, validate_temperature,
+};
 use holmes_rs::snow::SnowError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -290,6 +293,381 @@ fn test_length_mismatch() {
         1000.0,
     );
     assert!(matches!(result, Err(SnowError::LengthMismatch(3, 2, 3))));
+}
+
+#[test]
+fn test_cemaneige_empty_precipitation() {
+    let (defaults, _) = init();
+    let precip: Array1<f64> = array![];
+    let temp: Array1<f64> = array![];
+    let doy: Array1<usize> = array![];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::EmptyInput {
+                name: "precipitation"
+            })
+        ),
+        "Should reject empty precipitation array"
+    );
+}
+
+#[test]
+fn test_cemaneige_negative_precipitation() {
+    let (defaults, _) = init();
+    let precip = array![10.0, -5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::NegativeInput {
+                name: "precipitation",
+                index: 1,
+                ..
+            })
+        ),
+        "Should reject negative precipitation"
+    );
+}
+
+#[test]
+fn test_cemaneige_nan_in_precipitation() {
+    let (defaults, _) = init();
+    let precip = array![10.0, f64::NAN, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::NonFiniteInput {
+                name: "precipitation",
+                ..
+            })
+        ),
+        "Should reject NaN in precipitation"
+    );
+}
+
+#[test]
+fn test_cemaneige_nan_in_temperature() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, f64::NAN, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::NonFiniteInput {
+                name: "temperature",
+                ..
+            })
+        ),
+        "Should reject NaN in temperature"
+    );
+}
+
+#[test]
+fn test_cemaneige_temperature_too_low() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, -150.0, 0.0]; // -150 is below -100 min
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::TemperatureOutOfRange {
+                index: 1,
+                min: -100.0,
+                max: 100.0,
+                ..
+            })
+        ),
+        "Should reject temperature below -100°C"
+    );
+}
+
+#[test]
+fn test_cemaneige_temperature_too_high() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 150.0, 0.0]; // 150 is above 100 max
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::TemperatureOutOfRange {
+                index: 1,
+                min: -100.0,
+                max: 100.0,
+                ..
+            })
+        ),
+        "Should reject temperature above 100°C"
+    );
+}
+
+#[test]
+fn test_cemaneige_invalid_day_of_year_zero() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 0, 3]; // 0 is invalid
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::InvalidDayOfYear { index: 1, value: 0 })
+        ),
+        "Should reject day of year 0"
+    );
+}
+
+#[test]
+fn test_cemaneige_invalid_day_of_year_367() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 367, 3]; // 367 is invalid
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::InvalidDayOfYear {
+                index: 1,
+                value: 367
+            })
+        ),
+        "Should reject day of year > 366"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_ctg_out_of_bounds() {
+    let params = array![1.5, 5.0, 350.0]; // ctg = 1.5 > 1.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "ctg", .. })
+        ),
+        "Should reject ctg > 1.0"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_kf_out_of_bounds() {
+    let params = array![0.5, 25.0, 350.0]; // kf = 25.0 > 20.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "kf", .. })
+        ),
+        "Should reject kf > 20.0"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_qnbv_out_of_bounds() {
+    let params = array![0.5, 5.0, 900.0]; // qnbv = 900.0 > 800.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "qnbv", .. })
+        ),
+        "Should reject qnbv > 800.0"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_ctg_negative() {
+    let params = array![-0.1, 5.0, 350.0]; // ctg = -0.1 < 0.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "ctg", .. })
+        ),
+        "Should reject ctg < 0.0"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_kf_negative() {
+    let params = array![0.5, -1.0, 350.0]; // kf = -1.0 < 0.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "kf", .. })
+        ),
+        "Should reject kf < 0.0"
+    );
+}
+
+#[test]
+fn test_cemaneige_param_qnbv_too_low() {
+    let params = array![0.5, 5.0, 40.0]; // qnbv = 40.0 < 50.0
+    let precip = array![10.0, 5.0, 0.0];
+    let temp = array![0.0, 0.0, 0.0];
+    let doy = array![1_usize, 2, 3];
+    let elevation_layers = array![1000.0];
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    );
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::ParameterOutOfBounds { name: "qnbv", .. })
+        ),
+        "Should reject qnbv < 50.0"
+    );
 }
 
 // =============================================================================
@@ -755,4 +1133,69 @@ fn test_cemaneige_empty_layers() {
         result.is_err() || result.unwrap().iter().all(|&p| p.is_finite()),
         "Empty elevation layers should be handled"
     );
+}
+
+// =============================================================================
+// Direct Utility Function Tests
+// =============================================================================
+
+#[test]
+fn test_validate_day_of_year_empty() {
+    let doy: Array1<usize> = array![];
+    let result = validate_day_of_year(doy.view());
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::EmptyInput {
+                name: "day_of_year"
+            })
+        ),
+        "Should reject empty day_of_year array"
+    );
+}
+
+#[test]
+fn test_validate_output_nan() {
+    let arr = array![1.0, f64::NAN, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::NumericalError {
+                context: "test",
+                ..
+            })
+        ),
+        "Should reject NaN in output"
+    );
+}
+
+#[test]
+fn test_validate_output_infinity() {
+    let arr = array![1.0, f64::INFINITY, 3.0];
+    let result = validate_output(arr.view(), "test context");
+    assert!(
+        matches!(
+            result,
+            Err(SnowError::NumericalError {
+                context: "test context",
+                ..
+            })
+        ),
+        "Should reject Infinity in output"
+    );
+}
+
+#[test]
+fn test_validate_output_valid() {
+    let arr = array![1.0, 2.0, 3.0];
+    let result = validate_output(arr.view(), "test");
+    assert!(result.is_ok(), "Should accept valid output");
+}
+
+#[test]
+fn test_validate_temperature_valid() {
+    let temp = array![-50.0, 0.0, 50.0];
+    let result = validate_temperature(temp.view());
+    assert!(result.is_ok(), "Should accept valid temperatures");
 }

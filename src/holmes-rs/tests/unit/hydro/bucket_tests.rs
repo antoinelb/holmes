@@ -436,17 +436,54 @@ fn test_bucket_small_c_soil() {
 }
 
 #[test]
-#[ignore = "R1-ERR-04: NaN propagates through simulation"]
 fn test_bucket_nan_input() {
     let (defaults, _) = init();
     let precip = array![10.0, f64::NAN, 0.0];
     let pet = array![2.0, 2.0, 2.0];
 
     let result = simulate(defaults.view(), precip.view(), pet.view());
-    if let Ok(streamflow) = result {
-        assert!(
-            streamflow.iter().all(|&q| q.is_finite()),
-            "NaN should not propagate"
-        );
-    }
+    assert!(
+        matches!(result, Err(HydroError::NonFiniteInput { .. })),
+        "Should reject NaN in precipitation"
+    );
+}
+
+#[test]
+fn test_bucket_negative_precipitation() {
+    let (defaults, _) = init();
+    let precip = array![10.0, -5.0, 0.0];
+    let pet = array![2.0, 2.0, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NegativeInput { .. })),
+        "Should reject negative precipitation"
+    );
+}
+
+#[test]
+fn test_bucket_empty_arrays() {
+    let (defaults, _) = init();
+    let precip: Array1<f64> = array![];
+    let pet: Array1<f64> = array![];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::EmptyInput { .. })),
+        "Should reject empty input arrays"
+    );
+}
+
+#[test]
+fn test_bucket_params_outside_bounds() {
+    // Parameters outside valid bounds
+    let params = array![5000.0, 2.0, 0.0, 0.5, 2.0, 0.0]; // All outside bounds
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, 2.0, 2.0];
+
+    let result = simulate(params.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::ParameterOutOfBounds { .. })),
+        "Should reject out-of-bounds parameters"
+    );
 }
