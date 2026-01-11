@@ -6,7 +6,6 @@ These tests verify that GR4J and Bucket models work correctly from Python.
 
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal
 
 from holmes_rs import HolmesValidationError
 from holmes_rs.hydro import bucket, gr4j
@@ -164,7 +163,9 @@ class TestBucketSimulate:
         """Output should have same length as input."""
         defaults, _ = bucket.init()
 
-        streamflow = bucket.simulate(defaults, sample_precipitation, sample_pet)
+        streamflow = bucket.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
 
         assert len(streamflow) == len(sample_precipitation)
 
@@ -172,7 +173,9 @@ class TestBucketSimulate:
         """All streamflow values should be non-negative."""
         defaults, _ = bucket.init()
 
-        streamflow = bucket.simulate(defaults, sample_precipitation, sample_pet)
+        streamflow = bucket.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
 
         assert np.all(streamflow >= 0)
 
@@ -180,7 +183,9 @@ class TestBucketSimulate:
         """All output values should be finite."""
         defaults, _ = bucket.init()
 
-        streamflow = bucket.simulate(defaults, sample_precipitation, sample_pet)
+        streamflow = bucket.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
 
         assert np.all(np.isfinite(streamflow))
 
@@ -219,7 +224,9 @@ class TestHydroModuleIntegration:
         assert hasattr(hydro, "gr4j")
         assert hasattr(hydro, "bucket")
 
-    def test_both_models_produce_output(self, sample_precipitation, sample_pet):
+    def test_both_models_produce_output(
+        self, sample_precipitation, sample_pet
+    ):
         """Both models should produce valid streamflow."""
         gr4j_defaults, _ = gr4j.init()
         bucket_defaults, _ = bucket.init()

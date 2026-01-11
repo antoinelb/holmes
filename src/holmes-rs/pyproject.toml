@@ -2,7 +2,11 @@
 name = "holmes-rs"
 version = "0.2.0"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada. These are the models written in rust."
-requires-python = ">=3.11"
+readme = "README.md"
+authors = [
+  {name = "Antoine Lefebvre-Brossard", email = "antoinelb@proton.me"}
+]
+license = {text = "MIT"}
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Education",
@@ -13,6 +17,11 @@ classifiers = [
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering :: Hydrology",
 ]
+requires-python = ">=3.11"
+
+[project.urls]
+Homepage = "https://github.com/antoinelb/holmes"
+Repository = "https://github.com/antoinelb/holmes"
 
 [build-system]
 requires = ["maturin>=1.10.2"]
