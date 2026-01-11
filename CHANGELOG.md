@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-rs/CHANGELOG.md).
 
-## [Unreleased]
+## [3.3.5] - 2026-01-11
 
 ### Removed
 - WebSocket ping/pong heartbeat functionality from frontend and backend (unnecessary for application)
