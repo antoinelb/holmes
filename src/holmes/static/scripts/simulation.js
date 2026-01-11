@@ -190,7 +190,7 @@ export async function update(model, msg, dispatch, createNotification) {
         );
         if (model.calibration.length === 0) {
           dispatch({ type: "GetAvailableConfig" });
-        } else {
+        } else if (model.availableConfig !== null) {
           dispatch({ type: "GetObservations" });
           if (model.config.start === null) {
             const end = new Date(model.availableConfig.end);

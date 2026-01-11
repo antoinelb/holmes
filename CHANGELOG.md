@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-rs/CHANGELOG.md).
 
+## [Unreleased]
+
+### Added
+- Labels for manual calibration parameter sliders showing parameter names
+
+### Changed
+- Manual calibration settings layout now uses CSS grid for better alignment
+
+### Fixed
+- Race condition in simulation page when navigating before configuration data is loaded
+
 ## [3.3.5] - 2026-01-11
 
 ### Removed

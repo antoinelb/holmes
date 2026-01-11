@@ -950,6 +950,13 @@ function manualCalibrationSettingsView(model) {
       clear(div);
       hydro.params.forEach((param) => {
         div.appendChild(
+          create(
+            "label",
+            { for: `calibration__manual-config__${param.name}` },
+            [param.name],
+          ),
+        );
+        div.appendChild(
           createSlider(
             `calibration__manual-config__${param.name}`,
             param.min,
