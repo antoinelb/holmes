@@ -4,7 +4,7 @@ version = "3.3.3"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
 authors = [
-  {name = "Antoine Lefebvre-Brossard", email = "antoinelb@protonmail.com"}
+  {name = "Antoine Lefebvre-Brossard", email = "antoinelb@proton.me"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -19,7 +19,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "holmes-rs>=0.2.0",
+    "holmes-rs>=0.2.1",
     "numpy>=2.4.0",
     "polars>=1.36.0",
     "starlette>=0.50.0",
@@ -91,3 +91,4 @@ exclude_lines = [
 ]
 precision = 2
 show_missing = true
+

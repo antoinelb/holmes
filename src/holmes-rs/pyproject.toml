@@ -1,6 +1,6 @@
 [project]
 name = "holmes-rs"
-version = "0.2.0"
+version = "0.2.1"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada. These are the models written in rust."
 readme = "README.md"
 authors = [
