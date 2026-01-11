@@ -52,9 +52,6 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
     logger.info(f"Websocket {msg_type} message")
 
     match msg_type:
-        case "ping":
-            # Respond to ping with pong for heartbeat
-            await send(ws, "pong", None)
         case "config":
             await _handle_config_message(ws)
         case "observations":

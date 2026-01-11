@@ -214,14 +214,6 @@ class TestCalibrationWebSocket:
             response = ws.receive_json()
             assert response["type"] == "config"
 
-    def test_websocket_ping_pong(self):
-        """P3-WS-01: WebSocket ping gets pong response for heartbeat."""
-        client = TestClient(create_app())
-        with client.websocket_connect("/calibration/") as ws:
-            ws.send_json({"type": "ping"})
-            response = ws.receive_json()
-            assert response["type"] == "pong"
-
 
 class TestCalibrationDataErrors:
     """Tests for HolmesDataError handling in calibration API."""

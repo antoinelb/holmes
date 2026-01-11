@@ -2,7 +2,6 @@
 
 Note: Most anti-fragility tests have been moved to their appropriate test files:
 - Data validation tests: tests/unit/test_data.py (TestAntiFragilityValidation)
-- WebSocket ping/pong tests: tests/unit/api/test_calibration.py, etc.
 - Model error handling: tests/unit/models/*.py
 
 This file is kept for documentation and for tests that don't fit elsewhere.

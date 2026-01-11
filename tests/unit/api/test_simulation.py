@@ -267,14 +267,6 @@ class TestSimulationWebSocket:
             assert response["type"] == "error"
             assert "Unknown message type" in response["data"]
 
-    def test_websocket_ping_pong(self):
-        """P3-WS-01: WebSocket ping gets pong response for heartbeat."""
-        client = TestClient(create_app())
-        with client.websocket_connect("/simulation/") as ws:
-            ws.send_json({"type": "ping"})
-            response = ws.receive_json()
-            assert response["type"] == "pong"
-
 
 class TestSimulationDataErrors:
     """Tests for HolmesDataError handling in simulation API."""

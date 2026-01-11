@@ -5,7 +5,6 @@ export const WS_CONFIG = {
   maxRetries: 10, // Circuit breaker after 10 failures
   backoffFactor: 2, // Double delay each retry
   connectionTimeout: 10000, // 10 second connection timeout
-  heartbeatInterval: 30000, // Ping every 30 seconds
 };
 
 // Track reconnection state per URL
@@ -66,20 +65,9 @@ export function connect(url, handleMessage, dispatch, globalDispatch) {
     }
   }, WS_CONFIG.connectionTimeout);
 
-  // Heartbeat interval reference
-  let heartbeatInterval = null;
-
   ws.onopen = () => {
     clearTimeout(connectionTimeout);
     resetReconnectState(url);
-
-    // Start heartbeat
-    heartbeatInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "ping" }));
-      }
-    }, WS_CONFIG.heartbeatInterval);
-
     dispatch({ type: "Connected", data: ws });
   };
 
@@ -89,9 +77,6 @@ export function connect(url, handleMessage, dispatch, globalDispatch) {
 
   ws.onclose = (event) => {
     clearTimeout(connectionTimeout);
-    if (heartbeatInterval) {
-      clearInterval(heartbeatInterval);
-    }
     dispatch({ type: "Disconnected" });
   };
 
