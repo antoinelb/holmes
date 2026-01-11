@@ -7,6 +7,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use thiserror::Error;
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn register_submodule(
     py: Python<'_>,
     parent: &Bound<'_, PyModule>,
@@ -36,6 +37,7 @@ pub enum Error {
     Pet(#[from] PetError),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<Error> for PyErr {
     fn from(err: Error) -> PyErr {
         PyValueError::new_err(err.to_string())

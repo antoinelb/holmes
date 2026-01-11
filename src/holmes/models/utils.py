@@ -56,5 +56,5 @@ def evaluate(
         )
     elif criteria == "correlation":
         return float(np.corrcoef(observations, simulation)[0, 1])
-    else:
-        assert_never(criteria)  # type: ignore
+    else:  # pragma: no cover
+        assert_never(criteria)

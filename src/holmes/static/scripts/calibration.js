@@ -1,6 +1,12 @@
 import { create, clear, createSlider } from "./utils/elements.js";
-import { connect } from "./utils/ws.js";
+import {
+  connect,
+  incrementReconnectAttempt,
+  isCircuitBreakerOpen,
+} from "./utils/ws.js";
 import { colours, toTitle, formatNumber } from "./utils/misc.js";
+
+const WS_URL = "calibration/";
 
 /*********/
 /* model */
@@ -54,7 +60,7 @@ export async function update(model, msg, dispatch, createNotification) {
   let configValid;
   switch (msg.type) {
     case "Connect":
-      connect("calibration/", handleMessage, dispatch, createNotification);
+      connect(WS_URL, handleMessage, dispatch, createNotification);
       return { ...model, loading: true };
     case "Connected":
       if (model.availableConfig === null) {
@@ -65,7 +71,18 @@ export async function update(model, msg, dispatch, createNotification) {
       }
       return { ...model, loading: false, ws: msg.data };
     case "Disconnected":
-      setTimeout(() => dispatch({ type: "Connect" }), 3000);
+      if (isCircuitBreakerOpen(WS_URL)) {
+        createNotification(
+          "Connection lost. Please refresh the page to reconnect.",
+          true,
+        );
+        return { ...model, ws: null };
+      }
+      const calibrationReconnectState = incrementReconnectAttempt(WS_URL);
+      setTimeout(
+        () => dispatch({ type: "Connect" }),
+        calibrationReconnectState.delay,
+      );
       return { ...model, ws: null };
     case "GetAvailableConfig":
       if (model.ws?.readyState === WebSocket.OPEN) {
@@ -231,7 +248,7 @@ export async function update(model, msg, dispatch, createNotification) {
       return {
         ...model,
         loading: !msg.data.done,
-        running: !msg.data.done,
+        running: model.running && !msg.data.done,
         simulation: msg.data.simulation,
         results:
           model.results === null
@@ -257,7 +274,14 @@ function createDispatch(dispatch) {
 }
 
 function handleMessage(event, dispatch, createNotification) {
-  const msg = JSON.parse(event.data);
+  let msg;
+  try {
+    msg = JSON.parse(event.data);
+  } catch (e) {
+    console.error("Failed to parse WebSocket message:", e);
+    createNotification("Received invalid message from server", true);
+    return;
+  }
   switch (msg.type) {
     case "error":
       createNotification(msg.data, true);

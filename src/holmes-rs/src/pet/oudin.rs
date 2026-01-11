@@ -1,15 +1,21 @@
-use crate::pet::utils::{check_lengths, PetError};
+use crate::pet::utils::{
+    check_lengths, validate_day_of_year, validate_latitude, validate_output,
+    validate_temperature, PetError,
+};
 use ndarray::{Array1, ArrayView1, Zip};
 use numpy::{PyArray1, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 use std::f64::consts::PI;
 
-fn simulate(
+pub fn simulate(
     temperature: ArrayView1<f64>,
     day_of_year: ArrayView1<usize>,
     latitude: f64,
 ) -> Result<Array1<f64>, PetError> {
     check_lengths(temperature, day_of_year)?;
+    validate_temperature(temperature)?;
+    validate_day_of_year(day_of_year)?;
+    validate_latitude(latitude)?;
 
     let gsc = 0.082; // solar constant (MJ m^-2 min^-1)
     let rho = 1000.; // water density (kg/m^3)
@@ -33,9 +39,14 @@ fn simulate(
         },
     );
 
-    Ok(Array1::from_vec(pet))
+    let result = Array1::from_vec(pet);
+
+    validate_output(result.view(), "Oudin PET")?;
+
+    Ok(result)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "simulate")]
 pub fn py_simulate<'py>(
@@ -49,6 +60,7 @@ pub fn py_simulate<'py>(
     Ok(simulation.to_pyarray(py))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "oudin")?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;

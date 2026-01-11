@@ -8,11 +8,16 @@ from starlette.routing import BaseRoute, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from holmes import data
+from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
 from holmes.models import calibration, evaluate, hydro, snow
 from holmes.utils.print import format_list
+from holmes.utils.websocket import (
+    cleanup_websocket,
+    create_monitored_task,
+    send,
+)
 
-from .utils import convert_for_json
 
 ##########
 # public #
@@ -20,24 +25,36 @@ from .utils import convert_for_json
 
 
 def get_routes() -> list[BaseRoute]:
+    """Get routes for calibration WebSocket endpoint."""
     return [
         WebSocketRoute("/", endpoint=_websocket_handler),
     ]
 
 
 async def _websocket_handler(ws: WebSocket) -> None:
+    """Main WebSocket handler with connection lifecycle management."""
     await ws.accept()
     try:
         while True:
             msg = await ws.receive_json()
             await _handle_message(ws, msg)
     except WebSocketDisconnect:
-        pass
+        # P1-ERR-04: Log disconnection instead of silent pass
+        logger.debug("Calibration WebSocket client disconnected")
+    finally:
+        # P3-WS-05: Clean up connection state
+        await cleanup_websocket(ws)
 
 
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
-    logger.info(f"Websocket {msg.get('type')} message")
-    match msg.get("type"):
+    """Dispatch incoming WebSocket messages to handlers."""
+    msg_type = msg.get("type")
+    logger.info(f"Websocket {msg_type} message")
+
+    match msg_type:
+        case "ping":
+            # Respond to ping with pong for heartbeat
+            await send(ws, "pong", None)
         case "config":
             await _handle_config_message(ws)
         case "observations":
@@ -47,19 +64,23 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
         case "calibration_start":
             stop_event = asyncio.Event()
             setattr(ws.state, "stop_event", stop_event)
-            asyncio.create_task(
+            # P1-ERR-06: Use monitored task for error handling
+            create_monitored_task(
                 _handle_calibration_start_message(
                     ws, msg.get("data", {}), stop_event
-                )
+                ),
+                ws,
+                task_name="calibration",
             )
         case "calibration_stop":
             if hasattr(ws.state, "stop_event"):
                 getattr(ws.state, "stop_event").set()
         case _:
-            await _send(ws, "error", f"Unknown message type {msg['type']}.")
+            await send(ws, "error", f"Unknown message type {msg_type}.")
 
 
 async def _handle_config_message(ws: WebSocket) -> None:
+    """Handle config request - return available models and catchments."""
     catchments = [
         {
             "name": c[0],
@@ -89,30 +110,36 @@ async def _handle_config_message(ws: WebSocket) -> None:
             ],
         ],
     }
-    await _send(ws, "config", config)
+    await send(ws, "config", config)
 
 
 async def _handle_observations_message(
     ws: WebSocket, msg_data: dict[str, Any]
 ) -> None:
+    """Handle observations request - return streamflow data for date range."""
     if any(key not in msg_data for key in ("catchment", "start", "end")):
-        await _send(
+        await send(
             ws,
             "error",
             "`catchment`, `start` and `end` must be provided.",
         )
         return
 
-    _data = data.read_data(
-        msg_data["catchment"], msg_data["start"], msg_data["end"]
-    )
+    try:
+        _data = data.read_data(
+            msg_data["catchment"], msg_data["start"], msg_data["end"]
+        )
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
-    await _send(ws, "observations", _data.select("date", "streamflow"))
+    await send(ws, "observations", _data.select("date", "streamflow"))
 
 
 async def _handle_manual_calibration_message(
     ws: WebSocket, msg_data: dict[str, Any]
 ) -> None:
+    """Handle manual calibration - simulate with user-provided parameters."""
     needed_keys = [
         "catchment",
         "start",
@@ -124,17 +151,21 @@ async def _handle_manual_calibration_message(
         "transformation",
     ]
     if any(key not in msg_data for key in needed_keys):
-        await _send(
+        await send(
             ws,
             "error",
             format_list(needed_keys, surround="`") + " must be provided.",
         )
         return
 
-    _data = data.read_data(
-        msg_data["catchment"], msg_data["start"], msg_data["end"]
-    )
-    metadata = data.read_cemaneige_info(msg_data["catchment"])
+    try:
+        _data = data.read_data(
+            msg_data["catchment"], msg_data["start"], msg_data["end"]
+        )
+        metadata = data.read_cemaneige_info(msg_data["catchment"])
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
     hydro_simulate = hydro.get_model(msg_data["hydroModel"])
     hydro_params = np.array(msg_data["hydroParams"])
@@ -179,7 +210,7 @@ async def _handle_manual_calibration_message(
         msg_data["transformation"],
     )
 
-    await _send(
+    await send(
         ws,
         "result",
         {
@@ -194,6 +225,7 @@ async def _handle_manual_calibration_message(
 async def _handle_calibration_start_message(
     ws: WebSocket, msg_data: dict[str, Any], stop_event: asyncio.Event
 ) -> None:
+    """Handle automatic calibration - run SCE-UA optimization."""
     needed_keys = [
         "catchment",
         "start",
@@ -206,17 +238,21 @@ async def _handle_calibration_start_message(
         "algorithmParams",
     ]
     if any(key not in msg_data for key in needed_keys):
-        await _send(
+        await send(
             ws,
             "error",
             format_list(needed_keys, surround="`") + " must be provided.",
         )
         return
 
-    _data = data.read_data(
-        msg_data["catchment"], msg_data["start"], msg_data["end"]
-    )
-    metadata = data.read_cemaneige_info(msg_data["catchment"])
+    try:
+        _data = data.read_data(
+            msg_data["catchment"], msg_data["start"], msg_data["end"]
+        )
+        metadata = data.read_cemaneige_info(msg_data["catchment"])
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
     precipitation = _data["precipitation"].to_numpy()
     temperature = _data["temperature"].to_numpy()
@@ -239,7 +275,7 @@ async def _handle_calibration_start_message(
         simulation: npt.NDArray[np.float64],
         results: dict[str, float],
     ) -> None:
-        await _send(
+        await send(
             ws,
             "result",
             {
@@ -270,12 +306,3 @@ async def _handle_calibration_start_message(
         callback=callback,
         stop_event=stop_event,
     )
-
-
-###########
-# private #
-###########
-
-
-async def _send(ws: WebSocket, event: str, data: Any) -> None:
-    await ws.send_json({"type": event, "data": convert_for_json(data)})

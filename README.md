@@ -1,5 +1,11 @@
 # HOLMES
 
+[![ci holmes](https://github.com/antoinelb/holmes/workflows/ci%20holmes/badge.svg)](https://github.com/antoinelb/holmes/actions)
+[![ci holmes-rs](https://github.com/antoinelb/holmes/workflows/ci%20holmes-rs/badge.svg)](https://github.com/antoinelb/holmes/actions)
+![holmes-hydro pypi version](https://img.shields.io/pypi/v/holmes-hydro?label=holmes-hydro%20pypi%20package&color=green)
+![holmes-rs pypi version](https://img.shields.io/pypi/v/holmes-rs?label=holmes-rs%20pypi%20package&color=green)
+[![Supported Python Version](https://img.shields.io/pypi/pyversions/holmes-hydro.svg?color=%2334D058)](https://pypi.org/project/holmes-hydro)
+
 HOLMES (HydrOLogical Modeling Educational Software) is a software developed to teach operational hydrology. It is developed at Université Laval, Québec, Canada.
 
 ## Usage
@@ -63,9 +69,9 @@ holmes
 ### Code Quality
 
 ```bash
-uv run black src/ 
-uv run ruff check src/ 
-uv run ty check src/
+black src/ tests/
+ruff check src/ tests/
+ty check src/ tests/
 ```
 
 ## References

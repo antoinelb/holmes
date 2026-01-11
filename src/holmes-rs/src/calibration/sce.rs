@@ -34,7 +34,7 @@ struct SceParams {
     pub max_evaluations: usize,
 }
 
-#[pyclass(module = "hydro_rs.calibration.sce", unsendable)]
+#[pyclass(module = "hydro_rs.calibration.sce")]
 pub struct Sce {
     calibration_params: CalibrationParams,
     sce_params: SceParams,
@@ -207,7 +207,6 @@ impl Sce {
     ) -> Result<(bool, Array1<f64>, Array1<f64>, Array1<f64>), CalibrationError>
     {
         if self.calibration_params.done {
-            // Recompute simulation for the final result (only happens once when done)
             let best_simulation = (self.calibration_params.simulate)(
                 self.calibration_params.params.view(),
                 precipitation,
@@ -289,17 +288,28 @@ impl Sce {
                 .sce_params
                 .criteria
                 .slice(s![-(self.sce_params.k_stop as isize)..]);
-            let mean_recent = recent.iter().map(|x| x.abs()).sum::<f64>()
-                / self.sce_params.k_stop as f64;
-            if mean_recent > 0.0 {
-                (self.sce_params.criteria[self.sce_params.criteria.len() - 1]
-                    - self.sce_params.criteria[self.sce_params.criteria.len()
-                        - self.sce_params.k_stop])
-                    .abs()
-                    * 100.0
-                    / mean_recent
-            } else {
+
+            let has_non_finite = recent.iter().any(|x| !x.is_finite());
+            if has_non_finite {
+                // if NaN/inf in criteria, don't consider converged
                 f64::INFINITY
+            } else {
+                let mean_recent = recent.iter().map(|x| x.abs()).sum::<f64>()
+                    / self.sce_params.k_stop as f64;
+                if mean_recent > 1e-10 {
+                    let diff = (self.sce_params.criteria
+                        [self.sce_params.criteria.len() - 1]
+                        - self.sce_params.criteria[self
+                            .sce_params
+                            .criteria
+                            .len()
+                            - self.sce_params.k_stop])
+                        .abs();
+                    diff * 100.0 / mean_recent
+                } else {
+                    // if mean is effectively zero, criteria are constant -> converged
+                    0.0
+                }
             }
         } else {
             f64::INFINITY
@@ -312,7 +322,6 @@ impl Sce {
         self.calibration_params.params = population.row(0).to_owned();
         self.sce_params.n_calls = n_calls;
 
-        // Compute simulation once and return directly (no clone)
         let best_simulation = (self.calibration_params.simulate)(
             self.calibration_params.params.view(),
             precipitation,
@@ -336,6 +345,7 @@ impl Sce {
     }
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pymethods]
 impl Sce {
     #[new]
@@ -543,7 +553,9 @@ fn evaluate_simulation(
     ]))
 }
 
-fn sort_population(
+/// Sort population by objectives, placing NaN values at the end (worst position).
+/// This function is public for testing purposes.
+pub fn sort_population(
     population: &mut Array2<f64>,
     objectives: &mut Array2<f64>,
     objective_idx: usize,
@@ -551,17 +563,25 @@ fn sort_population(
 ) {
     let mut indices: Vec<usize> = (0..objectives.nrows()).collect();
 
-    if is_minimization {
-        indices.sort_by(|&a, &b| {
-            objectives[[a, objective_idx]]
-                .total_cmp(&objectives[[b, objective_idx]])
-        });
-    } else {
-        indices.sort_by(|&a, &b| {
-            objectives[[b, objective_idx]]
-                .total_cmp(&objectives[[a, objective_idx]])
-        });
-    }
+    // NaN-safe sorting: NaN values are placed at the end (worst position)
+    // for minimization: ascending order, NaN at end (worst = largest)
+    // for maximization: descending order, NaN at end (worst = smallest)
+    indices.sort_by(|&a, &b| {
+        let va = objectives[[a, objective_idx]];
+        let vb = objectives[[b, objective_idx]];
+        match (va.is_finite(), vb.is_finite()) {
+            (true, true) => {
+                if is_minimization {
+                    va.total_cmp(&vb)
+                } else {
+                    vb.total_cmp(&va)
+                }
+            }
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            (false, false) => std::cmp::Ordering::Equal,
+        }
+    });
 
     let sorted_population = population.select(Axis(0), &indices);
     let sorted_objectives = objectives.select(Axis(0), &indices);
@@ -827,7 +847,7 @@ fn select_simplex_indices(
         indices.push(lpos);
     }
 
-    indices.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    indices.sort_unstable();
     indices
 }
 
@@ -861,6 +881,7 @@ fn merge_complexes(
     (population, objectives)
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "sce")?;
     m.add_class::<Sce>()?;

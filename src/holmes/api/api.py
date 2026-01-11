@@ -18,6 +18,7 @@ def get_routes() -> list[BaseRoute]:
     return [
         Route("/", endpoint=_index, methods=["GET"]),
         Route("/ping", endpoint=_ping, methods=["GET"]),
+        Route("/health", endpoint=_health, methods=["GET"]),
         Route("/version", endpoint=_get_version, methods=["GET"]),
         Mount(
             "/static",
@@ -38,10 +39,16 @@ async def _ping(_: Request) -> Response:
     return PlainTextResponse("Pong!")
 
 
+async def _health(_: Request) -> Response:
+    """Health check endpoint for monitoring."""
+    return PlainTextResponse("OK")
+
+
 async def _get_version(_: Request) -> Response:
     try:
         return PlainTextResponse(importlib.metadata.version("holmes_hydro"))
-    except Exception:
+    except importlib.metadata.PackageNotFoundError:
+        # P1-ERR-03: Use specific exception instead of bare Exception
         return PlainTextResponse("Unknown version", status_code=500)
 
 

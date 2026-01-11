@@ -1,5 +1,6 @@
 import { create } from "./utils/elements.js";
 import { onKey } from "./utils/listeners.js";
+import { range } from "./utils/misc.js";
 
 /*********/
 /* model */
@@ -27,9 +28,10 @@ export async function update(model, msg, dispatch) {
   dispatch = createDispatch(dispatch);
   switch (msg.type) {
     case "CheckEscape":
+      const settingsCheckEl = document.getElementById("settings");
       if (
         msg.data.type === "click" &&
-        document.getElementById("settings").contains(msg.data.target)
+        settingsCheckEl?.contains(msg.data.target)
       ) {
         return model;
       } else {
@@ -46,6 +48,15 @@ export async function update(model, msg, dispatch) {
       const theme = model.theme === "dark" ? "light" : "dark";
       window.localStorage.setItem("holmes--settings--theme", theme);
       return { ...model, theme: theme };
+    case "Reset":
+      range(window.localStorage.length)
+        .map((i) => window.localStorage.key(i))
+        .filter((key) => key.substring(0, 6) === "holmes")
+        .forEach((key) => {
+          window.localStorage.removeItem(key);
+        });
+      window.location.reload();
+      return model;
     default:
       return model;
   }
@@ -56,9 +67,26 @@ function createDispatch(dispatch) {
 }
 
 async function getVersion(dispatch) {
-  const resp = await fetch("/version");
-  const version = await resp.text();
-  dispatch({ type: "GotVersion", data: version });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const resp = await fetch("/version", { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+    const version = await resp.text();
+    dispatch({ type: "GotVersion", data: version });
+  } catch (e) {
+    clearTimeout(timeout);
+    if (e.name === "AbortError") {
+      console.error("Version fetch timed out");
+    } else {
+      console.error("Failed to fetch version:", e);
+    }
+    dispatch({ type: "GotVersion", data: "unknown" });
+  }
 }
 
 /********/
@@ -120,6 +148,25 @@ export function initView(dispatch) {
           },
         ],
       ),
+      create(
+        "button",
+        { id: "reset" },
+        [
+          create("svg", { class: "icon" }, [
+            create("use", { href: "#icon-refresh-cw" }),
+          ]),
+          create("span", {}, ["Reset all"]),
+        ],
+        [
+          {
+            event: "click",
+            fct: async () =>
+              await dispatch({
+                type: "Reset",
+              }),
+          },
+        ],
+      ),
       create("div", { id: "version" }, [
         create("span", {}, ["Version: "]),
         create("span"),
@@ -131,10 +178,13 @@ export function initView(dispatch) {
 export function view(model, dispatch) {
   dispatch = createDispatch(dispatch);
 
-  if (model.open) {
-    document.getElementById("settings").classList.add("settings--open");
-  } else {
-    document.getElementById("settings").classList.remove("settings--open");
+  const settingsEl = document.getElementById("settings");
+  if (settingsEl) {
+    if (model.open) {
+      settingsEl.classList.add("settings--open");
+    } else {
+      settingsEl.classList.remove("settings--open");
+    }
   }
 
   if (model.theme === "dark") {
@@ -143,11 +193,8 @@ export function view(model, dispatch) {
     document.body.classList.add("light");
   }
 
-  if (
-    document.querySelector("#version span:last-child").textContent !==
-    model.version
-  ) {
-    document.querySelector("#version span:last-child").textContent =
-      model.version;
+  const versionSpan = document.querySelector("#version span:last-child");
+  if (versionSpan && versionSpan.textContent !== model.version) {
+    versionSpan.textContent = model.version;
   }
 }

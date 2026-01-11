@@ -1,14 +1,28 @@
-use crate::hydro::utils::{check_lengths, HydroError};
+use crate::hydro::utils::{
+    check_lengths, validate_inputs_finite, validate_non_negative,
+    validate_output, validate_parameter, HydroError,
+};
 use ndarray::{array, Array1, Array2, ArrayView1, Axis, Zip};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 
 pub const param_names: &[&str] = &["x1", "x2", "x3", "x4"];
 
+const BOUNDS: [(&str, f64, f64); 4] = [
+    ("x1", 10.0, 1500.0),
+    ("x2", -5.0, 3.0),
+    ("x3", 10.0, 400.0),
+    ("x4", 0.8, 10.0),
+];
+
 pub fn init() -> (Array1<f64>, Array2<f64>) {
     // corresponds to x1, x2, x3, x4
-    let bounds =
-        array![[10.0, 1500.0], [-5.0, 3.0], [10.0, 400.0], [0.8, 10.0]];
+    let bounds = array![
+        [BOUNDS[0].1, BOUNDS[0].2],
+        [BOUNDS[1].1, BOUNDS[1].2],
+        [BOUNDS[2].1, BOUNDS[2].2],
+        [BOUNDS[3].1, BOUNDS[3].2]
+    ];
     let default_values = bounds.sum_axis(Axis(1)) / 2.0;
     (default_values, bounds)
 }
@@ -22,7 +36,17 @@ pub fn simulate(
         .as_slice()
         .and_then(|s| s.try_into().ok())
         .ok_or_else(|| HydroError::ParamsMismatch(4, params.len()))?;
+
+    for (i, &param_value) in [x1, x2, x3, x4].iter().enumerate() {
+        let (name, lower, upper) = BOUNDS[i];
+        validate_parameter(param_value, name, lower, upper)?;
+    }
+
     check_lengths(precipitation, pet)?;
+    validate_inputs_finite(precipitation, "precipitation")?;
+    validate_inputs_finite(pet, "pet")?;
+    validate_non_negative(precipitation, "precipitation")?;
+    validate_non_negative(pet, "pet")?;
 
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
@@ -59,7 +83,11 @@ pub fn simulate(
             streamflow[t] = streamflow_;
         });
 
-    Ok(Array1::from_vec(streamflow))
+    let result = Array1::from_vec(streamflow);
+
+    validate_output(result.view(), "GR4J simulation")?;
+
+    Ok(result)
 }
 
 fn create_unit_hydrographs(x4: f64) -> (Vec<f64>, Vec<f64>) {
@@ -182,6 +210,7 @@ fn update_hydrographs(
         0.1 * routing_precipitation * unit_hydrographs.1[n2 - 1];
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "init")]
 pub fn py_init<'py>(
@@ -191,6 +220,7 @@ pub fn py_init<'py>(
     (default_values.to_pyarray(py), bounds.to_pyarray(py))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "simulate")]
 pub fn py_simulate<'py>(
@@ -204,6 +234,7 @@ pub fn py_simulate<'py>(
     Ok(simulation.to_pyarray(py))
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "gr4j")?;
     m.add("param_names", param_names)?;

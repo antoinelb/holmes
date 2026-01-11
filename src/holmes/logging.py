@@ -1,14 +1,25 @@
+import contextvars
+import functools
 import logging
 import logging.config
 import re
 import sys
-from typing import Literal, Optional
+import time
+from typing import Callable, Literal, Optional, ParamSpec, TypeVar
 
 import click
 
 from . import config
 
 logger = logging.getLogger("holmes")
+
+# P7-LOG-03: Correlation ID for request tracing
+_correlation_id: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "correlation_id", default=None
+)
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def init_logging() -> None:
@@ -202,6 +213,7 @@ class RouteFilter(logging.Filter):
         """
         routes = [
             "/ping",
+            "/health",
             "/",
             "/static/scripts/.+.js",
             "/static/styles/.+.css",
@@ -211,3 +223,66 @@ class RouteFilter(logging.Filter):
             re.search(f'"GET {route}(?:\\?\\S+)? HTTP/1.1" 200', msg) is None
             for route in routes
         )
+
+
+###########
+# helpers #
+###########
+
+
+def get_correlation_id() -> str | None:
+    """Get the current correlation ID for request tracing."""
+    return _correlation_id.get()
+
+
+def set_correlation_id(correlation_id: str) -> None:
+    """Set the correlation ID for the current context."""
+    _correlation_id.set(correlation_id)
+
+
+def log_with_timing(
+    func: Callable[P, R],
+) -> Callable[P, R]:
+    """
+    Decorator that logs function execution time.
+
+    P7-LOG-04: Performance monitoring via timing decorator.
+
+    Parameters
+    ----------
+    func : Callable
+        Function to wrap with timing
+
+    Returns
+    -------
+    Callable
+        Wrapped function that logs execution time
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        start_time = time.perf_counter()
+        try:
+            result = func(*args, **kwargs)
+            return result
+        finally:
+            elapsed = time.perf_counter() - start_time
+            logger.debug(f"{func.__name__} completed in {elapsed:.3f}s")
+
+    return wrapper
+
+
+def log_exception(exc: Exception, message: str = "An error occurred") -> None:
+    """
+    Log an exception with full stack trace.
+
+    P7-LOG-01: Ensure exceptions are logged with stack traces.
+
+    Parameters
+    ----------
+    exc : Exception
+        The exception to log
+    message : str
+        Additional context message
+    """
+    logger.exception(f"{message}: {exc}")

@@ -1,10 +1,27 @@
 import { create, clear, createLoading } from "./utils/elements.js";
-import { connect } from "./utils/ws.js";
+import {
+  connect,
+  incrementReconnectAttempt,
+  isCircuitBreakerOpen,
+} from "./utils/ws.js";
 import { round, colours, formatNumber, setEqual } from "./utils/misc.js";
+
+const WS_URL = "projection/";
 
 /*********/
 /* model */
 /*********/
+
+function parseLocalStorageCalibration() {
+  const stored = window.localStorage.getItem("holmes--projection--calibration");
+  if (stored === null) return null;
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error("Failed to parse localStorage calibration:", e);
+    return null;
+  }
+}
 
 export function initModel() {
   return {
@@ -12,12 +29,7 @@ export function initModel() {
     ws: null,
     running: false,
     availableConfig: null,
-    calibration:
-      window.localStorage.getItem("holmes--projection--calibration") === null
-        ? null
-        : JSON.parse(
-            window.localStorage.getItem("holmes--projection--calibration"),
-          ),
+    calibration: parseLocalStorageCalibration(),
     config: {
       model: window.localStorage.getItem("holmes--projection--model"),
       scenario: window.localStorage.getItem("holmes--projection--scenario"),
@@ -58,9 +70,10 @@ function verifyCalibration(calibration) {
 
 export async function update(model, msg, dispatch, createNotification) {
   dispatch = createDispatch(dispatch);
+  let calibration;
   switch (msg.type) {
     case "Connect":
-      connect("projection/", handleMessage, dispatch, createNotification);
+      connect(WS_URL, handleMessage, dispatch, createNotification);
       return { ...model, loading: true };
     case "Connected":
       if (model.availableConfig === null) {
@@ -68,7 +81,18 @@ export async function update(model, msg, dispatch, createNotification) {
       }
       return { ...model, loading: false, ws: msg.data };
     case "Disconnected":
-      setTimeout(() => dispatch({ type: "Connect" }), 3000);
+      if (isCircuitBreakerOpen(WS_URL)) {
+        createNotification(
+          "Connection lost. Please refresh the page to reconnect.",
+          true,
+        );
+        return { ...model, ws: null };
+      }
+      const projectionReconnectState = incrementReconnectAttempt(WS_URL);
+      setTimeout(
+        () => dispatch({ type: "Connect" }),
+        projectionReconnectState.delay,
+      );
       return { ...model, ws: null };
     case "GetAvailableConfig":
       if (
@@ -81,8 +105,10 @@ export async function update(model, msg, dispatch, createNotification) {
             data: model.calibration.catchment,
           }),
         );
+        return { ...model, loading: true };
+      } else {
+        return model;
       }
-      return { ...model, loading: true };
     case "GotAvailableConfig":
       dispatch({ type: "UpdateConfigFields" });
       return { ...model, availableConfig: msg.data, loading: false };
@@ -91,11 +117,21 @@ export async function update(model, msg, dispatch, createNotification) {
         const reader = new FileReader();
         reader.onload = (event) =>
           dispatch({ type: "ImportCalibration", data: event });
+        reader.onerror = () => {
+          console.error("Failed to read file:", file.name);
+          createNotification(`Failed to read file: ${file.name}`, true);
+        };
         reader.readAsText(file);
       });
       return model;
     case "ImportCalibration":
-      calibration = JSON.parse(msg.data.target.result);
+      try {
+        calibration = JSON.parse(msg.data.target.result);
+      } catch (e) {
+        console.error("Failed to parse calibration file:", e);
+        createNotification("Invalid JSON in calibration file", true);
+        return model;
+      }
       const [valid, error] = verifyCalibration(calibration);
       if (valid) {
         window.localStorage.setItem(
@@ -216,7 +252,6 @@ export async function update(model, msg, dispatch, createNotification) {
       }
       return { ...model, loading: true, running: true };
     case "GotProjection":
-      console.log(msg.data);
       return {
         ...model,
         projection: msg.data,
@@ -236,7 +271,14 @@ function createDispatch(dispatch) {
 }
 
 function handleMessage(event, dispatch, createNotification) {
-  const msg = JSON.parse(event.data);
+  let msg;
+  try {
+    msg = JSON.parse(event.data);
+  } catch (e) {
+    console.error("Failed to parse WebSocket message:", e);
+    createNotification("Received invalid message from server", true);
+    return;
+  }
   switch (msg.type) {
     case "error":
       createNotification(msg.data, true);
@@ -445,7 +487,7 @@ function calibrationView(model, dispatch) {
         create("span", {}, [model.calibration.algorithm]),
         create("span", {}, [model.calibration.start]),
         create("span", {}, [model.calibration.end]),
-        create("span", {}, [model.calibration.snowModel]),
+        create("span", {}, [model.calibration.snowModel ?? "none"]),
         create(
           "div",
           {},

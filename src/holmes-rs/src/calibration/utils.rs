@@ -96,9 +96,15 @@ pub enum CalibrationError {
     Snow(#[from] SnowError),
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl From<CalibrationError> for PyErr {
     fn from(err: CalibrationError) -> PyErr {
-        PyValueError::new_err(err.to_string())
+        match err {
+            CalibrationError::Metrics(e) => e.into(),
+            CalibrationError::Hydro(e) => e.into(),
+            CalibrationError::Snow(e) => e.into(),
+            _ => PyValueError::new_err(err.to_string()),
+        }
     }
 }
 

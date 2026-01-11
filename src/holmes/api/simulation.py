@@ -7,12 +7,12 @@ from starlette.routing import BaseRoute, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from holmes import data
+from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
 from holmes.models import hydro, snow
 from holmes.models.utils import evaluate
 from holmes.utils.print import format_list
-
-from .utils import send
+from holmes.utils.websocket import cleanup_websocket, send
 
 ##########
 # public #
@@ -31,31 +31,44 @@ def get_routes() -> list[BaseRoute]:
 
 
 async def _websocket_handler(ws: WebSocket) -> None:
+    """Main WebSocket handler with connection lifecycle management."""
     await ws.accept()
     try:
         while True:
             msg = await ws.receive_json()
             await _handle_message(ws, msg)
     except WebSocketDisconnect:
-        pass
+        # P1-ERR-04: Log disconnection instead of silent pass
+        logger.debug("Simulation WebSocket client disconnected")
+    finally:
+        # P3-WS-05: Clean up connection state
+        await cleanup_websocket(ws)
 
 
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
-    logger.info(f"Websocket {msg.get('type')} message")
-    match msg.get("type"):
+    """Dispatch incoming WebSocket messages to handlers."""
+    msg_type = msg.get("type")
+    logger.info(f"Websocket {msg_type} message")
+
+    match msg_type:
+        case "ping":
+            # Respond to ping with pong for heartbeat
+            await send(ws, "pong", None)
         case "config":
             if "data" not in msg:
                 await send(ws, "error", "The catchment must be provided.")
+                return
             await _handle_config_message(ws, msg["data"])
         case "observations":
             await _handle_observations_message(ws, msg.get("data", {}))
         case "simulation":
             await _handle_simulation_message(ws, msg.get("data", {}))
         case _:
-            await send(ws, "error", f"Unknown message type {msg['type']}.")
+            await send(ws, "error", f"Unknown message type {msg_type}.")
 
 
 async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
+    """Handle config request - return date range for catchment."""
     try:
         catchment = next(
             c for c in data.get_available_catchments() if c[0] == msg_data
@@ -71,6 +84,7 @@ async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
 async def _handle_observations_message(
     ws: WebSocket, msg_data: dict[str, Any]
 ) -> None:
+    """Handle observations request - return streamflow data for date range."""
     needed_keys = [
         "catchment",
         "start",
@@ -84,9 +98,13 @@ async def _handle_observations_message(
         )
         return
 
-    _data = data.read_data(
-        msg_data["catchment"], msg_data["start"], msg_data["end"]
-    )
+    try:
+        _data = data.read_data(
+            msg_data["catchment"], msg_data["start"], msg_data["end"]
+        )
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
     await send(ws, "observations", _data.select("date", "streamflow"))
 
@@ -94,6 +112,7 @@ async def _handle_observations_message(
 async def _handle_simulation_message(
     ws: WebSocket, msg_data: dict[str, Any]
 ) -> None:
+    """Handle simulation request - run forward model with calibrated parameters."""
     needed_keys = [
         "config",
         "calibration",
@@ -123,8 +142,12 @@ async def _handle_simulation_message(
     start = msg_data["config"]["start"]
     end = msg_data["config"]["end"]
 
-    _data = data.read_data(catchment, start, end)
-    metadata = data.read_cemaneige_info(catchment)
+    try:
+        _data = data.read_data(catchment, start, end)
+        metadata = data.read_cemaneige_info(catchment)
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
     precipitation = _data["precipitation"].to_numpy()
     temperature = _data["temperature"].to_numpy()
