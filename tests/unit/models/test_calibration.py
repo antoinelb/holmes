@@ -1,12 +1,14 @@
 """Unit tests for holmes.models.calibration module."""
 
 import asyncio
+from unittest.mock import patch
 
 import numpy as np
 import polars as pl
 import pytest
 
 from holmes import data
+from holmes.exceptions import HolmesNumericalError, HolmesValidationError
 from holmes.models import calibration
 
 
@@ -217,3 +219,148 @@ class TestCalibrate:
             assert "rmse" in call["results"]
             assert "nse" in call["results"]
             assert "kge" in call["results"]
+
+
+class TestCalibrateErrorHandling:
+    """Tests for error handling during calibration."""
+
+    @pytest.fixture
+    def sample_data(self):
+        """Load sample data for calibration tests."""
+        catchment_data = data.read_data(
+            "Au Saumon", "2000-01-01", "2001-12-31"
+        )
+        cemaneige_info = data.read_cemaneige_info("Au Saumon")
+        return {
+            "precipitation": catchment_data["precipitation"].to_numpy(),
+            "temperature": catchment_data["temperature"].to_numpy(),
+            "pet": catchment_data["pet"].to_numpy(),
+            "observations": catchment_data["streamflow"].to_numpy(),
+            "day_of_year": (
+                catchment_data.select(
+                    (pl.col("date").dt.ordinal_day() - 1).mod(365) + 1
+                )["date"]
+                .to_numpy()
+                .astype(np.uintp)
+            ),
+            "elevation_layers": np.array(cemaneige_info["altitude_layers"]),
+            "median_elevation": cemaneige_info["median_altitude"],
+            "qnbv": cemaneige_info["qnbv"],
+        }
+
+    @pytest.fixture
+    def sce_params(self):
+        """SCE parameters for fast testing."""
+        return {
+            "n_complexes": 2,
+            "k_stop": 2,
+            "p_convergence_threshold": 0.1,
+            "geometric_range_threshold": 0.001,
+            "max_evaluations": 50,
+        }
+
+    @pytest.mark.asyncio
+    async def test_snow_simulation_numerical_error(
+        self, sample_data, sce_params
+    ):
+        """Calibration handles snow simulation HolmesNumericalError."""
+        with patch(
+            "holmes.models.snow.get_model",
+            return_value=lambda *args: (_ for _ in ()).throw(
+                HolmesNumericalError("Snow numerical error")
+            ),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                await calibration.calibrate(
+                    sample_data["precipitation"],
+                    sample_data["temperature"],
+                    sample_data["pet"],
+                    sample_data["observations"],
+                    sample_data["day_of_year"],
+                    sample_data["elevation_layers"],
+                    sample_data["median_elevation"],
+                    sample_data["qnbv"],
+                    hydro_model="gr4j",
+                    snow_model="cemaneige",
+                    objective="nse",
+                    transformation="none",
+                    algorithm="sce",
+                    params=sce_params,
+                )
+
+    @pytest.mark.asyncio
+    async def test_sce_init_numerical_error(self, sample_data, sce_params):
+        """Calibration handles SCE init HolmesNumericalError."""
+        with patch(
+            "holmes_rs.calibration.sce.Sce.__init__",
+            side_effect=HolmesNumericalError("SCE init error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                await calibration.calibrate(
+                    sample_data["precipitation"],
+                    sample_data["temperature"],
+                    sample_data["pet"],
+                    sample_data["observations"],
+                    sample_data["day_of_year"],
+                    sample_data["elevation_layers"],
+                    sample_data["median_elevation"],
+                    sample_data["qnbv"],
+                    hydro_model="gr4j",
+                    snow_model=None,
+                    objective="nse",
+                    transformation="none",
+                    algorithm="sce",
+                    params=sce_params,
+                )
+
+    @pytest.mark.asyncio
+    async def test_sce_data_init_validation_error(
+        self, sample_data, sce_params
+    ):
+        """Calibration handles SCE data init HolmesValidationError."""
+        with patch(
+            "holmes_rs.calibration.sce.Sce.init",
+            side_effect=HolmesValidationError("Data validation error"),
+        ):
+            with pytest.raises(HolmesValidationError):
+                await calibration.calibrate(
+                    sample_data["precipitation"],
+                    sample_data["temperature"],
+                    sample_data["pet"],
+                    sample_data["observations"],
+                    sample_data["day_of_year"],
+                    sample_data["elevation_layers"],
+                    sample_data["median_elevation"],
+                    sample_data["qnbv"],
+                    hydro_model="gr4j",
+                    snow_model=None,
+                    objective="nse",
+                    transformation="none",
+                    algorithm="sce",
+                    params=sce_params,
+                )
+
+    @pytest.mark.asyncio
+    async def test_sce_step_numerical_error(self, sample_data, sce_params):
+        """Calibration handles SCE step HolmesNumericalError."""
+        with patch(
+            "holmes_rs.calibration.sce.Sce.step",
+            side_effect=HolmesNumericalError("Step numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                await calibration.calibrate(
+                    sample_data["precipitation"],
+                    sample_data["temperature"],
+                    sample_data["pet"],
+                    sample_data["observations"],
+                    sample_data["day_of_year"],
+                    sample_data["elevation_layers"],
+                    sample_data["median_elevation"],
+                    sample_data["qnbv"],
+                    hydro_model="gr4j",
+                    snow_model=None,
+                    objective="nse",
+                    transformation="none",
+                    algorithm="sce",
+                    params=sce_params,
+                )

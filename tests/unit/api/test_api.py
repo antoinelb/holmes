@@ -1,5 +1,6 @@
 """Unit tests for holmes.api.api module."""
 
+import importlib.metadata
 from unittest.mock import patch
 
 from starlette.testclient import TestClient
@@ -17,6 +18,13 @@ class TestHTTPEndpoints:
         assert response.status_code == 200
         assert response.text == "Pong!"
 
+    def test_health(self):
+        """Health endpoint returns OK."""
+        client = TestClient(create_app())
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.text == "OK"
+
     def test_version(self):
         """Version endpoint returns version string."""
         client = TestClient(create_app())
@@ -30,7 +38,10 @@ class TestHTTPEndpoints:
         with patch(
             "holmes.api.api.importlib.metadata.version"
         ) as mock_version:
-            mock_version.side_effect = Exception("Package not found")
+            # P1-ERR-03: Use specific exception instead of bare Exception
+            mock_version.side_effect = importlib.metadata.PackageNotFoundError(
+                "holmes_hydro"
+            )
             client = TestClient(create_app())
             response = client.get("/version")
             assert response.status_code == 500

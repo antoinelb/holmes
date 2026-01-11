@@ -213,3 +213,104 @@ class TestCalibrationWebSocket:
             ws.send_json({"type": "config"})
             response = ws.receive_json()
             assert response["type"] == "config"
+
+    def test_websocket_ping_pong(self):
+        """P3-WS-01: WebSocket ping gets pong response for heartbeat."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json({"type": "ping"})
+            response = ws.receive_json()
+            assert response["type"] == "pong"
+
+
+class TestCalibrationDataErrors:
+    """Tests for HolmesDataError handling in calibration API."""
+
+    def test_observations_invalid_catchment(self):
+        """Observations with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "observations",
+                    "data": {
+                        "catchment": "NonExistentCatchment",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment" in response["data"].lower()
+
+    def test_observations_invalid_date_format(self):
+        """Observations with invalid date format returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "observations",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000/01/01",  # Wrong format
+                        "end": "2000-12-31",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "date" in response["data"].lower()
+
+    def test_manual_calibration_invalid_catchment(self):
+        """Manual calibration with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "manual",
+                    "data": {
+                        "catchment": "NonExistentCatchment",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": None,
+                        "hydroParams": [100.0, 0.0, 50.0, 2.0],
+                        "objective": "nse",
+                        "transformation": "none",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment" in response["data"].lower()
+
+    def test_calibration_start_invalid_catchment(self):
+        """Calibration start with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "calibration_start",
+                    "data": {
+                        "catchment": "NonExistentCatchment",
+                        "start": "2000-01-01",
+                        "end": "2000-06-30",
+                        "hydroModel": "gr4j",
+                        "snowModel": None,
+                        "objective": "nse",
+                        "transformation": "none",
+                        "algorithm": "sce",
+                        "algorithmParams": {
+                            "n_complexes": 2,
+                            "k_stop": 3,
+                            "p_convergence_threshold": 0.1,
+                            "geometric_range_threshold": 0.001,
+                            "max_evaluations": 50,
+                        },
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment" in response["data"].lower()

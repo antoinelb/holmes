@@ -1,10 +1,13 @@
 """Unit tests for holmes.models.snow module."""
 
 import numpy as np
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from unittest.mock import patch
 
 from holmes import data
+from holmes.exceptions import HolmesNumericalError, HolmesValidationError
 from holmes.models import snow
 
 
@@ -131,3 +134,53 @@ class TestHypothesis:
             median_elevation,
         )
         assert np.all(result >= 0)
+
+
+class TestErrorHandling:
+    """Tests for error handling in snow models."""
+
+    def test_simulate_numerical_error(self):
+        """Simulate handles HolmesNumericalError from Rust."""
+        cemaneige_info = data.read_cemaneige_info("Au Saumon")
+        # Patch before get_model to capture the mock in the closure
+        with patch(
+            "holmes.models.snow.cemaneige.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = snow.get_model("cemaneige")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([0.25, 3.74, cemaneige_info["qnbv"]])
+                precip = np.array([10.0, 20.0, 15.0])
+                temp = np.array([5.0, -5.0, 0.0])
+                doy = np.array([1, 2, 3], dtype=np.uintp)
+                simulate(
+                    params,
+                    precip,
+                    temp,
+                    doy,
+                    cemaneige_info["altitude_layers"],
+                    cemaneige_info["median_altitude"],
+                )
+
+    def test_simulate_validation_error(self):
+        """Simulate handles HolmesValidationError from Rust."""
+        cemaneige_info = data.read_cemaneige_info("Au Saumon")
+        # Patch before get_model to capture the mock in the closure
+        with patch(
+            "holmes.models.snow.cemaneige.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = snow.get_model("cemaneige")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([0.25, 3.74, cemaneige_info["qnbv"]])
+                precip = np.array([10.0, 20.0, 15.0])
+                temp = np.array([5.0, -5.0, 0.0])
+                doy = np.array([1, 2, 3], dtype=np.uintp)
+                simulate(
+                    params,
+                    precip,
+                    temp,
+                    doy,
+                    cemaneige_info["altitude_layers"],
+                    cemaneige_info["median_altitude"],
+                )

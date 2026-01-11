@@ -17,6 +17,7 @@ import polars as pl
 import pytest
 
 from holmes import data
+from holmes.exceptions import HolmesDataError
 from holmes.models import hydro, snow
 from holmes.models.utils import evaluate
 
@@ -73,7 +74,7 @@ def load_catchment_data(catchment: str) -> dict:
         )
         result["median_elevation"] = cemaneige_info["median_altitude"]
         result["qnbv"] = cemaneige_info["qnbv"]
-    except FileNotFoundError:
+    except (FileNotFoundError, HolmesDataError):
         result["elevation_layers"] = None
         result["median_elevation"] = None
         result["qnbv"] = None

@@ -1,6 +1,5 @@
 """Unit tests for holmes.api.simulation module."""
 
-import pytest
 from starlette.testclient import TestClient
 
 from holmes.app import create_app
@@ -41,16 +40,13 @@ class TestSimulationWebSocket:
             assert "Unknown catchment" in response["data"]
 
     def test_websocket_config_missing_data(self):
-        """Config message without data sends error then raises KeyError."""
+        """Config message without data sends error."""
         client = TestClient(create_app())
-        # Source code has a bug: sends error but doesn't return,
-        # then tries to access msg["data"] causing KeyError
-        with pytest.raises(KeyError):
-            with client.websocket_connect("/simulation/") as ws:
-                ws.send_json({"type": "config"})
-                response = ws.receive_json()
-                assert response["type"] == "error"
-                assert "catchment must be provided" in response["data"]
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json({"type": "config"})
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment must be provided" in response["data"]
 
     def test_websocket_observations_message(self):
         """Observations message returns streamflow data."""
@@ -270,3 +266,66 @@ class TestSimulationWebSocket:
             response = ws.receive_json()
             assert response["type"] == "error"
             assert "Unknown message type" in response["data"]
+
+    def test_websocket_ping_pong(self):
+        """P3-WS-01: WebSocket ping gets pong response for heartbeat."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json({"type": "ping"})
+            response = ws.receive_json()
+            assert response["type"] == "pong"
+
+
+class TestSimulationDataErrors:
+    """Tests for HolmesDataError handling in simulation API."""
+
+    def test_observations_invalid_catchment(self):
+        """Observations with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json(
+                {
+                    "type": "observations",
+                    "data": {
+                        "catchment": "NonExistentCatchment",
+                        "start": "2000-01-01",
+                        "end": "2000-12-31",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment" in response["data"].lower()
+
+    def test_simulation_invalid_catchment(self):
+        """Simulation with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "2000-01-01",
+                            "end": "2000-12-31",
+                            "multimodel": False,
+                        },
+                        "calibration": [
+                            {
+                                "catchment": "NonExistentCatchment",
+                                "hydroModel": "gr4j",
+                                "snowModel": None,
+                                "hydroParams": {
+                                    "x1": 100.0,
+                                    "x2": 0.0,
+                                    "x3": 50.0,
+                                    "x4": 2.0,
+                                },
+                            },
+                        ],
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "catchment" in response["data"].lower()

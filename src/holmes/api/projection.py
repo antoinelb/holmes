@@ -9,11 +9,11 @@ from starlette.routing import BaseRoute, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from holmes import data
+from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
 from holmes.models import hydro, snow
 from holmes.utils.print import format_list
-
-from .utils import send
+from holmes.utils.websocket import cleanup_websocket, send
 
 ##########
 # public #
@@ -32,20 +32,29 @@ def get_routes() -> list[BaseRoute]:
 
 
 async def _websocket_handler(ws: WebSocket) -> None:
+    """Main WebSocket handler with connection lifecycle management."""
     await ws.accept()
     try:
         while True:
             msg = await ws.receive_json()
             await _handle_message(ws, msg)
     except WebSocketDisconnect:
-        pass
+        # P1-ERR-04: Log disconnection instead of silent pass
+        logger.debug("Projection WebSocket client disconnected")
+    finally:
+        # P3-WS-05: Clean up connection state
+        await cleanup_websocket(ws)
 
 
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
-    logger.info(f"Websocket {msg.get('type')} message")
-    match msg.get("type"):
+    """Dispatch incoming WebSocket messages to handlers."""
+    msg_type = msg.get("type")
+    logger.info(f"Websocket {msg_type} message")
+
+    match msg_type:
         case "ping":
-            pass
+            # Respond to ping with pong for heartbeat
+            await send(ws, "pong", None)
         case "config":
             if "data" not in msg:
                 await send(ws, "error", "The catchment must be provided.")
@@ -54,23 +63,30 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
         case "projection":
             await _handle_projection_message(ws, msg.get("data", {}))
         case _:
-            await send(ws, "error", f"Unknown message type {msg['type']}.")
+            await send(ws, "error", f"Unknown message type {msg_type}.")
 
 
 async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
-    config = (
-        data.read_projection_data(msg_data)
-        .select("model", "horizon", "scenario")
-        .unique()
-        .sort("model", "horizon", "scenario")
-        .collect()
-    )
+    """Handle config request - return available projection configurations."""
+    try:
+        config = (
+            data.read_projection_data(msg_data)
+            .select("model", "horizon", "scenario")
+            .unique()
+            .sort("model", "horizon", "scenario")
+            .collect()
+        )
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
+
     await send(ws, "config", config)
 
 
 async def _handle_projection_message(
     ws: WebSocket, msg_data: dict[str, Any]
 ) -> None:
+    """Handle projection request - run climate projection simulation."""
     needed_keys = [
         "config",
         "calibration",
@@ -84,17 +100,22 @@ async def _handle_projection_message(
         return
 
     catchment = msg_data["calibration"]["catchment"]
-    metadata = data.read_cemaneige_info(catchment)
-    _data = (
-        data.read_projection_data(catchment)
-        .filter(
-            pl.col("model") == msg_data["config"]["model"],
-            pl.col("horizon") == msg_data["config"]["horizon"],
-            pl.col("scenario") == msg_data["config"]["scenario"],
+
+    try:
+        metadata = data.read_cemaneige_info(catchment)
+        _data = (
+            data.read_projection_data(catchment)
+            .filter(
+                pl.col("model") == msg_data["config"]["model"],
+                pl.col("horizon") == msg_data["config"]["horizon"],
+                pl.col("scenario") == msg_data["config"]["scenario"],
+            )
+            .sort("member")
+            .collect()
         )
-        .sort("member")
-        .collect()
-    )
+    except HolmesDataError as exc:
+        await send(ws, "error", str(exc))
+        return
 
     elevation_layers = np.array(metadata["altitude_layers"])
     median_elevation = metadata["median_altitude"]

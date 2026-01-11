@@ -1,9 +1,12 @@
 """Unit tests for holmes.models.hydro module."""
 
 import numpy as np
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from unittest.mock import patch
 
+from holmes.exceptions import HolmesNumericalError, HolmesValidationError
 from holmes.models import hydro
 
 
@@ -168,3 +171,53 @@ class TestHypothesis:
         pet = np.random.uniform(0, 5, len(precipitation))
         result = simulate(params, precip, pet)
         assert np.all(result >= 0)
+
+
+class TestErrorHandling:
+    """Tests for error handling in hydro models."""
+
+    def test_get_config_numerical_error(self):
+        """get_config handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes_rs.hydro.gr4j.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("gr4j")
+
+    def test_get_config_validation_error(self):
+        """get_config handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes_rs.hydro.bucket.init",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            with pytest.raises(HolmesValidationError):
+                hydro.get_config("bucket")
+
+    def test_simulate_numerical_error(self):
+        """Simulate handles HolmesNumericalError from Rust."""
+        # Patch before get_model to capture the mock in the closure
+        with patch(
+            "holmes.models.hydro.gr4j.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("gr4j")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([100.0, 0.0, 50.0, 2.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_validation_error(self):
+        """Simulate handles HolmesValidationError from Rust."""
+        # Patch before get_model to capture the mock in the closure
+        with patch(
+            "holmes.models.hydro.bucket.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("bucket")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([100.0, 0.5, 100.0, 6.0, 0.5, 200.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)

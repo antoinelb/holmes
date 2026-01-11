@@ -130,3 +130,61 @@ class TestProjectionWebSocket:
             response = ws.receive_json()
             assert response["type"] == "error"
             assert "Unknown message type" in response["data"]
+
+    def test_websocket_ping_pong(self):
+        """P3-WS-01: WebSocket ping gets pong response for heartbeat."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/projection/") as ws:
+            ws.send_json({"type": "ping"})
+            response = ws.receive_json()
+            assert response["type"] == "pong"
+
+
+class TestProjectionDataErrors:
+    """Tests for HolmesDataError handling in projection API."""
+
+    def test_config_catchment_without_projection_data(self):
+        """Config for catchment without projection file returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/projection/") as ws:
+            # Leaf catchment has no projection data
+            ws.send_json({"type": "config", "data": "Leaf"})
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            # Error should mention projection file not found
+            assert "projection" in response["data"].lower()
+
+    def test_projection_invalid_catchment(self):
+        """Projection with invalid catchment returns error."""
+        client = TestClient(create_app())
+        with client.websocket_connect("/projection/") as ws:
+            ws.send_json(
+                {
+                    "type": "projection",
+                    "data": {
+                        "config": {
+                            "model": "some_model",
+                            "horizon": "2050",
+                            "scenario": "rcp45",
+                        },
+                        "calibration": {
+                            "catchment": "NonExistentCatchment",
+                            "hydroModel": "gr4j",
+                            "snowModel": None,
+                            "hydroParams": {
+                                "x1": 100.0,
+                                "x2": 0.0,
+                                "x3": 50.0,
+                                "x4": 2.0,
+                            },
+                        },
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            # Error should mention CemaNeige or catchment issue
+            assert (
+                "cemaneige" in response["data"].lower()
+                or "catchment" in response["data"].lower()
+            )

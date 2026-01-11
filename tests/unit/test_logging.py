@@ -4,7 +4,7 @@ import logging
 from unittest.mock import patch
 
 
-from holmes.logging import RouteFilter, init_logging
+from holmes.logging import RouteFilter, init_logging, log_exception
 
 
 class TestInitLogging:
@@ -181,3 +181,45 @@ class TestRouteFilter:
             exc_info=None,
         )
         assert filter_instance.filter(record) is False
+
+    def test_route_filter_blocks_health_route(self):
+        """RouteFilter blocks /health GET 200 requests."""
+        filter_instance = RouteFilter()
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg='"GET /health HTTP/1.1" 200',
+            args=(),
+            exc_info=None,
+        )
+        assert filter_instance.filter(record) is False
+
+
+class TestLogException:
+    """Tests for log_exception helper function."""
+
+    def test_log_exception_logs_with_message(self, caplog):
+        """log_exception logs the exception with provided message."""
+        exc = ValueError("Test error")
+        with caplog.at_level(logging.ERROR, logger="holmes"):
+            try:
+                raise exc
+            except ValueError as e:
+                log_exception(e, "Something went wrong")
+
+        assert "Something went wrong" in caplog.text
+        assert "Test error" in caplog.text
+
+    def test_log_exception_default_message(self, caplog):
+        """log_exception uses default message when not provided."""
+        exc = RuntimeError("Runtime failure")
+        with caplog.at_level(logging.ERROR, logger="holmes"):
+            try:
+                raise exc
+            except RuntimeError as e:
+                log_exception(e)
+
+        assert "An error occurred" in caplog.text
+        assert "Runtime failure" in caplog.text

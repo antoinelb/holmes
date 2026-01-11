@@ -1,12 +1,28 @@
+"""
+Calibration model registry and orchestration.
+
+This module provides calibration algorithms (SCE-UA) and orchestrates
+the calibration process using snow and hydro models.
+"""
+
 import asyncio
+import logging
 from typing import Any, Awaitable, Callable, Literal, assert_never
 
 import numpy as np
 import numpy.typing as npt
 from holmes_rs.calibration.sce import Sce
 
+from holmes.exceptions import (
+    HolmesError,
+    HolmesNumericalError,
+    HolmesValidationError,
+)
+
 from . import snow
 from .snow import SnowModel
+
+logger = logging.getLogger("holmes")
 
 #########
 # types #
@@ -24,6 +40,7 @@ Algorithm = Literal["sce"]
 def get_config(
     model: Algorithm,
 ) -> list[dict[str, str | int | float | bool | None]]:
+    """Get calibration algorithm configuration."""
     match model:
         case "sce":
             return [
@@ -97,46 +114,103 @@ async def calibrate(
     ) = None,
     stop_event: asyncio.Event | None = None,
 ) -> npt.NDArray[np.float64]:
+    """
+    Run model calibration using the specified algorithm.
+
+    Parameters
+    ----------
+    precipitation : array
+        Daily precipitation values
+    temperature : array
+        Daily temperature values
+    pet : array
+        Daily potential evapotranspiration
+    observations : array
+        Observed streamflow values
+    day_of_year : array
+        Day of year for each timestep
+    elevation_layers : array
+        Elevation band fractions
+    median_elevation : float
+        Median catchment elevation
+    qnbv : float
+        CemaNeige parameter
+    hydro_model : str
+        Name of hydrological model
+    snow_model : SnowModel or None
+        Name of snow model, or None to disable
+    objective : str
+        Objective function ("rmse", "nse", "kge")
+    transformation : str
+        Data transformation ("log", "sqrt", "none")
+    algorithm : str
+        Calibration algorithm ("sce")
+    params : dict
+        Algorithm parameters
+    callback : callable, optional
+        Async callback for progress updates
+    stop_event : asyncio.Event, optional
+        Event to signal early termination
+
+    Returns
+    -------
+    array
+        Calibrated parameters
+    """
     seed = 123
     max_iter = 100_000
 
+    # Apply snow model if enabled
     if snow_model is not None:
-        snow_simulate = snow.get_model(snow_model)
-        snow_params = np.array([0.25, 3.74, qnbv])
-        precipitation = snow_simulate(
-            snow_params,
-            precipitation,
-            temperature,
-            day_of_year,
-            elevation_layers,
-            median_elevation,
-        )
-
-    match algorithm:
-        case "sce":
-            calibration = Sce(
-                hydro_model,
-                None,
-                objective,
-                transformation,
-                seed=seed,
-                n_complexes=params["n_complexes"],
-                k_stop=params["k_stop"],
-                p_convergence_threshold=params["p_convergence_threshold"],
-                geometric_range_threshold=params["geometric_range_threshold"],
-                max_evaluations=params["max_evaluations"],
-            )
-            calibration.init(
+        try:
+            snow_simulate = snow.get_model(snow_model)
+            snow_params = np.array([0.25, 3.74, qnbv])
+            precipitation = snow_simulate(
+                snow_params,
                 precipitation,
                 temperature,
-                pet,
                 day_of_year,
                 elevation_layers,
                 median_elevation,
-                observations,
             )
-            for _ in range(max_iter):
-                done, params_, simulation, objectives = calibration.step(
+        except (HolmesNumericalError, HolmesValidationError) as exc:
+            logger.error(f"Snow simulation failed during calibration: {exc}")
+            raise
+        except Exception as exc:  # pragma: no cover
+            logger.exception(
+                "Unexpected error in snow simulation during calibration"
+            )
+            raise HolmesError(f"Snow simulation failed: {exc}") from exc
+
+    match algorithm:
+        case "sce":
+            # Initialize SCE-UA algorithm
+            try:
+                calibration = Sce(
+                    hydro_model,
+                    None,
+                    objective,
+                    transformation,
+                    seed=seed,
+                    n_complexes=params["n_complexes"],
+                    k_stop=params["k_stop"],
+                    p_convergence_threshold=params["p_convergence_threshold"],
+                    geometric_range_threshold=params[
+                        "geometric_range_threshold"
+                    ],
+                    max_evaluations=params["max_evaluations"],
+                )
+            except (HolmesNumericalError, HolmesValidationError) as exc:
+                logger.error(f"Failed to initialize SCE-UA: {exc}")
+                raise
+            except Exception as exc:  # pragma: no cover
+                logger.exception("Unexpected error initializing SCE-UA")
+                raise HolmesError(
+                    f"SCE-UA initialization failed: {exc}"
+                ) from exc
+
+            try:
+                calibration.init(
                     precipitation,
                     temperature,
                     pet,
@@ -145,6 +219,35 @@ async def calibrate(
                     median_elevation,
                     observations,
                 )
+            except (HolmesNumericalError, HolmesValidationError) as exc:
+                logger.error(f"Failed to initialize SCE-UA with data: {exc}")
+                raise
+            except Exception as exc:  # pragma: no cover
+                logger.exception(
+                    "Unexpected error during SCE-UA data initialization"
+                )
+                raise HolmesError(
+                    f"SCE-UA data initialization failed: {exc}"
+                ) from exc
+
+            for _ in range(max_iter):
+                try:
+                    done, params_, simulation, objectives = calibration.step(
+                        precipitation,
+                        temperature,
+                        pet,
+                        day_of_year,
+                        elevation_layers,
+                        median_elevation,
+                        observations,
+                    )
+                except (HolmesNumericalError, HolmesValidationError) as exc:
+                    logger.error(f"SCE-UA step failed: {exc}")
+                    raise
+                except Exception as exc:  # pragma: no cover
+                    logger.exception("Unexpected error during SCE-UA step")
+                    raise HolmesError(f"SCE-UA step failed: {exc}") from exc
+
                 results = {
                     "rmse": objectives[0],
                     "nse": objectives[1],
@@ -159,7 +262,7 @@ async def calibrate(
                 if done:
                     break
 
-            return np.array(params)
+            return np.array(params_)
 
         case _:  # pragma: no cover
             assert_never(algorithm)
