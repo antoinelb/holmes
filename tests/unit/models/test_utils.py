@@ -111,6 +111,7 @@ class TestHypothesis:
             st.floats(min_value=0.1, max_value=1000, allow_nan=False),
             min_size=10,
             max_size=100,
+            unique=True,  # Ensure values have variance (avoid constant arrays)
         )
     )
     @settings(max_examples=50)
@@ -139,6 +140,7 @@ class TestHypothesis:
             st.floats(min_value=0.1, max_value=1000, allow_nan=False),
             min_size=10,
             max_size=100,
+            unique=True,  # Ensure values have variance (avoid constant arrays)
         )
     )
     @settings(max_examples=50)

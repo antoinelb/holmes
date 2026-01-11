@@ -69,9 +69,9 @@ holmes
 ### Code Quality
 
 ```bash
-uv run black src/ 
-uv run ruff check src/ 
-uv run ty check src/
+black src/ tests/
+ruff check src/ tests/
+ty check src/ tests/
 ```
 
 ## References

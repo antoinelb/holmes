@@ -3,7 +3,7 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-from .pages import CalibrationPage
+from .pages import CalibrationPage, SettingsPage
 
 
 class TestDataPersistence:
@@ -102,3 +102,119 @@ class TestDataPersistence:
         expect(
             calibration_page.page.locator(calibration_page.END_DATE)
         ).to_have_value("2001-06-01")
+
+
+class TestResetAllButton:
+    """Tests for the Reset All button functionality."""
+
+    @pytest.fixture
+    def calibration_page(self, app_page: Page) -> CalibrationPage:
+        """Get calibration page object."""
+        return CalibrationPage(app_page)
+
+    @pytest.fixture
+    def settings_page(self, app_page: Page) -> SettingsPage:
+        """Get settings page object."""
+        return SettingsPage(app_page)
+
+    def test_reset_all_clears_page_selection(self, fresh_page: Page) -> None:
+        """Reset all button clears page selection and returns to default."""
+        fresh_page.click("#nav button[title='Toggle navigation']")
+        fresh_page.wait_for_selector("#nav.nav--open")
+        fresh_page.click("#nav nav button:has-text('Projection')")
+        fresh_page.wait_for_selector("section#projection:not([hidden])")
+
+        stored = fresh_page.evaluate("localStorage.getItem('holmes--page')")
+        assert stored == "projection"
+
+        settings = SettingsPage(fresh_page)
+        settings.click_reset_all()
+        fresh_page.wait_for_selector("header h1", state="visible")
+
+        expect(fresh_page.locator("section#calibration")).to_be_visible()
+        expect(fresh_page.locator("section#projection")).to_be_hidden()
+
+        stored_after = fresh_page.evaluate("localStorage.getItem('holmes--page')")
+        assert stored_after is None
+
+    def test_reset_all_clears_theme_preference(self, app_page: Page) -> None:
+        """Reset all button clears theme preference and returns to dark theme."""
+        settings = SettingsPage(app_page)
+        settings.click_toggle_theme()
+
+        assert settings.get_current_theme() == "light"
+        stored = app_page.evaluate(
+            "localStorage.getItem('holmes--settings--theme')"
+        )
+        assert stored == "light"
+
+        settings.click_reset_all()
+        app_page.wait_for_selector("header h1", state="visible")
+
+        settings_after = SettingsPage(app_page)
+        assert settings_after.get_current_theme() == "dark"
+
+        stored_after = app_page.evaluate(
+            "localStorage.getItem('holmes--settings--theme')"
+        )
+        assert stored_after is None
+
+    def test_reset_all_clears_calibration_config(
+        self, calibration_page: CalibrationPage, settings_page: SettingsPage
+    ) -> None:
+        """Reset all button clears calibration configuration and restores defaults."""
+        calibration_page.wait_for_loading_complete()
+        calibration_page.select_hydro_model("gr4j")
+        calibration_page.select_catchment("Au Saumon")
+        calibration_page.select_objective("kge")
+        calibration_page.select_transformation("sqrt")
+
+        stored_objective = settings_page.page.evaluate(
+            "localStorage.getItem('holmes--calibration--objective')"
+        )
+        stored_transformation = settings_page.page.evaluate(
+            "localStorage.getItem('holmes--calibration--transformation')"
+        )
+        assert stored_objective == "kge"
+        assert stored_transformation == "sqrt"
+
+        settings_page.click_reset_all()
+        settings_page.page.wait_for_selector("header h1", state="visible")
+
+        calibration_after = CalibrationPage(settings_page.page)
+        calibration_after.wait_for_loading_complete()
+
+        stored_objective_after = settings_page.page.evaluate(
+            "localStorage.getItem('holmes--calibration--objective')"
+        )
+        stored_transformation_after = settings_page.page.evaluate(
+            "localStorage.getItem('holmes--calibration--transformation')"
+        )
+        assert stored_objective_after != "kge"
+        assert stored_transformation_after != "sqrt"
+
+    def test_reset_all_removes_only_holmes_keys(self, app_page: Page) -> None:
+        """Reset all button only removes localStorage keys with 'holmes' prefix."""
+        app_page.evaluate("localStorage.setItem('other-app-key', 'should-remain')")
+        app_page.evaluate("localStorage.setItem('holmes--test', 'should-be-removed')")
+
+        stored_other = app_page.evaluate("localStorage.getItem('other-app-key')")
+        stored_holmes = app_page.evaluate("localStorage.getItem('holmes--test')")
+        assert stored_other == "should-remain"
+        assert stored_holmes == "should-be-removed"
+
+        settings = SettingsPage(app_page)
+        settings.click_reset_all()
+        app_page.wait_for_selector("header h1", state="visible")
+
+        stored_other_after = app_page.evaluate(
+            "localStorage.getItem('other-app-key')"
+        )
+        stored_holmes_after = app_page.evaluate(
+            "localStorage.getItem('holmes--test')"
+        )
+
+        assert stored_other_after == "should-remain"
+        assert stored_holmes_after is None
+
+        app_page.evaluate("localStorage.removeItem('other-app-key')")
