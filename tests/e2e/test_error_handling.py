@@ -94,3 +94,55 @@ class TestErrorHandling:
             "#notifications .notification"
         ).count()
         assert final_count < initial_count
+
+    def test_multiple_notifications_display_correctly(
+        self, simulation_page: SimulationPage, tmp_path: Path
+    ) -> None:
+        """Multiple notifications can be displayed and removed without crashing.
+
+        This tests the setDifference browser compatibility fix.
+        """
+        # Create multiple invalid files to trigger multiple notifications
+        for i in range(3):
+            invalid_file = tmp_path / f"invalid_{i}.json"
+            invalid_file.write_text(json.dumps({"foo": f"bar_{i}"}))
+            simulation_page.upload_calibration(invalid_file)
+            simulation_page.page.wait_for_timeout(200)
+
+        # Wait for notifications to appear
+        simulation_page.page.wait_for_selector("#notifications .notification")
+
+        # App should not crash - should have at least one notification
+        notification_count = simulation_page.page.locator(
+            "#notifications .notification"
+        ).count()
+        assert notification_count >= 1
+
+        # Wait for notifications to auto-dismiss
+        simulation_page.page.wait_for_timeout(4000)
+
+        # App should still be responsive after notifications are removed
+        expect(simulation_page.page.locator("header h1")).to_be_visible()
+
+    def test_app_handles_console_errors_gracefully(
+        self, app_page: Page
+    ) -> None:
+        """App registers global error handlers."""
+        # Verify the global error handlers are registered
+        has_onerror = app_page.evaluate("typeof window.onerror === 'function'")
+        has_unhandled = app_page.evaluate(
+            "typeof window.onunhandledrejection === 'function'"
+        )
+        assert has_onerror, "window.onerror handler should be registered"
+        assert has_unhandled, "window.onunhandledrejection handler should be registered"
+
+    def test_app_functional_after_reload(
+        self, app_page: Page
+    ) -> None:
+        """App remains functional after page reload (WebSocket reconnects)."""
+        app_page.reload()
+        app_page.wait_for_selector("header h1", state="visible")
+
+        # App should be functional after reload
+        sections = app_page.locator("main section").count()
+        assert sections == 3, "All three sections should be present"

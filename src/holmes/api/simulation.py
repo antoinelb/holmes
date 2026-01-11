@@ -43,6 +43,8 @@ async def _websocket_handler(ws: WebSocket) -> None:
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
     logger.info(f"Websocket {msg.get('type')} message")
     match msg.get("type"):
+        case "ping":
+            pass
         case "config":
             if "data" not in msg:
                 await send(ws, "error", "The catchment must be provided.")

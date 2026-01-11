@@ -1,4 +1,5 @@
 import { create } from "./utils/elements.js";
+import { setDifference } from "./utils/misc.js";
 
 /*********/
 /* model */
@@ -64,12 +65,13 @@ export function view(model, dispatch) {
   dispatch = createDispatch(dispatch);
 
   const div = document.getElementById("notifications");
+  if (!div) return;
+
   const notifications = [...document.querySelectorAll(".notification")];
   const current = new Set(model.notifications.map((n) => n.id));
-  const toRemove = new Set(
-    notifications.map((n) => n.getAttribute("data-id")),
-  ).difference(current);
-  const toAdd = current.difference(toRemove);
+  const domIds = new Set(notifications.map((n) => n.getAttribute("data-id")));
+  const toRemove = setDifference(domIds, current);
+  const toAdd = setDifference(current, domIds);
 
   notifications.forEach((n) => {
     if (toRemove.has(n.getAttribute("data-id"))) {

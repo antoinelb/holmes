@@ -21,9 +21,10 @@ export async function update(model, msg, dispatch) {
   dispatch = createDispatch(dispatch);
   switch (msg.type) {
     case "CheckEscape":
+      const navCheckEl = document.getElementById("nav");
       if (
         msg.data.type === "click" &&
-        document.getElementById("nav").contains(msg.data.target)
+        navCheckEl?.contains(msg.data.target)
       ) {
         return model;
       } else {
@@ -125,9 +126,12 @@ export function initView(dispatch) {
 export function view(model, dispatch) {
   dispatch = createDispatch(dispatch);
 
-  if (model.open) {
-    document.getElementById("nav").classList.add("nav--open");
-  } else {
-    document.getElementById("nav").classList.remove("nav--open");
+  const navEl = document.getElementById("nav");
+  if (navEl) {
+    if (model.open) {
+      navEl.classList.add("nav--open");
+    } else {
+      navEl.classList.remove("nav--open");
+    }
   }
 }

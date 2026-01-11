@@ -38,6 +38,8 @@ async def _websocket_handler(ws: WebSocket) -> None:
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
     logger.info(f"Websocket {msg.get('type')} message")
     match msg.get("type"):
+        case "ping":
+            pass
         case "config":
             await _handle_config_message(ws)
         case "observations":

@@ -8,6 +8,16 @@ import * as calibration from "./calibration.js";
 import * as simulation from "./simulation.js";
 import * as projection from "./projection.js";
 
+// Global error handlers
+window.onerror = (message, source, lineno, colno, error) => {
+  console.error("Uncaught error:", { message, source, lineno, colno, error });
+  return false; // Let default handler also run
+};
+
+window.onunhandledrejection = (event) => {
+  console.error("Unhandled promise rejection:", event.reason);
+};
+
 /*********/
 /* model */
 /*********/
@@ -154,9 +164,17 @@ async function initView(model, dispatch) {
 
 async function injectSvgSprite() {
   if (!document.getElementById("svg-sprite")) {
-    const resp = await fetch("/static/assets/icons/icons.svg");
-    const sprite = await resp.text();
-    document.body.insertAdjacentHTML("beforebegin", sprite);
+    try {
+      const resp = await fetch("/static/assets/icons/icons.svg");
+      if (!resp.ok) {
+        console.error("Failed to load SVG sprite:", resp.status);
+        return;
+      }
+      const sprite = await resp.text();
+      document.body.insertAdjacentHTML("beforebegin", sprite);
+    } catch (e) {
+      console.error("Failed to inject SVG sprite:", e);
+    }
   }
 }
 
@@ -193,19 +211,17 @@ function loadingView(model) {
     model.calibration.loading ||
     model.simulation.loading ||
     model.projection.loading;
+
+  const faviconLink = document.querySelector("link[rel~='icon']");
+  if (!faviconLink) return;
+
   if (loading) {
-    if (
-      !document.querySelector("link[rel~='icon']").href.endsWith("/loading.svg")
-    ) {
-      document.querySelector("link[rel~='icon']").href =
-        "/static/assets/icons/loading.svg";
+    if (!faviconLink.href.endsWith("/loading.svg")) {
+      faviconLink.href = "/static/assets/icons/loading.svg";
     }
   } else {
-    if (
-      !document.querySelector("link[rel~='icon']").href.endsWith("/favicon.svg")
-    ) {
-      document.querySelector("link[rel~='icon']").href =
-        "/static/assets/icons/favicon.svg";
+    if (!faviconLink.href.endsWith("/favicon.svg")) {
+      faviconLink.href = "/static/assets/icons/favicon.svg";
     }
   }
 }

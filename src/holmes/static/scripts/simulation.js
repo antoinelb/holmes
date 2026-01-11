@@ -1,22 +1,34 @@
 import { create, clear, createIcon, createCheckbox } from "./utils/elements.js";
-import { connect } from "./utils/ws.js";
+import {
+  connect,
+  incrementReconnectAttempt,
+  isCircuitBreakerOpen,
+} from "./utils/ws.js";
 import { formatNumber, colours, round, setEqual } from "./utils/misc.js";
+
+const WS_URL = "simulation/";
 
 /*********/
 /* model */
 /*********/
+
+function parseLocalStorageCalibration() {
+  const stored = window.localStorage.getItem("holmes--simulation--calibration");
+  if (stored === null) return [];
+  try {
+    return JSON.parse(stored) ?? [];
+  } catch (e) {
+    console.error("Failed to parse localStorage calibrations:", e);
+    return [];
+  }
+}
 
 export function initModel() {
   return {
     loading: false,
     ws: null,
     availableConfig: null,
-    calibration:
-      window.localStorage.getItem("holmes--simulation--calibration") === null
-        ? []
-        : JSON.parse(
-            window.localStorage.getItem("holmes--simulation--calibration"),
-          ),
+    calibration: parseLocalStorageCalibration(),
     config: {
       start: window.localStorage.getItem("holmes--simulation--start"),
       end: window.localStorage.getItem("holmes--simulation--end"),
@@ -83,7 +95,7 @@ export async function update(model, msg, dispatch, createNotification) {
   let calibration;
   switch (msg.type) {
     case "Connect":
-      connect("simulation/", handleMessage, dispatch, createNotification);
+      connect(WS_URL, handleMessage, dispatch, createNotification);
       return { ...model, loading: true };
     case "Connected":
       if (model.availableConfig === null) {
@@ -91,7 +103,18 @@ export async function update(model, msg, dispatch, createNotification) {
       }
       return { ...model, loading: false, ws: msg.data };
     case "Disconnected":
-      setTimeout(() => dispatch({ type: "Connect" }), 3000);
+      if (isCircuitBreakerOpen(WS_URL)) {
+        createNotification(
+          "Connection lost. Please refresh the page to reconnect.",
+          true,
+        );
+        return { ...model, ws: null };
+      }
+      const simulationReconnectState = incrementReconnectAttempt(WS_URL);
+      setTimeout(
+        () => dispatch({ type: "Connect" }),
+        simulationReconnectState.delay,
+      );
       return { ...model, ws: null };
     case "GetAvailableConfig":
       if (
@@ -134,11 +157,21 @@ export async function update(model, msg, dispatch, createNotification) {
         const reader = new FileReader();
         reader.onload = (event) =>
           dispatch({ type: "ImportCalibration", data: event });
+        reader.onerror = () => {
+          console.error("Failed to read file:", file.name);
+          createNotification(`Failed to read file: ${file.name}`, true);
+        };
         reader.readAsText(file);
       });
       return model;
     case "ImportCalibration":
-      calibration = JSON.parse(msg.data.target.result);
+      try {
+        calibration = JSON.parse(msg.data.target.result);
+      } catch (e) {
+        console.error("Failed to parse calibration file:", e);
+        createNotification("Invalid JSON in calibration file", true);
+        return model;
+      }
       const [valid, error] = verifyCalibration(model, calibration);
       if (valid) {
         const calibrations = [
@@ -314,7 +347,14 @@ function createDispatch(dispatch) {
 }
 
 function handleMessage(event, dispatch, createNotification) {
-  const msg = JSON.parse(event.data);
+  let msg;
+  try {
+    msg = JSON.parse(event.data);
+  } catch (e) {
+    console.error("Failed to parse WebSocket message:", e);
+    createNotification("Received invalid message from server", true);
+    return;
+  }
   switch (msg.type) {
     case "error":
       createNotification(msg.data, true);
