@@ -45,15 +45,22 @@ class TestCalibrationWorkflow:
         calibration_page.wait_for_loading_complete()
         calibration_page.select_hydro_model("gr4j")
 
-        slider_input = calibration_page.page.locator(
-            f"{calibration_page.MANUAL_CONFIG} .slider:first-child input[type='range']"
-        )
-        number_input = calibration_page.page.locator(
-            f"{calibration_page.MANUAL_CONFIG} .slider:first-child input[type='number']"
-        )
+        # Get the first slider's range and number inputs
+        first_slider = calibration_page.page.locator(
+            f"{calibration_page.MANUAL_CONFIG} .slider"
+        ).first
+        range_input = first_slider.locator("input[type='range']")
+        number_input = first_slider.locator("input[type='number']")
 
-        slider_input.fill("400")
-        slider_input.dispatch_event("input")
+        # Use evaluate to set range input value (fill() doesn't work on range inputs)
+        range_input.evaluate(
+            """
+            element => {
+                element.value = "400";
+                element.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            """
+        )
 
         expect(number_input).to_have_value("400")
 
