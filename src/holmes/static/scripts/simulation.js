@@ -340,7 +340,7 @@ export async function update(model, msg, dispatch, createNotification) {
         loading: false,
       };
     case "Export":
-      downloadData(model);
+      downloadData(model, createNotification);
       return model;
     default:
       return model;
@@ -379,7 +379,7 @@ function handleMessage(event, dispatch, createNotification) {
   }
 }
 
-function downloadData(model) {
+function downloadData(model, createNotification) {
   if (
     model.calibration.length > 0 &&
     model.results !== null &&
@@ -395,15 +395,17 @@ function downloadData(model) {
       results: model.results,
     };
 
+    let filename = `${model.calibration[0].catchment.toLowerCase().replace(" ", "_")}_simulation_results.json`;
     let blob = new Blob([JSON.stringify(resultsData, null, 2)], {
       type: "application/json",
     });
     let url = URL.createObjectURL(blob);
     let a = document.createElement("a");
     a.href = url;
-    a.download = `${model.calibration[0].catchment.toLowerCase().replace(" ", "_")}_simulation_results.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded simulation results to ${filename}.`);
 
     const streamflowData = [
       [...Object.keys(model.simulation[0]), "observation"].join(","),
@@ -413,15 +415,17 @@ function downloadData(model) {
       ),
     ].join("\n");
 
+    filename = `${model.calibration[0].catchment.toLowerCase().replace(" ", "_")}_simulation_data.csv`;
     blob = new Blob([streamflowData], {
       type: "text/csv",
     });
     url = URL.createObjectURL(blob);
     a = document.createElement("a");
     a.href = url;
-    a.download = `${model.calibration[0].catchment.toLowerCase().replace(" ", "_")}_simulation_data.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded simulation timeseries to ${filename}.`);
   }
 }
 

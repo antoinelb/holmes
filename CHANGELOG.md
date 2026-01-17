@@ -11,9 +11,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ### Added
 - Added "Allow save" button in settings to allow reading from saved configs
+- Notifications confirming successful file downloads on calibration, simulation, and projection pages
 
 ### Fixed
 - Fixed date icon in dark mode for chromium browsers
+- Fixed notifications not being removed from the DOM due to missing `data-id` attribute
 
 ## [3.3.6] - 2026-01-11
 

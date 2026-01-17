@@ -271,10 +271,10 @@ export async function update(model, msg, dispatch, createNotification) {
               ],
       };
     case "ExportParams":
-      downloadParams(model);
+      downloadParams(model, createNotification);
       return model;
     case "ExportData":
-      downloadData(model);
+      downloadData(model, createNotification);
       return model;
     default:
       return model;
@@ -338,7 +338,7 @@ function updateCatchment(model, catchment, dispatch) {
   dispatch({ type: "GetObservations" });
 }
 
-function downloadParams(model) {
+function downloadParams(model, createNotification) {
   if (
     model.availableConfig !== null &&
     model.config.catchment !== null &&
@@ -358,19 +358,21 @@ function downloadParams(model) {
       ),
     };
 
+    const filename = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_params.json`;
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_params.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded calibration parameters to ${filename}.`);
   }
 }
 
-function downloadData(model) {
+function downloadData(model, createNotification) {
   if (
     model.availableConfig !== null &&
     model.config.catchment !== null &&
@@ -392,15 +394,17 @@ function downloadData(model) {
       [model.config.objective]: objectiveData,
     };
 
+    let filename = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_results.json`;
     let blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
     let url = URL.createObjectURL(blob);
     let a = document.createElement("a");
     a.href = url;
-    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_results.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded calibration results to ${filename}.`);
 
     const streamflowData = [
       ["date", "observation", "simulation"].join(","),
@@ -409,15 +413,17 @@ function downloadData(model) {
       ),
     ].join("\n");
 
+    filename = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_data.csv`;
     blob = new Blob([streamflowData], {
       type: "text/csv",
     });
     url = URL.createObjectURL(blob);
     a = document.createElement("a");
     a.href = url;
-    a.download = `${model.config.catchment.toLowerCase().replace(" ", "_")}_${model.config.hydroModel}_calibration_data.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded calibration timeseries to ${filename}.`);
   }
 }
 

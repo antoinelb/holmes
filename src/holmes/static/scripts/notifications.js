@@ -68,7 +68,7 @@ export function view(model, dispatch) {
   if (!div) return;
 
   const notifications = [...document.querySelectorAll(".notification")];
-  const current = new Set(model.notifications.map((n) => n.id));
+  const current = new Set(model.notifications.map((n) => String(n.id)));
   const domIds = new Set(notifications.map((n) => n.getAttribute("data-id")));
   const toRemove = setDifference(domIds, current);
   const toAdd = setDifference(current, domIds);
@@ -79,11 +79,14 @@ export function view(model, dispatch) {
     }
   });
   model.notifications.forEach((n) => {
-    if (toAdd.has(n.id)) {
+    if (toAdd.has(String(n.id))) {
       div.appendChild(
         create(
           "div",
-          { class: `notification ${n.isError ? "error" : ""}` },
+          {
+            class: `notification ${n.isError ? "error" : ""}`,
+            "data-id": n.id,
+          },
           [create("span", {}, n.text), create("div", {}, create("div"))],
           [
             {

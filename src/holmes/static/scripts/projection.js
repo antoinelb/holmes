@@ -265,7 +265,7 @@ export async function update(model, msg, dispatch, createNotification) {
         running: false,
       };
     case "Export":
-      downloadData(model);
+      downloadData(model, createNotification);
       return model;
     default:
       return model;
@@ -301,7 +301,7 @@ function handleMessage(event, dispatch, createNotification) {
   }
 }
 
-function downloadData(model) {
+function downloadData(model, createNotification) {
   if (model.calibration !== null && model.projection !== null) {
     const _data = model.projection.map((p) => ({
       ...p,
@@ -314,15 +314,17 @@ function downloadData(model) {
       ..._data.map((p) => Object.values(p).join(",")),
     ].join("\n");
 
+    const filename = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_data.csv`;
     const blob = new Blob([data], {
       type: "text/csv",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_data.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    createNotification(`Downloaded projection timeseries ${filename}.`);
   }
 }
 
