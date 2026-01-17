@@ -21,21 +21,21 @@ class Sce:
     def init(
         self,
         precipitation: npt.NDArray[np.float64],
-        temperature: npt.NDArray[np.float64],
+        temperature: npt.NDArray[np.float64] | None,
         pet: npt.NDArray[np.float64],
         day_of_year: npt.NDArray[np.uintp],
-        elevation_layers: npt.NDArray[np.float64],
-        median_elevation: float,
+        elevation_layers: npt.NDArray[np.float64] | None,
+        median_elevation: float | None,
         observations: npt.NDArray[np.float64],
     ) -> None: ...
     def step(
         self,
         precipitation: npt.NDArray[np.float64],
-        temperature: npt.NDArray[np.float64],
+        temperature: npt.NDArray[np.float64] | None,
         pet: npt.NDArray[np.float64],
         day_of_year: npt.NDArray[np.uintp],
-        elevation_layers: npt.NDArray[np.float64],
-        median_elevation: float,
+        elevation_layers: npt.NDArray[np.float64] | None,
+        median_elevation: float | None,
         observations: npt.NDArray[np.float64],
     ) -> tuple[
         bool,

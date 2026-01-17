@@ -4,9 +4,6 @@ from typing import Any, get_args
 import numpy as np
 import numpy.typing as npt
 import polars as pl
-from starlette.routing import BaseRoute, WebSocketRoute
-from starlette.websockets import WebSocket, WebSocketDisconnect
-
 from holmes import data
 from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
@@ -17,7 +14,8 @@ from holmes.utils.websocket import (
     create_monitored_task,
     send,
 )
-
+from starlette.routing import BaseRoute, WebSocketRoute
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 ##########
 # public #
@@ -159,7 +157,6 @@ async def _handle_manual_calibration_message(
         _data = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
-        metadata = data.read_cemaneige_info(msg_data["catchment"])
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
@@ -168,7 +165,6 @@ async def _handle_manual_calibration_message(
     hydro_params = np.array(msg_data["hydroParams"])
 
     precipitation = _data["precipitation"].to_numpy()
-    temperature = _data["temperature"].to_numpy()
     pet = _data["pet"].to_numpy()
     day_of_year = (
         _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
@@ -177,12 +173,27 @@ async def _handle_manual_calibration_message(
         .to_numpy()
         .astype(np.uintp)
     )
-    elevation_layers = np.array(metadata["altitude_layers"])
-    median_elevation = metadata["median_altitude"]
 
     observations = _data["streamflow"].to_numpy()
 
     if msg_data["snowModel"] is not None:
+        try:
+            metadata = data.read_cemaneige_info(msg_data["catchment"])
+        except HolmesDataError as exc:
+            await send(ws, "error", str(exc))
+            return
+
+        try:
+            temperature = _data["temperature"].to_numpy()
+        except pl.exceptions.ColumnNotFoundError:
+            await send(
+                ws,
+                "error",
+                f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
+            )
+            return
+        elevation_layers = np.array(metadata["altitude_layers"])
+        median_elevation = metadata["median_altitude"]
         snow_simulate = snow.get_model(msg_data["snowModel"])
         snow_params = np.array([0.25, 3.74, metadata["qnbv"]])
         precipitation = snow_simulate(
@@ -246,13 +257,11 @@ async def _handle_calibration_start_message(
         _data = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
-        metadata = data.read_cemaneige_info(msg_data["catchment"])
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
 
     precipitation = _data["precipitation"].to_numpy()
-    temperature = _data["temperature"].to_numpy()
     pet = _data["pet"].to_numpy()
     day_of_year = (
         _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
@@ -261,10 +270,32 @@ async def _handle_calibration_start_message(
         .to_numpy()
         .astype(np.uintp)
     )
-    elevation_layers = np.array(metadata["altitude_layers"])
-    median_elevation = metadata["median_altitude"]
 
     observations = _data["streamflow"].to_numpy()
+
+    if msg_data["snowModel"] is not None:
+        try:
+            metadata = data.read_cemaneige_info(msg_data["catchment"])
+        except HolmesDataError as exc:
+            await send(ws, "error", str(exc))
+            return
+        try:
+            temperature = _data["temperature"].to_numpy()
+        except pl.exceptions.ColumnNotFoundError:
+            await send(
+                ws,
+                "error",
+                f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
+            )
+            return
+        elevation_layers = np.array(metadata["altitude_layers"])
+        median_elevation = metadata["median_altitude"]
+        qnbv = metadata["qnbv"]
+    else:
+        temperature = None
+        elevation_layers = None
+        median_elevation = None
+        qnbv = None
 
     async def callback(
         done: bool,
@@ -293,7 +324,7 @@ async def _handle_calibration_start_message(
         day_of_year,
         elevation_layers,
         median_elevation,
-        metadata["qnbv"],
+        qnbv,
         msg_data["hydroModel"],
         msg_data["snowModel"],
         msg_data["objective"],

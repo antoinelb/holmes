@@ -18,10 +18,7 @@ fn test_sce_synthetic_convergence() {
 
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
 
     // Generate observations from known parameters
     let obs = gr4j::simulate(known_params.view(), precip.view(), pet.view())
@@ -42,14 +39,14 @@ fn test_sce_synthetic_convergence() {
     )
     .unwrap();
 
-    // Initialize
+    // Initialize (no snow model, so snow params are None)
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -64,11 +61,11 @@ fn test_sce_synthetic_convergence() {
         let (d, params, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                median_elevation,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -106,9 +103,7 @@ fn test_sce_rmse_objective() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     // Generate observations with some noise
     let (defaults, _) = gr4j::init();
@@ -132,11 +127,11 @@ fn test_sce_rmse_objective() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -149,11 +144,11 @@ fn test_sce_rmse_objective() {
         let (d, _, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -175,9 +170,7 @@ fn test_sce_kge_objective() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     let (defaults, _) = gr4j::init();
     let obs = gr4j::simulate(defaults.view(), precip.view(), pet.view())
@@ -200,11 +193,11 @@ fn test_sce_kge_objective() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -217,11 +210,11 @@ fn test_sce_kge_objective() {
         let (d, _, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -246,9 +239,7 @@ fn test_sce_log_transformation() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     // Ensure positive observations for log transform
     let (defaults, _) = gr4j::init();
@@ -272,11 +263,11 @@ fn test_sce_log_transformation() {
 
     let init_result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -284,11 +275,11 @@ fn test_sce_log_transformation() {
 
     let step_result = sce.step(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -309,9 +300,7 @@ fn test_sce_sqrt_transformation() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     // Positive observations for sqrt transform
     let (defaults, _) = gr4j::init();
@@ -335,11 +324,11 @@ fn test_sce_sqrt_transformation() {
 
     let init_result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -347,11 +336,11 @@ fn test_sce_sqrt_transformation() {
 
     let step_result = sce.step(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -372,9 +361,7 @@ fn test_sce_max_evaluations() {
 
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     let mut sce = Sce::new(
@@ -393,11 +380,11 @@ fn test_sce_max_evaluations() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -409,11 +396,11 @@ fn test_sce_max_evaluations() {
         let (d, _, _, _) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -478,13 +465,14 @@ fn test_sce_snow_hydro_calibration() {
     )
     .unwrap();
 
+    // Snow model requires temperature, elevation_bands, and median_elevation
     sce.init(
         precip.view(),
-        temp.view(),
+        Some(temp.view()),
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        Some(elevation_layers.view()),
+        Some(median_elevation),
         obs.view(),
     )
     .unwrap();
@@ -498,11 +486,11 @@ fn test_sce_snow_hydro_calibration() {
         let (d, params, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                Some(temp.view()),
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                median_elevation,
+                Some(elevation_layers.view()),
+                Some(median_elevation),
                 obs.view(),
             )
             .unwrap();
@@ -537,9 +525,7 @@ fn test_sce_reproducibility() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     let (defaults, _) = gr4j::init();
     let obs = gr4j::simulate(defaults.view(), precip.view(), pet.view())
@@ -566,11 +552,11 @@ fn test_sce_reproducibility() {
 
         sce.init(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         )
         .unwrap();
@@ -578,11 +564,11 @@ fn test_sce_reproducibility() {
         let (_, params, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -610,11 +596,8 @@ fn test_full_calibration_workflow() {
     // 1. Define the problem
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
 
     // 2. Generate "observed" data (with known parameters for testing)
     let true_params = array![250.0, 0.3, 80.0, 2.0];
@@ -636,14 +619,14 @@ fn test_full_calibration_workflow() {
     )
     .unwrap();
 
-    // 4. Initialize
+    // 4. Initialize (no snow model, so snow params are None)
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -658,11 +641,11 @@ fn test_full_calibration_workflow() {
         let (d, _params, sim, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                median_elevation,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();

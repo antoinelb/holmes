@@ -148,3 +148,139 @@ class TestCalibrationWebSocket:
             response = ws.receive_json()
             assert response["type"] == "error"
             assert "Unknown" in response["data"]
+
+    def test_manual_calibration_snow_model_missing_cemaneige_info(
+        self, client
+    ):
+        """Error when snow model requested but catchment has no CemaNeige info."""
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "manual",
+                    "data": {
+                        "catchment": "Leaf",  # Has no CemaNeige info file
+                        "start": "1980-01-01",
+                        "end": "1981-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "hydroParams": [350, 0.5, 90, 1.7],
+                        "objective": "nse",
+                        "transformation": "none",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "CemaNeige" in response["data"]
+
+    def test_calibration_start_snow_model_missing_cemaneige_info(self, client):
+        """Error when snow model requested but catchment has no CemaNeige info."""
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "calibration_start",
+                    "data": {
+                        "catchment": "Leaf",  # Has no CemaNeige info file
+                        "start": "1980-01-01",
+                        "end": "1981-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "objective": "nse",
+                        "transformation": "none",
+                        "algorithm": "sce",
+                        "algorithmParams": {
+                            "n_complexes": 2,
+                            "k_stop": 2,
+                            "p_convergence_threshold": 0.1,
+                            "geometric_range_threshold": 0.001,
+                            "max_evaluations": 20,
+                        },
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "CemaNeige" in response["data"]
+
+
+class TestCalibrationWebSocketSnowModelMissingTemperature:
+    """Tests for snow model with catchments missing temperature data."""
+
+    def test_manual_calibration_snow_model_missing_temperature(
+        self, client, monkeypatch
+    ):
+        """Error when snow model requested but catchment has no temperature."""
+        from holmes import data as data_module
+
+        original_read_data = data_module.read_data
+
+        def mock_read_data(catchment, start, end, **kwargs):
+            """Return data without temperature column."""
+            df = original_read_data(catchment, start, end, **kwargs)
+            # Remove temperature column to simulate catchment without temp data
+            return df.drop("temperature")
+
+        monkeypatch.setattr(data_module, "read_data", mock_read_data)
+
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "manual",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2001-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "hydroParams": [350, 0.5, 90, 1.7],
+                        "objective": "nse",
+                        "transformation": "none",
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "temperature" in response["data"].lower()
+
+    def test_calibration_start_snow_model_missing_temperature(
+        self, client, monkeypatch
+    ):
+        """Error when snow model requested but catchment has no temperature."""
+        from holmes import data as data_module
+
+        original_read_data = data_module.read_data
+
+        def mock_read_data(catchment, start, end, **kwargs):
+            """Return data without temperature column."""
+            df = original_read_data(catchment, start, end, **kwargs)
+            # Remove temperature column to simulate catchment without temp data
+            return df.drop("temperature")
+
+        monkeypatch.setattr(data_module, "read_data", mock_read_data)
+
+        with client.websocket_connect("/calibration/") as ws:
+            ws.send_json(
+                {
+                    "type": "calibration_start",
+                    "data": {
+                        "catchment": "Au Saumon",
+                        "start": "2000-01-01",
+                        "end": "2001-12-31",
+                        "hydroModel": "gr4j",
+                        "snowModel": "cemaneige",
+                        "objective": "nse",
+                        "transformation": "none",
+                        "algorithm": "sce",
+                        "algorithmParams": {
+                            "n_complexes": 2,
+                            "k_stop": 2,
+                            "p_convergence_threshold": 0.1,
+                            "geometric_range_threshold": 0.001,
+                            "max_evaluations": 20,
+                        },
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "temperature" in response["data"].lower()

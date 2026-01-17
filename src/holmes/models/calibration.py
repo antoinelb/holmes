@@ -11,13 +11,12 @@ from typing import Any, Awaitable, Callable, Literal, assert_never
 
 import numpy as np
 import numpy.typing as npt
-from holmes_rs.calibration.sce import Sce
-
 from holmes.exceptions import (
     HolmesError,
     HolmesNumericalError,
     HolmesValidationError,
 )
+from holmes_rs.calibration.sce import Sce
 
 from . import snow
 from .snow import SnowModel
@@ -86,13 +85,13 @@ def get_config(
 
 async def calibrate(
     precipitation: npt.NDArray[np.float64],
-    temperature: npt.NDArray[np.float64],
+    temperature: npt.NDArray[np.float64] | None,
     pet: npt.NDArray[np.float64],
     observations: npt.NDArray[np.float64],
     day_of_year: npt.NDArray[np.uintp],
-    elevation_layers: npt.NDArray[np.float64],
-    median_elevation: float,
-    qnbv: float,
+    elevation_layers: npt.NDArray[np.float64] | None,
+    median_elevation: float | None,
+    qnbv: float | None,
     hydro_model: str,
     snow_model: SnowModel | None,
     objective: Objective,
@@ -114,54 +113,17 @@ async def calibrate(
     ) = None,
     stop_event: asyncio.Event | None = None,
 ) -> npt.NDArray[np.float64]:
-    """
-    Run model calibration using the specified algorithm.
-
-    Parameters
-    ----------
-    precipitation : array
-        Daily precipitation values
-    temperature : array
-        Daily temperature values
-    pet : array
-        Daily potential evapotranspiration
-    observations : array
-        Observed streamflow values
-    day_of_year : array
-        Day of year for each timestep
-    elevation_layers : array
-        Elevation band fractions
-    median_elevation : float
-        Median catchment elevation
-    qnbv : float
-        CemaNeige parameter
-    hydro_model : str
-        Name of hydrological model
-    snow_model : SnowModel or None
-        Name of snow model, or None to disable
-    objective : str
-        Objective function ("rmse", "nse", "kge")
-    transformation : str
-        Data transformation ("log", "sqrt", "none")
-    algorithm : str
-        Calibration algorithm ("sce")
-    params : dict
-        Algorithm parameters
-    callback : callable, optional
-        Async callback for progress updates
-    stop_event : asyncio.Event, optional
-        Event to signal early termination
-
-    Returns
-    -------
-    array
-        Calibrated parameters
-    """
     seed = 123
     max_iter = 100_000
 
-    # Apply snow model if enabled
     if snow_model is not None:
+        if (
+            temperature is None
+            or elevation_layers is None
+            or median_elevation is None
+            or qnbv is None
+        ):
+            raise HolmesError("There are missing snow parameters.")
         try:
             snow_simulate = snow.get_model(snow_model)
             snow_params = np.array([0.25, 3.74, qnbv])
@@ -184,7 +146,6 @@ async def calibrate(
 
     match algorithm:
         case "sce":
-            # Initialize SCE-UA algorithm
             try:
                 calibration = Sce(
                     hydro_model,
@@ -265,4 +226,4 @@ async def calibrate(
             return np.array(params_)
 
         case _:  # pragma: no cover
-            assert_never(algorithm)
+            assert_never(algorithm)  # type: ignore

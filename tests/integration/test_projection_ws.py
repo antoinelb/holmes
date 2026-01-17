@@ -91,3 +91,50 @@ class TestProjectionWebSocket:
             ws.send_json({"type": "unknown_type"})
             response = ws.receive_json()
             assert response["type"] == "error"
+
+    def test_projection_run_with_snow_model(self, client):
+        """Run projection with snow model returns results."""
+        with client.websocket_connect("/projection/") as ws:
+            ws.send_json({"type": "config", "data": "Au Saumon"})
+            config_response = ws.receive_json()
+            if len(config_response["data"]) == 0:
+                pytest.skip("No projection data available")
+            first_config = config_response["data"][0]
+            ws.send_json(
+                {
+                    "type": "projection",
+                    "data": {
+                        "config": {
+                            "model": first_config["model"],
+                            "horizon": first_config["horizon"],
+                            "scenario": first_config["scenario"],
+                        },
+                        "calibration": {
+                            "catchment": "Au Saumon",
+                            "hydroModel": "gr4j",
+                            "snowModel": "cemaneige",
+                            "hydroParams": {
+                                "x1": 350,
+                                "x2": 0.5,
+                                "x3": 90,
+                                "x4": 1.7,
+                            },
+                        },
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "projection"
+            data = response["data"]
+            assert isinstance(data, list)
+            assert len(data) > 0
+
+    def test_projection_on_catchment_without_projection_data_errors(
+        self, client
+    ):
+        """Projection fails on catchment without projection data."""
+        with client.websocket_connect("/projection/") as ws:
+            ws.send_json({"type": "config", "data": "Leaf"})
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "Projection" in response["data"] or "not found" in response["data"]

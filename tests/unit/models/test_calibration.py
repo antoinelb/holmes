@@ -8,7 +8,11 @@ import polars as pl
 import pytest
 
 from holmes import data
-from holmes.exceptions import HolmesNumericalError, HolmesValidationError
+from holmes.exceptions import (
+    HolmesError,
+    HolmesNumericalError,
+    HolmesValidationError,
+)
 from holmes.models import calibration
 
 
@@ -364,3 +368,26 @@ class TestCalibrateErrorHandling:
                     algorithm="sce",
                     params=sce_params,
                 )
+
+    @pytest.mark.asyncio
+    async def test_snow_model_missing_snow_params(
+        self, sample_data, sce_params
+    ):
+        """Calibration raises error when snow model set but params missing."""
+        with pytest.raises(HolmesError, match="missing snow parameters"):
+            await calibration.calibrate(
+                sample_data["precipitation"],
+                None,  # temperature is None
+                sample_data["pet"],
+                sample_data["observations"],
+                sample_data["day_of_year"],
+                None,  # elevation_layers is None
+                None,  # median_elevation is None
+                None,  # qnbv is None
+                hydro_model="gr4j",
+                snow_model="cemaneige",  # Snow model set but params missing
+                objective="nse",
+                transformation="none",
+                algorithm="sce",
+                params=sce_params,
+            )

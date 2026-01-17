@@ -16,6 +16,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ### Fixed
 - Fixed date icon in dark mode for chromium browsers
 - Fixed notifications not being removed from the DOM due to missing `data-id` attribute
+- Fixed handling of catchments with no snow data
 
 ## [3.3.6] - 2026-01-11
 

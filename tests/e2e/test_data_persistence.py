@@ -256,17 +256,23 @@ class TestAllowSaveButton:
 
         # Initially checked and no localStorage value (defaults to true)
         assert settings.is_allow_save_checked()
-        stored = fresh_page.evaluate("localStorage.getItem('holmes--can-save')")
+        stored = fresh_page.evaluate(
+            "localStorage.getItem('holmes--can-save')"
+        )
         assert stored is None
 
         # Uncheck - should store "false"
         settings.click_allow_save()
-        stored = fresh_page.evaluate("localStorage.getItem('holmes--can-save')")
+        stored = fresh_page.evaluate(
+            "localStorage.getItem('holmes--can-save')"
+        )
         assert stored == "false"
 
         # Check again - should store "true"
         settings.click_allow_save()
-        stored = fresh_page.evaluate("localStorage.getItem('holmes--can-save')")
+        stored = fresh_page.evaluate(
+            "localStorage.getItem('holmes--can-save')"
+        )
         assert stored == "true"
 
     def test_allow_save_state_persists_after_reload(

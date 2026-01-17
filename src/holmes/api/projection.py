@@ -99,7 +99,6 @@ async def _handle_projection_message(
     catchment = msg_data["calibration"]["catchment"]
 
     try:
-        metadata = data.read_cemaneige_info(catchment)
         _data = (
             data.read_projection_data(catchment)
             .filter(
@@ -110,26 +109,31 @@ async def _handle_projection_message(
             .sort("member")
             .collect()
         )
+        # CemaNeige info is always needed for latitude (PET calculation)
+        metadata = data.read_cemaneige_info(catchment)
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
 
-    elevation_layers = np.array(metadata["altitude_layers"])
-    median_elevation = metadata["median_altitude"]
     latitude = metadata["latitude"]
-    qnbv = metadata["qnbv"]
+
+    # Only set up snow parameters when snow model is used
+    if msg_data["calibration"]["snowModel"] is not None:
+        elevation_layers = np.array(metadata["altitude_layers"])
+        median_elevation = metadata["median_altitude"]
+        qnbv = metadata["qnbv"]
+        snow_simulate = snow.get_model(msg_data["calibration"]["snowModel"])
+        snow_params = np.array([0.25, 3.74, qnbv])
+    else:
+        elevation_layers = None
+        median_elevation = None
+        snow_simulate = None
+        snow_params = None
 
     hydro_simulate = hydro.get_model(msg_data["calibration"]["hydroModel"])
     hydro_params = np.array(
         list(msg_data["calibration"]["hydroParams"].values())
     )
-
-    snow_simulate = (
-        snow.get_model(msg_data["calibration"]["snowModel"])
-        if msg_data["calibration"]["snowModel"] is not None
-        else None
-    )
-    snow_params = np.array([0.25, 3.74, qnbv])
 
     projections = [
         _run_projection(
@@ -181,8 +185,8 @@ async def _handle_projection_message(
 
 def _run_projection(
     _data: pl.DataFrame,
-    elevation_layers: npt.NDArray[np.float64],
-    median_elevation: float,
+    elevation_layers: npt.NDArray[np.float64] | None,
+    median_elevation: float | None,
     latitude: float,
     hydro_simulate: Callable[
         [
@@ -207,7 +211,7 @@ def _run_projection(
         | None
     ),
     hydro_params: npt.NDArray[np.float64],
-    snow_params: npt.NDArray[np.float64],
+    snow_params: npt.NDArray[np.float64] | None,
 ) -> pl.DataFrame:
     precipitation = _data["precipitation"].to_numpy()
     temperature = _data["temperature"].to_numpy()
@@ -222,6 +226,10 @@ def _run_projection(
     pet = oudin.simulate(temperature, day_of_year, latitude)
 
     if snow_simulate is not None:
+        # These values are guaranteed to be non-None when snow_simulate is set
+        assert snow_params is not None
+        assert elevation_layers is not None
+        assert median_elevation is not None
         precipitation = snow_simulate(
             snow_params,
             precipitation,

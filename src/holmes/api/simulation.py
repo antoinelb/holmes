@@ -141,13 +141,41 @@ async def _handle_simulation_message(
 
     try:
         _data = data.read_data(catchment, start, end)
-        metadata = data.read_cemaneige_info(catchment)
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
 
+    # Check if any calibration uses a snow model
+    uses_snow = any(
+        calibration["snowModel"] is not None
+        for calibration in msg_data["calibration"]
+    )
+
+    if uses_snow:
+        try:
+            metadata = data.read_cemaneige_info(catchment)
+        except HolmesDataError as exc:
+            await send(ws, "error", str(exc))
+            return
+        try:
+            temperature = _data["temperature"].to_numpy()
+        except pl.exceptions.ColumnNotFoundError:
+            await send(
+                ws,
+                "error",
+                f"The {catchment} catchment doesn't have any temperature data.",
+            )
+            return
+        elevation_layers = np.array(metadata["altitude_layers"])
+        median_elevation = metadata["median_altitude"]
+        qnbv = metadata["qnbv"]
+    else:
+        temperature = None
+        elevation_layers = None
+        median_elevation = None
+        qnbv = None
+
     precipitation = _data["precipitation"].to_numpy()
-    temperature = _data["temperature"].to_numpy()
     pet = _data["pet"].to_numpy()
     day_of_year = (
         _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
@@ -156,9 +184,6 @@ async def _handle_simulation_message(
         .to_numpy()
         .astype(np.uintp)
     )
-    elevation_layers = np.array(metadata["altitude_layers"])
-    median_elevation = metadata["median_altitude"]
-    qnbv = metadata["qnbv"]
 
     observations = _data["streamflow"].to_numpy()
 
@@ -230,12 +255,12 @@ async def _handle_simulation_message(
 
 def _run_simulation(
     precipitation: npt.NDArray[np.float64],
-    temperature: npt.NDArray[np.float64],
+    temperature: npt.NDArray[np.float64] | None,
     pet: npt.NDArray[np.float64],
     day_of_year: npt.NDArray[np.uintp],
-    elevation_layers: npt.NDArray[np.float64],
-    median_elevation: float,
-    qnbv: float,
+    elevation_layers: npt.NDArray[np.float64] | None,
+    median_elevation: float | None,
+    qnbv: float | None,
     observations: npt.NDArray[np.float64],
     hydro_model: str,
     snow_model: str | None,
@@ -246,6 +271,11 @@ def _run_simulation(
     hydro_params_ = np.array(list(hydro_params.values()))
 
     if snow_model is not None:
+        # These values are guaranteed to be non-None when snow_model is set
+        assert temperature is not None
+        assert elevation_layers is not None
+        assert median_elevation is not None
+        assert qnbv is not None
         snow_simulate = snow.get_model(cast(snow.SnowModel, snow_model))
         snow_params = np.array([0.25, 3.74, qnbv])
         precipitation = snow_simulate(

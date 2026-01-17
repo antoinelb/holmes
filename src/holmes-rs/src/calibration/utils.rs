@@ -11,13 +11,13 @@ use crate::snow::{SnowError, SnowSimulate};
 
 pub type Simulate = Box<
     dyn Fn(
-            ArrayView1<f64>,
-            ArrayView1<f64>,
-            ArrayView1<f64>,
-            ArrayView1<f64>,
-            ArrayView1<usize>,
-            ArrayView1<f64>,
-            f64,
+            ArrayView1<f64>,         // params
+            ArrayView1<f64>,         // precipitation
+            Option<ArrayView1<f64>>, // temperature (optional - only needed for snow)
+            ArrayView1<f64>,         // pet
+            ArrayView1<usize>,       // day_of_year
+            Option<ArrayView1<f64>>, // elevation_bands (optional - only needed for snow)
+            Option<f64>, // median_elevation (optional - only needed for snow)
         ) -> Result<Array1<f64>, CalibrationError>
         + Sync
         + Send,
@@ -88,6 +88,8 @@ pub enum CalibrationError {
     LengthMismatch(usize, usize, usize, usize),
     #[error("expected {0} params, got {1}")]
     ParamsMismatch(usize, usize),
+    #[error("snow model requires temperature, elevation_bands, and median_elevation")]
+    MissingSnowParams,
     #[error(transparent)]
     Metrics(#[from] MetricsError),
     #[error(transparent)]
@@ -110,14 +112,18 @@ impl From<CalibrationError> for PyErr {
 
 pub fn check_lengths(
     precipitation: ArrayView1<f64>,
-    temperature: ArrayView1<f64>,
+    temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
     day_of_year: ArrayView1<usize>,
 ) -> Result<(), CalibrationError> {
-    if precipitation.len() != pet.len() {
+    let temp_len = temperature.map(|t| t.len()).unwrap_or(precipitation.len());
+    if precipitation.len() != pet.len()
+        || precipitation.len() != temp_len
+        || precipitation.len() != day_of_year.len()
+    {
         Err(CalibrationError::LengthMismatch(
             precipitation.len(),
-            temperature.len(),
+            temp_len,
             pet.len(),
             day_of_year.len(),
         ))
@@ -137,10 +143,18 @@ pub fn compose_simulate(
               temperature,
               pet,
               day_of_year,
-              elevation_layers,
+              elevation_bands,
               median_elevation| {
             check_lengths(precipitation, temperature, pet, day_of_year)?;
             if let Some(snow_simulate) = snow_simulate {
+                // Snow model requires temperature, elevation_bands, and median_elevation
+                let temperature =
+                    temperature.ok_or(CalibrationError::MissingSnowParams)?;
+                let elevation_bands = elevation_bands
+                    .ok_or(CalibrationError::MissingSnowParams)?;
+                let median_elevation = median_elevation
+                    .ok_or(CalibrationError::MissingSnowParams)?;
+
                 let snow_params = params.slice(s![..n_snow_params]);
                 let hydro_params = params.slice(s![n_snow_params..]);
 
@@ -149,7 +163,7 @@ pub fn compose_simulate(
                     precipitation,
                     temperature,
                     day_of_year,
-                    elevation_layers,
+                    elevation_bands,
                     median_elevation,
                 )
                 .map_err(CalibrationError::Snow)?;
@@ -161,6 +175,7 @@ pub fn compose_simulate(
                 )
                 .map_err(CalibrationError::Hydro)
             } else {
+                // No snow model - snow params are not needed
                 hydro_simulate(params, precipitation, pet)
                     .map_err(CalibrationError::Hydro)
             }

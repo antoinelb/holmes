@@ -121,11 +121,8 @@ fn test_sce_init_basic() {
 
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
 
     // Generate synthetic observations (model output + noise)
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -137,13 +134,14 @@ fn test_sce_init_basic() {
     .unwrap()
     .mapv(|x| x * 1.1); // Add 10% bias
 
+    // No snow model, so snow params are None
     let result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     );
 
@@ -172,11 +170,8 @@ fn test_sce_step_returns_valid_output() {
 
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
 
     // Generate synthetic observations
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -190,22 +185,22 @@ fn test_sce_step_returns_valid_output() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
 
     let result = sce.step(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     );
 
@@ -254,11 +249,8 @@ fn test_sce_converges() {
 
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
 
     // Generate synthetic observations from known parameters
     let known_params = array![300.0, 0.5, 100.0, 2.5];
@@ -271,11 +263,11 @@ fn test_sce_converges() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -288,11 +280,11 @@ fn test_sce_converges() {
     while !done && iterations < max_iterations {
         let result = sce.step(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            median_elevation,
+            None,
+            None,
             obs.view(),
         );
 
@@ -327,20 +319,17 @@ fn test_sce_respects_max_evaluations() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
-    let median_elevation = 1000.0;
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -352,11 +341,11 @@ fn test_sce_respects_max_evaluations() {
         let (d, _, _, _) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                median_elevation,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -449,28 +438,26 @@ proptest! {
         let n = 30;
         let precip = helpers::generate_precipitation(n, 5.0, 0.3, seed);
         let pet = helpers::generate_pet(n, 3.0, 1.0, seed + 1);
-        let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, seed + 2);
         let doy = helpers::generate_doy(1, n);
-        let elevation_layers = array![1000.0];
         let obs = helpers::generate_precipitation(n, 3.0, 0.5, seed + 3);
 
         sce.init(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         ).unwrap();
 
         let (_, best_params, _, _) = sce.step(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         ).unwrap();
 
@@ -512,19 +499,17 @@ fn test_sce_step_when_already_done() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -535,11 +520,11 @@ fn test_sce_step_when_already_done() {
         let (d, _, _, _) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -550,11 +535,11 @@ fn test_sce_step_when_already_done() {
     let (done_again, params, sim, objectives) = sce
         .step(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         )
         .unwrap();
@@ -587,19 +572,17 @@ fn test_sce_geometric_range_convergence() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -611,11 +594,11 @@ fn test_sce_geometric_range_convergence() {
         let (d, _, _, _) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -649,19 +632,17 @@ fn test_sce_criteria_change_convergence() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -673,11 +654,11 @@ fn test_sce_criteria_change_convergence() {
         let (d, _, _, _) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -735,13 +716,14 @@ fn test_sce_with_snow_model_calibration() {
     .unwrap()
     .mapv(|x| x * 1.1);
 
+    // Snow model requires temperature, elevation_bands, and median_elevation
     sce.init(
         precip.view(),
-        temp.view(),
+        Some(temp.view()),
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        median_elevation,
+        Some(elevation_layers.view()),
+        Some(median_elevation),
         obs.view(),
     )
     .unwrap();
@@ -749,11 +731,11 @@ fn test_sce_with_snow_model_calibration() {
     let (_, params, sim, objectives) = sce
         .step(
             precip.view(),
-            temp.view(),
+            Some(temp.view()),
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            median_elevation,
+            Some(elevation_layers.view()),
+            Some(median_elevation),
             obs.view(),
         )
         .unwrap();
@@ -791,20 +773,18 @@ fn test_sce_sqrt_transform_negative() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     // Negative observations to test sqrt transformation issue
     let obs = Array1::from_elem(n, -1.0);
 
     let init_result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -812,11 +792,11 @@ fn test_sce_sqrt_transform_negative() {
     if init_result.is_ok() {
         let step_result = sce.step(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         );
         if let Ok((_, _, _, objectives)) = step_result {
@@ -847,20 +827,18 @@ fn test_sce_constant_observations() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     // Constant observations cause NSE denominator = 0
     let obs = Array1::from_elem(n, 5.0);
 
     let init_result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -868,11 +846,11 @@ fn test_sce_constant_observations() {
         let (_, _, _, objectives) = sce
             .step(
                 precip.view(),
-                temp.view(),
+                None,
                 pet.view(),
                 doy.view(),
-                elevation_layers.view(),
-                1000.0,
+                None,
+                None,
                 obs.view(),
             )
             .unwrap();
@@ -908,21 +886,19 @@ fn test_init_with_mismatched_observations_length() {
 
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     // Observations with DIFFERENT length than precipitation (which determines simulation length)
     let obs = Array1::from_elem(n + 10, 5.0); // 10 more elements
 
     let result = sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     );
 
@@ -952,20 +928,18 @@ fn test_step_with_mismatched_observations_length() {
 
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 45);
 
     // Init with correct length
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -975,11 +949,11 @@ fn test_step_with_mismatched_observations_length() {
 
     let result = sce.step(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         wrong_obs.view(),
     );
 
@@ -1010,10 +984,8 @@ fn test_convergence_with_perfect_match() {
 
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let temp = helpers::generate_temperature(n, 10.0, 10.0, 2.0, 43);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
     let doy = helpers::generate_doy(1, n);
-    let elevation_layers = array![1000.0];
 
     // Use default GR4J params to generate observations
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -1026,11 +998,11 @@ fn test_convergence_with_perfect_match() {
 
     sce.init(
         precip.view(),
-        temp.view(),
+        None,
         pet.view(),
         doy.view(),
-        elevation_layers.view(),
-        1000.0,
+        None,
+        None,
         obs.view(),
     )
     .unwrap();
@@ -1041,11 +1013,11 @@ fn test_convergence_with_perfect_match() {
     while !done && iterations < 30 {
         let result = sce.step(
             precip.view(),
-            temp.view(),
+            None,
             pet.view(),
             doy.view(),
-            elevation_layers.view(),
-            1000.0,
+            None,
+            None,
             obs.view(),
         );
 

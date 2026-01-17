@@ -152,3 +152,77 @@ class TestSimulationWebSocket:
             ws.send_json({"type": "unknown_type"})
             response = ws.receive_json()
             assert response["type"] == "error"
+
+    def test_simulation_without_snow_model_on_catchment_without_cemaneige(
+        self, client
+    ):
+        """Simulation without snow model works on catchment without CemaNeige info."""
+        # Leaf catchment data is from 1957-1987, use dates within that range
+        # (with 3 years warmup, start from 1960)
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "1980-01-01",
+                            "end": "1981-12-31",
+                            "multimodel": False,
+                        },
+                        "calibration": [
+                            {
+                                "catchment": "Leaf",
+                                "hydroModel": "gr4j",
+                                "snowModel": None,
+                                "hydroParams": {
+                                    "x1": 350,
+                                    "x2": 0.5,
+                                    "x3": 90,
+                                    "x4": 1.7,
+                                },
+                            }
+                        ],
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "simulation"
+            data = response["data"]
+            assert "simulation" in data
+            assert "results" in data
+
+    def test_simulation_with_snow_model_on_catchment_without_cemaneige_errors(
+        self, client
+    ):
+        """Simulation with snow model fails on catchment without CemaNeige info."""
+        # Leaf catchment has no CemaNeige info file
+        # Leaf catchment data is from 1957-1987
+        with client.websocket_connect("/simulation/") as ws:
+            ws.send_json(
+                {
+                    "type": "simulation",
+                    "data": {
+                        "config": {
+                            "start": "1980-01-01",
+                            "end": "1981-12-31",
+                            "multimodel": False,
+                        },
+                        "calibration": [
+                            {
+                                "catchment": "Leaf",
+                                "hydroModel": "gr4j",
+                                "snowModel": "cemaneige",
+                                "hydroParams": {
+                                    "x1": 350,
+                                    "x2": 0.5,
+                                    "x3": 90,
+                                    "x4": 1.7,
+                                },
+                            }
+                        ],
+                    },
+                }
+            )
+            response = ws.receive_json()
+            assert response["type"] == "error"
+            assert "CemaNeige" in response["data"]
