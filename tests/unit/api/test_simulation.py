@@ -6,6 +6,7 @@ import polars as pl
 from starlette.testclient import TestClient
 
 from holmes.app import create_app
+from holmes.exceptions import HolmesDataError
 
 
 class TestSimulationWebSocket:
@@ -385,3 +386,57 @@ class TestSimulationDataErrors:
                 response = ws.receive_json()
                 assert response["type"] == "error"
                 assert "temperature" in response["data"].lower()
+
+    def test_simulation_with_snow_model_invalid_cemaneige_info(self):
+        """Simulation with snow model fails when cemaneige info is invalid."""
+        mock_data = pl.DataFrame(
+            {
+                "date": pl.date_range(
+                    pl.date(2000, 1, 1), pl.date(2000, 12, 31), eager=True
+                ),
+                "precipitation": [1.0] * 366,
+                "pet": [2.0] * 366,
+                "streamflow": [0.5] * 366,
+                "temperature": [10.0] * 366,
+            }
+        )
+
+        with (
+            patch(
+                "holmes.api.simulation.data.read_data", return_value=mock_data
+            ),
+            patch(
+                "holmes.api.simulation.data.read_cemaneige_info",
+                side_effect=HolmesDataError("CemaNeige info not found"),
+            ),
+        ):
+            client = TestClient(create_app())
+            with client.websocket_connect("/simulation/") as ws:
+                ws.send_json(
+                    {
+                        "type": "simulation",
+                        "data": {
+                            "config": {
+                                "start": "2000-01-01",
+                                "end": "2000-12-31",
+                                "multimodel": False,
+                            },
+                            "calibration": [
+                                {
+                                    "catchment": "MockCatchment",
+                                    "hydroModel": "gr4j",
+                                    "snowModel": "cemaneige",
+                                    "hydroParams": {
+                                        "x1": 100.0,
+                                        "x2": 0.0,
+                                        "x3": 50.0,
+                                        "x4": 2.0,
+                                    },
+                                },
+                            ],
+                        },
+                    }
+                )
+                response = ws.receive_json()
+                assert response["type"] == "error"
+                assert "cemaneige" in response["data"].lower()
