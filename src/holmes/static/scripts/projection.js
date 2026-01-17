@@ -181,6 +181,7 @@ export async function update(model, msg, dispatch, createNotification) {
           [msg.data.field]: msg.data.value,
         },
         projection: null,
+        results: null,
       };
       window.localStorage.setItem(
         `holmes--projection--${msg.data.field}`,

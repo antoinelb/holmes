@@ -259,7 +259,7 @@ async function init() {
     while (queue.length > 0) {
       const msg = queue.shift();
       model = await update(model, msg, dispatch);
-      // console.log(msg, model);
+      console.log(msg, model);
       view(msg, model, dispatch);
     }
     processing = false;
