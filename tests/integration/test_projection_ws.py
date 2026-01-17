@@ -143,4 +143,7 @@ class TestProjectionWebSocket:
             ws.send_json({"type": "config", "data": "Leaf"})
             response = ws.receive_json()
             assert response["type"] == "error"
-            assert "Projection" in response["data"] or "not found" in response["data"]
+            assert (
+                "Projection" in response["data"]
+                or "not found" in response["data"]
+            )

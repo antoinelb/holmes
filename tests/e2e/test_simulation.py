@@ -161,7 +161,10 @@ class TestSimulationWorkflow:
         ).to_have_value(original_end)
 
     def test_switching_catchment_resets_dates(
-        self, simulation_page: SimulationPage, tmp_path: Path, valid_calibration_json: dict
+        self,
+        simulation_page: SimulationPage,
+        tmp_path: Path,
+        valid_calibration_json: dict,
     ) -> None:
         """Switching to different catchment updates config dates to new catchment's range."""
         # Create calibration for Au Saumon catchment

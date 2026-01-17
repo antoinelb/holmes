@@ -237,7 +237,9 @@ class TestProjectionHelpers:
         assert m1_day1 == 11.0
         assert m2_day1 == 15.0
         # Median should be median of member values
-        median_day1 = result.filter(pl.col("date") == date(2021, 1, 1))["median"][0]
+        median_day1 = result.filter(pl.col("date") == date(2021, 1, 1))[
+            "median"
+        ][0]
         assert median_day1 == 13.0  # median of [11, 15]
 
     def test_aggregate_projections_handles_leap_years(self):
@@ -280,9 +282,21 @@ class TestProjectionHelpers:
                     # Base streamflow varies by season
                     if month in [1, 2, 3]:  # Winter
                         base = 5.0
-                    elif month in [3, 4, 5, 6]:  # Spring (overlaps with winter end)
+                    elif month in [
+                        3,
+                        4,
+                        5,
+                        6,
+                    ]:  # Spring (overlaps with winter end)
                         base = 50.0 if month != 3 else 20.0
-                    elif month in [5, 6, 7, 8, 9, 10]:  # Summer (overlaps with spring)
+                    elif month in [
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                    ]:  # Summer (overlaps with spring)
                         base = 2.0 if month not in [5, 6] else 15.0
                     else:  # Autumn (9, 10, 11, 12)
                         base = 30.0
