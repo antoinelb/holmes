@@ -137,7 +137,11 @@ export async function update(model, msg, dispatch, createNotification) {
         return model;
       }
     case "GotAvailableConfig":
-      if (model.config.start === null) {
+      if (
+        model.config.start === null ||
+        model.config.start < msg.data.start ||
+        model.config.start > msg.data.end
+      ) {
         const end = new Date(msg.data.end);
         end.setMonth(0);
         end.setDate(1);
@@ -149,7 +153,11 @@ export async function update(model, msg, dispatch, createNotification) {
           },
         });
       }
-      if (model.config.end === null) {
+      if (
+        model.config.end === null ||
+        model.config.end < msg.data.start ||
+        model.config.end > msg.data.end
+      ) {
         dispatch({
           type: "UpdateConfigField",
           data: { field: "end", value: msg.data.end },
@@ -230,20 +238,16 @@ export async function update(model, msg, dispatch, createNotification) {
         "holmes--simulation--calibration",
         JSON.stringify(calibration),
       );
-      if (calibration.length === 0) {
-        dispatch({
-          type: "UpdateConfigField",
-          data: { field: "start", value: null },
-        });
-        dispatch({
-          type: "UpdateConfigField",
-          data: { field: "end", value: null },
-        });
-      }
       return {
         ...model,
         calibration: calibration,
         observations: calibration.length === 0 ? null : model.observations,
+        availableConfig:
+          calibration.length === 0 ? null : model.availableConfig,
+        config:
+          calibration.length === 0
+            ? { ...model.config, start: null, end: null }
+            : model.config,
         simulation: null,
         results: null,
       };
@@ -278,7 +282,7 @@ export async function update(model, msg, dispatch, createNotification) {
         } else if (msg.data === "end") {
           dispatch({
             type: "UpdateConfigField",
-            data: { field: "end", value: model.availableConfig.start },
+            data: { field: "end", value: model.availableConfig.end },
           });
         } else {
           console.error(
@@ -362,6 +366,7 @@ function handleMessage(event, dispatch, createNotification) {
   }
   switch (msg.type) {
     case "error":
+      console.error(msg.data);
       createNotification(msg.data, true);
       break;
     case "config":
@@ -883,6 +888,17 @@ function streamflowView(model) {
 
     const svg = d3.select(_svg);
 
+    // Clip path for zoom
+    svg
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "simulation-clip")
+      .append("rect")
+      .attr("x", boundaries.l)
+      .attr("y", boundaries.t)
+      .attr("width", boundaries.r - boundaries.l)
+      .attr("height", boundaries.b - boundaries.t);
+
     const observations = model.observations;
     const [yMin, yMax] =
       model.simulation === null
@@ -905,17 +921,19 @@ function streamflowView(model) {
             ),
           ];
 
+    const xDomain = d3.extent(observations, (d) => new Date(d.date));
     const xScale = d3
       .scaleTime()
-      .domain(d3.extent(observations, (d) => new Date(d.date)))
+      .domain(xDomain)
       .range([boundaries.l, boundaries.r]);
     const yScale = d3
       .scaleLinear()
       .domain([yMin, yMax])
       .range([boundaries.b, boundaries.t]);
 
-    // grid
-    svg
+    // Grid group for vertical lines (updated on zoom)
+    const gridGroup = svg.append("g").attr("class", "grid-group");
+    gridGroup
       .selectAll(".grid-vertical")
       .data(xScale.ticks(5))
       .join("line")
@@ -967,10 +985,16 @@ function streamflowView(model) {
       .attr("font-size", "0.9rem")
       .text("Streamflow");
 
+    // Clipped group for data lines
+    const chartGroup = svg
+      .append("g")
+      .attr("class", "chart-content")
+      .attr("clip-path", "url(#simulation-clip)");
+
     // observations
-    svg
+    chartGroup
       .append("path")
-      .attr("class", colours[0])
+      .attr("class", `${colours[0]} observation-line`)
       .datum(observations)
       .attr(
         "d",
@@ -981,22 +1005,97 @@ function streamflowView(model) {
       );
 
     // simulation
-    if (model.simulation !== null) {
-      Object.keys(model.simulation[0])
-        .slice(1)
-        .forEach((s, i) => {
-          svg
-            .append("path")
-            .attr("class", colours[i + 2])
-            .datum(model.simulation)
-            .attr(
-              "d",
-              d3
-                .line()
-                .x((d) => xScale(new Date(d.date)))
-                .y((d) => yScale(d[s])),
-            );
-        });
+    const simulationKeys =
+      model.simulation !== null
+        ? Object.keys(model.simulation[0]).slice(1)
+        : [];
+    simulationKeys.forEach((s, i) => {
+      chartGroup
+        .append("path")
+        .attr("class", `${colours[i + 2]} simulation-line-${i}`)
+        .datum(model.simulation)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => xScale(new Date(d.date)))
+            .y((d) => yScale(d[s])),
+        );
+    });
+
+    // Brush zoom
+    const brush = d3
+      .brushX()
+      .extent([
+        [boundaries.l, boundaries.t],
+        [boundaries.r, boundaries.b],
+      ])
+      .on("end", brushed);
+    const brushGroup = svg.append("g").attr("class", "brush").call(brush);
+
+    svg.on("dblclick", resetZoom);
+
+    function brushed(event) {
+      const selection = event.selection;
+      if (!selection) return;
+      const [x0, x1] = selection.map(xScale.invert);
+      xScale.domain([x0, x1]);
+      brushGroup.call(brush.move, null);
+      updateChart();
+    }
+
+    function resetZoom() {
+      xScale.domain(xDomain);
+      updateChart();
+    }
+
+    function updateChart() {
+      const t = svg.transition().duration(300);
+
+      // Update x-axis
+      svg
+        .select(".x-axis")
+        .transition(t)
+        .call(d3.axisBottom(xScale).ticks(5).tickSize(0))
+        .call((g) => g.select(".domain").remove());
+
+      // Update vertical grid lines
+      gridGroup
+        .selectAll(".grid-vertical")
+        .data(xScale.ticks(5))
+        .join("line")
+        .attr("class", "grid-vertical")
+        .transition(t)
+        .attr("x1", (d) => xScale(d))
+        .attr("x2", (d) => xScale(d))
+        .attr("y1", yScale.range()[0])
+        .attr("y2", yScale.range()[1]);
+
+      // Update observation line
+      chartGroup
+        .select(".observation-line")
+        .transition(t)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => xScale(new Date(d.date)))
+            .y((d) => yScale(d.streamflow)),
+        );
+
+      // Update simulation lines
+      simulationKeys.forEach((s, i) => {
+        chartGroup
+          .select(`.simulation-line-${i}`)
+          .transition(t)
+          .attr(
+            "d",
+            d3
+              .line()
+              .x((d) => xScale(new Date(d.date)))
+              .y((d) => yScale(d[s])),
+          );
+      });
     }
   }
 }

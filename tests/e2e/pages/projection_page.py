@@ -23,6 +23,7 @@ class ProjectionPage(BasePage):
 
     RESULTS = "#projection__results"
     PROJECTION_CHART = "#projection__results__projection"
+    RESULTS_CHART = "#projection__results__results"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -92,6 +93,16 @@ class ProjectionPage(BasePage):
         """Check if projection chart is rendered with paths."""
         paths = self.page.query_selector_all(f"{self.PROJECTION_CHART} path")
         return len(paths) > 0
+
+    def has_results_chart(self) -> bool:
+        """Check if results scatter plot is rendered with circles."""
+        circles = self.page.query_selector_all(f"{self.RESULTS_CHART} circle")
+        return len(circles) > 0
+
+    def has_zoom_brush(self) -> bool:
+        """Check if zoom brush is rendered on projection chart."""
+        brush = self.page.query_selector(f"{self.PROJECTION_CHART} .brush")
+        return brush is not None
 
     def remove_calibration(self) -> None:
         """Remove the uploaded calibration."""

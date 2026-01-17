@@ -187,3 +187,18 @@ class TestCalibrationWorkflow:
             "localStorage.getItem('holmes--calibration--snowModel')"
         )
         assert snow == "none"
+
+    def test_streamflow_chart_has_zoom(
+        self, calibration_page: CalibrationPage
+    ) -> None:
+        """Streamflow chart has zoom brush functionality."""
+        calibration_page.wait_for_loading_complete()
+
+        calibration_page.select_hydro_model("gr4j")
+        calibration_page.select_catchment("Au Saumon")
+        calibration_page.set_date_range("2000-01-01", "2001-12-31")
+
+        calibration_page.run_manual_calibration()
+        calibration_page.wait_for_simulation_result()
+
+        assert calibration_page.has_zoom_brush()

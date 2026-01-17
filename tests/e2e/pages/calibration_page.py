@@ -131,6 +131,11 @@ class CalibrationPage(BasePage):
         paths = self.page.query_selector_all(f"{self.STREAMFLOW_CHART} path")
         return len(paths) >= 2
 
+    def has_zoom_brush(self) -> bool:
+        """Check if zoom brush is rendered on streamflow chart."""
+        brush = self.page.query_selector(f"{self.STREAMFLOW_CHART} .brush")
+        return brush is not None
+
     def export_params_enabled(self) -> bool:
         """Check if export params button is enabled."""
         btn = self.page.query_selector(f"{self.RESULTS} button")

@@ -63,8 +63,11 @@ class TestProjectionWebSocket:
             response = ws.receive_json()
             assert response["type"] == "projection"
             data = response["data"]
-            assert isinstance(data, list)
-            assert len(data) > 0
+            # Response contains projection (aggregated) and results (metrics)
+            assert isinstance(data, dict)
+            assert "projection" in data
+            assert "results" in data
+            assert len(data["projection"]) > 0
 
     def test_projection_missing_config(self, client):
         """Error for missing config."""
@@ -126,8 +129,11 @@ class TestProjectionWebSocket:
             response = ws.receive_json()
             assert response["type"] == "projection"
             data = response["data"]
-            assert isinstance(data, list)
-            assert len(data) > 0
+            # Response contains projection (aggregated) and results (metrics)
+            assert isinstance(data, dict)
+            assert "projection" in data
+            assert "results" in data
+            assert len(data["projection"]) > 0
 
     def test_projection_on_catchment_without_projection_data_errors(
         self, client

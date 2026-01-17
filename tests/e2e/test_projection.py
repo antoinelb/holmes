@@ -87,6 +87,70 @@ class TestProjectionWorkflow:
 
         assert projection_page.has_projection_chart()
 
+    def test_projection_shows_results_chart(
+        self, projection_page: ProjectionPage, calibration_file: Path
+    ) -> None:
+        """Projection displays results scatter plot."""
+        projection_page.wait_for_loading_complete()
+        projection_page.page.wait_for_timeout(500)
+        projection_page.upload_calibration(calibration_file)
+        projection_page.wait_for_table()
+        projection_page.wait_for_config()
+
+        models = projection_page.get_model_options()
+        projection_page.select_model(models[0])
+
+        projection_page.page.wait_for_function(
+            f"document.querySelector('{projection_page.HORIZON_SELECT}').options.length > 0",
+            timeout=5000,
+        )
+        horizons = projection_page.get_horizon_options()
+        projection_page.select_horizon(horizons[0])
+
+        projection_page.page.wait_for_function(
+            f"document.querySelector('{projection_page.SCENARIO_SELECT}').options.length > 0",
+            timeout=5000,
+        )
+        scenarios = projection_page.get_scenario_options()
+        projection_page.select_scenario(scenarios[0])
+
+        projection_page.run_projection()
+        projection_page.wait_for_results(timeout=20000)
+
+        assert projection_page.has_results_chart()
+
+    def test_projection_chart_has_zoom(
+        self, projection_page: ProjectionPage, calibration_file: Path
+    ) -> None:
+        """Projection chart has zoom brush functionality."""
+        projection_page.wait_for_loading_complete()
+        projection_page.page.wait_for_timeout(500)
+        projection_page.upload_calibration(calibration_file)
+        projection_page.wait_for_table()
+        projection_page.wait_for_config()
+
+        models = projection_page.get_model_options()
+        projection_page.select_model(models[0])
+
+        projection_page.page.wait_for_function(
+            f"document.querySelector('{projection_page.HORIZON_SELECT}').options.length > 0",
+            timeout=5000,
+        )
+        horizons = projection_page.get_horizon_options()
+        projection_page.select_horizon(horizons[0])
+
+        projection_page.page.wait_for_function(
+            f"document.querySelector('{projection_page.SCENARIO_SELECT}').options.length > 0",
+            timeout=5000,
+        )
+        scenarios = projection_page.get_scenario_options()
+        projection_page.select_scenario(scenarios[0])
+
+        projection_page.run_projection()
+        projection_page.wait_for_results(timeout=20000)
+
+        assert projection_page.has_zoom_brush()
+
     # Note: Projection module doesn't have a remove calibration button
     # unlike the simulation module. To change calibration, user uploads
     # a new file which replaces the existing one.

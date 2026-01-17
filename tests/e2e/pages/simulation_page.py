@@ -104,6 +104,11 @@ class SimulationPage(BasePage):
         charts = self.page.query_selector_all(f"{self.RESULTS} svg.plot")
         return len(charts) >= 6
 
+    def has_zoom_brush(self) -> bool:
+        """Check if zoom brush is rendered on streamflow chart."""
+        brush = self.page.query_selector(f"{self.STREAMFLOW_CHART} .brush")
+        return brush is not None
+
     def get_start_date(self) -> str:
         """Get current start date value."""
         return self.page.input_value(self.START_DATE)

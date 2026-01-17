@@ -12,11 +12,17 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ### Added
 - Added "Allow save" button in settings to allow reading from saved configs
 - Notifications confirming successful file downloads on calibration, simulation, and projection pages
+- Brush zoom on calibration, simulation, and projection streamflow plots (drag to zoom, double-click to reset)
+- Projection results metrics (winter min, summer min, spring max, autumn max, mean) calculation and scatter plot visualization
+- Download of projection results CSV alongside projection timeseries
 
 ### Fixed
 - Fixed date icon in dark mode for chromium browsers
 - Fixed notifications not being removed from the DOM due to missing `data-id` attribute
 - Fixed handling of catchments with no snow data
+- Config date validation when switching catchments now properly resets start/end if outside available range
+- Simulation config "Reset to default" for end date was incorrectly setting to start instead of end
+- Changing calibration parameters removes the simulation data
 
 ## [3.3.6] - 2026-01-11
 

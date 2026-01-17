@@ -17,6 +17,7 @@ export const {
   axisLeft,
   axisRight,
   axisTop,
+  brushX,
   drag,
   extent,
   line,

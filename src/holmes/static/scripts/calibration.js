@@ -152,6 +152,7 @@ export async function update(model, msg, dispatch, createNotification) {
           ...model.config,
           [msg.data.field]: msg.data.value === "none" ? null : msg.data.value,
         },
+        simulation: null,
         results: null,
       };
     case "ResetDate":
@@ -1135,11 +1136,25 @@ function streamflowView(model) {
 
     const svg = d3.select(_svg);
 
+    // Clip path to prevent lines from extending beyond plot boundaries
+    const clipId = "streamflow-clip";
+    svg
+      .append("defs")
+      .append("clipPath")
+      .attr("id", clipId)
+      .append("rect")
+      .attr("x", boundaries.l)
+      .attr("y", boundaries.t)
+      .attr("width", boundaries.r - boundaries.l)
+      .attr("height", boundaries.b - boundaries.t);
+
     const observations = model.observations;
+
+    const xDomain = d3.extent(observations, (d) => new Date(d.date));
 
     const xScale = d3
       .scaleTime()
-      .domain(d3.extent(observations, (d) => new Date(d.date)))
+      .domain(xDomain)
       .range([boundaries.l, boundaries.r]);
     const yScale = d3
       .scaleLinear()
@@ -1202,11 +1217,17 @@ function streamflowView(model) {
       .attr("font-size", "0.9rem")
       .text("Streamflow");
 
+    // Create clipped group for chart content (warmup, lines)
+    const chartGroup = svg
+      .append("g")
+      .attr("class", "chart-content")
+      .attr("clip-path", `url(#${clipId})`);
+
     // warmup
     if (observations[0].date !== model.config.start) {
-      svg
+      chartGroup
         .append("rect")
-        .attr("class", colours[0])
+        .attr("class", "warmup-rect")
         .attr("x", xScale(new Date(observations[0].date)))
         .attr("y", yScale.range()[1])
         .attr(
@@ -1214,10 +1235,12 @@ function streamflowView(model) {
           xScale(new Date(model.config.start)) -
             xScale(new Date(observations[0].date)),
         )
-        .attr("height", yScale.range()[0] - yScale.range()[1]);
-      svg
+        .attr("height", yScale.range()[0] - yScale.range()[1])
+        .attr("fill", "currentColor")
+        .attr("class", `warmup-rect ${colours[0]}`);
+      chartGroup
         .append("text")
-        .attr("class", `warmup ${colours[0]}`)
+        .attr("class", `warmup warmup-text ${colours[0]}`)
         .attr("text-anchor", "start")
         .attr("dominant-baseline", "hanging")
         .attr("x", xScale.range()[0])
@@ -1228,9 +1251,9 @@ function streamflowView(model) {
     }
 
     // observations
-    svg
+    chartGroup
       .append("path")
-      .attr("class", colours[0])
+      .attr("class", `observation-line ${colours[0]}`)
       .datum(observations)
       .attr(
         "d",
@@ -1242,9 +1265,9 @@ function streamflowView(model) {
 
     // simulation
     if (model.simulation !== null) {
-      svg
+      chartGroup
         .append("path")
-        .attr("class", colours[2])
+        .attr("class", `simulation-line ${colours[2]}`)
         .datum(model.simulation)
         .attr(
           "d",
@@ -1253,6 +1276,104 @@ function streamflowView(model) {
             .x((d) => xScale(new Date(d.date)))
             .y((d) => yScale(d.streamflow)),
         );
+    }
+
+    // zoom
+    const brush = d3
+      .brushX()
+      .extent([
+        [boundaries.l, boundaries.t],
+        [boundaries.r, boundaries.b],
+      ])
+      .on("end", brushed);
+
+    const brushGroup = svg.append("g").attr("class", "brush").call(brush);
+
+    svg.on("dblclick", resetZoom);
+
+    function brushed(event) {
+      const selection = event.selection;
+      if (!selection) return;
+
+      const [x0, x1] = selection.map(xScale.invert);
+      xScale.domain([x0, x1]);
+
+      brushGroup.call(brush.move, null);
+
+      updateChart();
+    }
+
+    function resetZoom() {
+      xScale.domain(xDomain);
+      updateChart();
+    }
+
+    function updateChart() {
+      const t = svg.transition().duration(750);
+
+      svg
+        .select(".x-axis")
+        .transition(t)
+        .call(d3.axisBottom(xScale).ticks(5).tickSize(0))
+        .call((g) => g.select(".domain").remove());
+
+      const gridData = xScale.ticks();
+      svg
+        .selectAll(".grid-vertical")
+        .data(gridData)
+        .join(
+          (enter) =>
+            enter
+              .append("line")
+              .attr("class", "grid-vertical")
+              .attr("x1", (d) => xScale(d))
+              .attr("x2", (d) => xScale(d))
+              .attr("y1", yScale.range()[0])
+              .attr("y2", yScale.range()[1]),
+          (update) =>
+            update
+              .transition(t)
+              .attr("x1", (d) => xScale(d))
+              .attr("x2", (d) => xScale(d)),
+          (exit) => exit.remove(),
+        );
+
+      const line = d3
+        .line()
+        .x((d) => xScale(new Date(d.date)))
+        .y((d) => yScale(d.streamflow));
+
+      svg.select(".observation-line").transition(t).attr("d", line);
+
+      svg.select(".simulation-line").transition(t).attr("d", line);
+
+      const warmupEndDate = new Date(model.config.start);
+      const currentXMin = xScale.domain()[0];
+      const warmupVisible = currentXMin < warmupEndDate;
+
+      svg
+        .select(".warmup-rect")
+        .transition(t)
+        .attr("x", xScale(new Date(observations[0].date)))
+        .attr(
+          "width",
+          Math.max(
+            0,
+            xScale(warmupEndDate) - xScale(new Date(observations[0].date)),
+          ),
+        );
+
+      // Only show warmup text if warmup period is visible
+      // Position text at the left edge of visible area or start of warmup rect
+      const warmupTextX = Math.max(
+        xScale.range()[0],
+        xScale(new Date(observations[0].date)),
+      );
+      svg
+        .select(".warmup-text")
+        .transition(t)
+        .attr("x", warmupTextX)
+        .style("opacity", warmupVisible ? 1 : 0);
     }
   }
 }

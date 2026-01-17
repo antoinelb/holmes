@@ -31,6 +31,7 @@ export function initModel(canSave) {
         : null,
     },
     projection: null,
+    results: null,
   };
 }
 
@@ -260,7 +261,8 @@ export async function update(model, msg, dispatch, createNotification) {
     case "GotProjection":
       return {
         ...model,
-        projection: msg.data,
+        projection: msg.data.projection,
+        results: msg.data.results,
         loading: false,
         running: false,
       };
@@ -302,7 +304,11 @@ function handleMessage(event, dispatch, createNotification) {
 }
 
 function downloadData(model, createNotification) {
-  if (model.calibration !== null && model.projection !== null) {
+  if (
+    model.calibration !== null &&
+    model.projection !== null &&
+    model.results !== null
+  ) {
     const _data = model.projection.map((p) => ({
       ...p,
       model: model.config.model,
@@ -314,17 +320,34 @@ function downloadData(model, createNotification) {
       ..._data.map((p) => Object.values(p).join(",")),
     ].join("\n");
 
-    const filename = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_data.csv`;
-    const blob = new Blob([data], {
+    let filename = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_data.csv`;
+    let blob = new Blob([data], {
       type: "text/csv",
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
     createNotification(`Downloaded projection timeseries ${filename}.`);
+
+    const resultsData = [
+      Object.keys(model.results[0]).join(","),
+      ...model.results.map((s) => Object.values(s).join(",")),
+    ].join("\n");
+
+    filename = `${model.calibration.catchment.toLowerCase().replace(" ", "_")}_projection_results.csv`;
+    blob = new Blob([resultsData], {
+      type: "text/csv",
+    });
+    url = URL.createObjectURL(blob);
+    a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    createNotification(`Downloaded projection results ${filename}.`);
   }
 }
 
@@ -353,6 +376,7 @@ export function view(model, dispatch) {
   calibrationView(model);
   configView(model);
   projectionView(model);
+  resultsView(model);
 }
 
 function initConfigView(dispatch) {
@@ -476,6 +500,7 @@ function initConfigView(dispatch) {
 function initResultsView(dispatch) {
   return create("div", { id: "projection__results" }, [
     create("svg", { id: "projection__results__projection", class: "plot" }),
+    create("svg", { id: "projection__results__results", class: "plot" }),
   ]);
 }
 
@@ -612,9 +637,20 @@ function projectionView(model) {
 
     const svg = d3.select(_svg);
 
+    // Clip path for zoom
+    svg
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "projection-clip")
+      .append("rect")
+      .attr("x", boundaries.l)
+      .attr("y", boundaries.t)
+      .attr("width", boundaries.r - boundaries.l)
+      .attr("height", boundaries.b - boundaries.t);
+
     const projection = model.projection;
-    const fields = Object.keys(model.projection[0]).filter((f) =>
-      f.startsWith("member"),
+    const fields = Object.keys(model.projection[0]).filter(
+      (f) => f !== "median" && f !== "date",
     );
     const yMin = d3.min(projection, (d) =>
       Math.min(d.median, ...fields.map((f) => d[f])),
@@ -623,22 +659,23 @@ function projectionView(model) {
       Math.max(d.median, ...fields.map((f) => d[f])),
     );
 
+    const xDomain = d3.extent(projection, (d) => new Date(d.date));
     const xScale = d3
       .scaleTime()
-      .domain(d3.extent(projection, (d) => new Date(d.date)))
+      .domain(xDomain)
       .range([boundaries.l, boundaries.r]);
     const yScale = d3
       .scaleLinear()
       .domain([yMin, yMax])
       .range([boundaries.b, boundaries.t]);
 
-    // grid
-    svg
-      .append("g")
-      .attr("class", "grid-vertical")
-      .selectAll("line")
+    // Grid group for vertical lines (updated on zoom)
+    const gridGroup = svg.append("g").attr("class", "grid-group");
+    gridGroup
+      .selectAll(".grid-vertical")
       .data(xScale.ticks(12))
       .join("line")
+      .attr("class", "grid-vertical")
       .attr("x1", (d) => xScale(d))
       .attr("x2", (d) => xScale(d))
       .attr("y1", yScale.range()[0])
@@ -693,11 +730,17 @@ function projectionView(model) {
       .attr("font-size", "0.9rem")
       .text("Streamflow");
 
+    // Clipped group for data lines
+    const chartGroup = svg
+      .append("g")
+      .attr("class", "chart-content")
+      .attr("clip-path", "url(#projection-clip)");
+
     // projections
-    fields.forEach((f) => {
-      svg
+    fields.forEach((f, i) => {
+      chartGroup
         .append("path")
-        .attr("class", colours[2])
+        .attr("class", `${colours[2]} member-line-${i}`)
         .datum(projection)
         .attr(
           "d",
@@ -709,9 +752,12 @@ function projectionView(model) {
     });
 
     // median
-    svg
+    chartGroup
       .append("path")
-      .attr("class", `${colours[2]} projection__results__projection__median`)
+      .attr(
+        "class",
+        `${colours[2]} projection__results__projection__median median-line`,
+      )
       .datum(projection)
       .attr(
         "d",
@@ -721,7 +767,7 @@ function projectionView(model) {
           .y((d) => yScale(d.median)),
       );
 
-    // legend
+    // legend (outside clipped group)
     const legendData = [
       {
         label: "Median",
@@ -753,5 +799,192 @@ function projectionView(model) {
       .attr("text-anchor", "end")
       .attr("font-size", "0.9rem")
       .text((d) => d.label);
+
+    // Brush zoom
+    const brush = d3
+      .brushX()
+      .extent([
+        [boundaries.l, boundaries.t],
+        [boundaries.r, boundaries.b],
+      ])
+      .on("end", brushed);
+    const brushGroup = svg.append("g").attr("class", "brush").call(brush);
+
+    svg.on("dblclick", resetZoom);
+
+    function brushed(event) {
+      const selection = event.selection;
+      if (!selection) return;
+      const [x0, x1] = selection.map(xScale.invert);
+      xScale.domain([x0, x1]);
+      brushGroup.call(brush.move, null);
+      updateChart();
+    }
+
+    function resetZoom() {
+      xScale.domain(xDomain);
+      updateChart();
+    }
+
+    function updateChart() {
+      const t = svg.transition().duration(300);
+
+      // Update x-axis
+      svg
+        .select(".x-axis")
+        .transition(t)
+        .call(
+          d3
+            .axisBottom(xScale)
+            .ticks(12)
+            .tickSize(0)
+            .tickFormat(d3.timeFormat("%B")),
+        )
+        .call((g) => g.select(".domain").remove());
+
+      // Update vertical grid lines
+      gridGroup
+        .selectAll(".grid-vertical")
+        .data(xScale.ticks(12))
+        .join("line")
+        .attr("class", "grid-vertical")
+        .transition(t)
+        .attr("x1", (d) => xScale(d))
+        .attr("x2", (d) => xScale(d))
+        .attr("y1", yScale.range()[0])
+        .attr("y2", yScale.range()[1]);
+
+      // Update member lines
+      fields.forEach((f, i) => {
+        chartGroup
+          .select(`.member-line-${i}`)
+          .transition(t)
+          .attr(
+            "d",
+            d3
+              .line()
+              .x((d) => xScale(new Date(d.date)))
+              .y((d) => yScale(d[f])),
+          );
+      });
+
+      // Update median line
+      chartGroup
+        .select(".median-line")
+        .transition(t)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => xScale(new Date(d.date)))
+            .y((d) => yScale(d.median)),
+        );
+    }
+  }
+}
+
+function resultsView(model) {
+  const _svg = document.getElementById("projection__results__results");
+  clear(_svg);
+  if (model.results !== null) {
+    const width = _svg.clientWidth;
+    const height = _svg.clientHeight;
+    _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const boundaries = {
+      l: 50,
+      r: width - 25,
+      t: 5,
+      b: height - 20,
+    };
+
+    const fieldToName = {
+      winter_min: "Winter min",
+      spring_max: "Spring max",
+      summer_min: "Summer min",
+      autumn_max: "Autumn max",
+      mean: "Mean",
+    };
+
+    const results = model.results
+      .map(({ member, ...r }) => r)
+      .flatMap((r) => Object.entries(r));
+
+    const yMin = Math.floor(Math.min(...results.map(([_, v]) => v)));
+    const yMax = Math.ceil(Math.max(...results.map(([_, v]) => v)));
+
+    const xScale = d3
+      .scaleBand()
+      .domain(Object.values(fieldToName))
+      .range([boundaries.l, boundaries.r]);
+    const yScale = d3
+      .scaleLinear()
+      .domain([yMin, yMax])
+      .range([boundaries.b, boundaries.t]);
+
+    const svg = d3.select(_svg);
+
+    svg
+      .append("g")
+      .attr("class", "grid-horizontal")
+      .selectAll("line")
+      .data(yScale.ticks(5))
+      .join("line")
+      .attr("y1", (d) => yScale(d))
+      .attr("y2", (d) => yScale(d))
+      .attr("x1", xScale.range()[0])
+      .attr("x2", xScale.range()[1]);
+
+    // x axis
+    svg
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${boundaries.b})`)
+      .call(d3.axisBottom(xScale).tickSize(0))
+      .call((g) => g.select(".domain").remove());
+    // y axis
+    svg
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${boundaries.l}, 0)`)
+      .call(
+        d3
+          .axisLeft(yScale)
+          .ticks(5)
+          .tickSize(0)
+          .tickFormat((x) => formatNumber(x)),
+      )
+      .call((g) => g.select(".domain").remove());
+    svg
+      .append("text")
+      .attr("x", 15)
+      .attr("y", (boundaries.t + boundaries.b) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr(
+        "transform",
+        `rotate(-90, 15, ${(boundaries.t + boundaries.b) / 2})`,
+      )
+      .attr("font-size", "0.9rem")
+      .text("Streamflow");
+
+    const jitter = (i) => {
+      const jitterWidth = xScale.bandwidth() * 0.05;
+      const hash = ((i * 2654435761) % 1000) / 1000; // Deterministic 0-1 value
+      return (hash - 0.5) * jitterWidth;
+    };
+
+    svg
+      .selectAll("circle")
+      .data(results)
+      .join("circle")
+      .attr("class", colours[2])
+      .attr(
+        "cx",
+        ([f, _], i) =>
+          xScale(fieldToName[f]) + xScale.bandwidth() / 2 + jitter(i),
+      )
+      .attr("cy", ([_, v]) => yScale(v))
+      .attr("r", 2);
   }
 }

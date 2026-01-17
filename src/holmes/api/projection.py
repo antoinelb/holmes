@@ -4,16 +4,15 @@ from typing import Any, Callable
 import numpy as np
 import numpy.typing as npt
 import polars as pl
-from holmes_rs.pet import oudin
-from starlette.routing import BaseRoute, WebSocketRoute
-from starlette.websockets import WebSocket, WebSocketDisconnect
-
 from holmes import data
 from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
 from holmes.models import hydro, snow
 from holmes.utils.print import format_list
 from holmes.utils.websocket import cleanup_websocket, send
+from holmes_rs.pet import oudin
+from starlette.routing import BaseRoute, WebSocketRoute
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 ##########
 # public #
@@ -135,46 +134,28 @@ async def _handle_projection_message(
         list(msg_data["calibration"]["hydroParams"].values())
     )
 
-    projections = [
-        _run_projection(
-            member_data,
-            elevation_layers,
-            median_elevation,
-            latitude,
-            hydro_simulate,
-            snow_simulate,
-            hydro_params,
-            snow_params,
-        ).rename({"streamflow": f"member_{member_data[0, 'member']}"})
-        for member_data in _data.partition_by("member", maintain_order=True)
-    ]
-    projection = (
-        pl.concat(
-            [
-                projections[0],
-                *[p.drop("day_of_year") for p in projections[1:]],
-            ],
-            how="horizontal",
-        )
-        .with_columns(
-            pl.lit(date(2021, 1, 1)).alias("date")
-            + pl.duration(days=pl.col("day_of_year") - 1)
-        )
-        .drop("day_of_year")
+    projection = pl.concat(
+        [
+            _run_projection(
+                member_data,
+                elevation_layers,
+                median_elevation,
+                latitude,
+                hydro_simulate,
+                snow_simulate,
+                hydro_params,
+                snow_params,
+            ).with_columns(pl.lit(member_data[0, "member"]).alias("member"))
+            for member_data in _data.partition_by("member")
+        ]
     )
-    projection = projection.with_columns(
-        projection.unpivot(
-            index="date",
-        )
-        .group_by("date")
-        .agg(pl.col("value").median().alias("median"))
-        .sort("date")["median"]
-    )
+    results = _evaluate_projection(projection)
+    projection = _aggregate_projections(projection)
 
     await send(
         ws,
         "projection",
-        projection,
+        {"projection": projection, "results": results},
     )
 
 
@@ -239,16 +220,77 @@ def _run_projection(
             median_elevation,
         )
 
-    _data = (
-        pl.DataFrame(
-            {
-                "day_of_year": day_of_year,
-                "streamflow": hydro_simulate(hydro_params, precipitation, pet),
-            }
+    return _data.select("date").with_columns(
+        pl.Series(
+            "streamflow", hydro_simulate(hydro_params, precipitation, pet)
         )
-        .group_by("day_of_year")
-        .agg(pl.col("streamflow").mean())
-        .sort("day_of_year")
     )
 
-    return _data
+
+def _aggregate_projections(_data: pl.DataFrame) -> pl.DataFrame:
+    _data = (
+        _data.with_columns(
+            ((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1).alias(
+                "day_of_year"
+            )
+        )
+        .drop("date")
+        .group_by("member", "day_of_year")
+        .agg(pl.col("streamflow").mean())
+    )
+    return (
+        _data.pivot(index="day_of_year", on="member", values="streamflow")
+        .join(
+            _data.group_by("day_of_year").agg(
+                pl.col("streamflow").median().alias("median")
+            ),
+            on="day_of_year",
+        )
+        .with_columns(
+            pl.lit(date(2021, 1, 1)).alias("date")
+            + pl.duration(days=pl.col("day_of_year") - 1)
+        )
+        .drop("day_of_year")
+        .sort("date")
+    )
+
+
+def _evaluate_projection(_data: pl.DataFrame) -> pl.DataFrame:
+    winter_min = (
+        _data.filter(pl.col("date").dt.month().is_between(1, 3))
+        .group_by("member", pl.col("date").dt.year())
+        .agg(pl.col("streamflow").min())
+        .group_by("member")
+        .agg(pl.col("streamflow").median().alias("winter_min"))
+    )
+    summer_min = (
+        _data.filter(pl.col("date").dt.month().is_between(5, 10))
+        .group_by("member", pl.col("date").dt.year())
+        .agg(pl.col("streamflow").min())
+        .group_by("member")
+        .agg(pl.col("streamflow").median().alias("summer_min"))
+    )
+    spring_max = (
+        _data.filter(pl.col("date").dt.month().is_between(3, 6))
+        .group_by("member", pl.col("date").dt.year())
+        .agg(pl.col("streamflow").max())
+        .group_by("member")
+        .agg(pl.col("streamflow").median().alias("spring_max"))
+    )
+    autumn_max = (
+        _data.filter(pl.col("date").dt.month().is_between(9, 12))
+        .group_by("member", pl.col("date").dt.year())
+        .agg(pl.col("streamflow").max())
+        .group_by("member")
+        .agg(pl.col("streamflow").median().alias("autumn_max"))
+    )
+    mean = _data.group_by("member").agg(
+        pl.col("streamflow").mean().alias("mean")
+    )
+    return (
+        winter_min.join(summer_min, on="member")
+        .join(spring_max, on="member")
+        .join(autumn_max, on="member")
+        .join(mean, on="member")
+        .sort("member")
+    )

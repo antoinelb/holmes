@@ -2,9 +2,8 @@ from typing import Literal, assert_never
 
 import numpy as np
 import numpy.typing as npt
-from holmes_rs.metrics import calculate_kge, calculate_nse, calculate_rmse
-
 from holmes.models import calibration
+from holmes_rs.metrics import calculate_kge, calculate_nse, calculate_rmse
 
 ##########
 # public #
@@ -57,4 +56,4 @@ def evaluate(
     elif criteria == "correlation":
         return float(np.corrcoef(observations, simulation)[0, 1])
     else:  # pragma: no cover
-        assert_never(criteria)
+        assert_never(criteria)  # type: ignore
