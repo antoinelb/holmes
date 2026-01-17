@@ -12,28 +12,40 @@ const WS_URL = "calibration/";
 /* model */
 /*********/
 
-export function initModel() {
+export function initModel(canSave) {
   return {
     loading: false,
     ws: null,
     running: false,
     availableConfig: null,
     config: {
-      hydroModel: window.localStorage.getItem(
-        "holmes--calibration--hydroModel",
-      ),
-      catchment: window.localStorage.getItem("holmes--calibration--catchment"),
-      snowModel:
-        window.localStorage.getItem("holmes--calibration--snowModel") === "none"
+      hydroModel: canSave
+        ? window.localStorage.getItem("holmes--calibration--hydroModel")
+        : null,
+      catchment: canSave
+        ? window.localStorage.getItem("holmes--calibration--catchment")
+        : null,
+      snowModel: canSave
+        ? window.localStorage.getItem("holmes--calibration--snowModel") ===
+          "none"
           ? null
-          : window.localStorage.getItem("holmes--calibration--snowModel"),
-      objective: window.localStorage.getItem("holmes--calibration--objective"),
-      transformation: window.localStorage.getItem(
-        "holmes--calibration--transformation",
-      ),
-      start: window.localStorage.getItem("holmes--calibration--start"),
-      end: window.localStorage.getItem("holmes--calibration--end"),
-      algorithm: window.localStorage.getItem("holmes--calibration--algorithm"),
+          : window.localStorage.getItem("holmes--calibration--snowModel")
+        : null,
+      objective: canSave
+        ? window.localStorage.getItem("holmes--calibration--objective")
+        : null,
+      transformation: canSave
+        ? window.localStorage.getItem("holmes--calibration--transformation")
+        : null,
+      start: canSave
+        ? window.localStorage.getItem("holmes--calibration--start")
+        : null,
+      end: canSave
+        ? window.localStorage.getItem("holmes--calibration--end")
+        : null,
+      algorithm: canSave
+        ? window.localStorage.getItem("holmes--calibration--algorithm")
+        : null,
     },
     params: null,
     algorithmParams: null,

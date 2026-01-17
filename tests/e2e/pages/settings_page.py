@@ -13,6 +13,7 @@ class SettingsPage(BasePage):
     TOGGLE_BUTTON = "#settings button[title='Toggle settings']"
     THEME_BUTTON = "#theme"
     RESET_BUTTON = "#reset"
+    ALLOW_SAVE_CHECKBOX = "#allow-save__btn"
     VERSION_DISPLAY = "#version"
 
     def __init__(self, page: Page):
@@ -65,3 +66,13 @@ class SettingsPage(BasePage):
         if version_span is None:
             return ""
         return version_span.text_content() or ""
+
+    def click_allow_save(self) -> None:
+        """Click the Allow Save checkbox to toggle it."""
+        self.open_settings()
+        self.page.click(self.ALLOW_SAVE_CHECKBOX)
+
+    def is_allow_save_checked(self) -> bool:
+        """Check if the Allow Save checkbox is checked."""
+        self.open_settings()
+        return self.page.is_checked(self.ALLOW_SAVE_CHECKBOX)

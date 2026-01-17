@@ -23,16 +23,21 @@ window.onunhandledrejection = (event) => {
 /*********/
 
 function initModel() {
+  const canSave =
+    (window.localStorage.getItem("holmes--can-save") ?? "true") === "true";
   return {
     preventEscape: false,
     loading: false,
-    page: window.localStorage.getItem("holmes--page") ?? "calibration",
+    canSave: canSave,
+    page: canSave
+      ? (window.localStorage.getItem("holmes--page") ?? "calibration")
+      : "calibration",
     notifications: notifications.initModel(),
-    settings: settings.initModel(),
+    settings: settings.initModel(canSave),
     nav: nav.initModel(),
-    calibration: calibration.initModel(),
-    simulation: simulation.initModel(),
-    projection: projection.initModel(),
+    calibration: calibration.initModel(canSave),
+    simulation: simulation.initModel(canSave),
+    projection: projection.initModel(canSave),
   };
 }
 
@@ -60,6 +65,9 @@ async function update(model, msg, dispatch) {
       return { ...model, preventEscape: true };
     case "UnsetPreventEscape":
       return { ...model, preventEscape: false };
+    case "ToggleCanSave":
+      window.localStorage.setItem("holmes--can-save", !model.canSave);
+      return { ...model, canSave: !model.canSave };
     case "Navigate":
       window.localStorage.setItem("holmes--page", msg.data);
       return { ...model, page: msg.data };
@@ -186,7 +194,7 @@ function view(msg, model, dispatch) {
       notifications.view(model.notifications, dispatch);
       break;
     case "SettingsMsg":
-      settings.view(model.settings, dispatch);
+      settings.view(model.settings, dispatch, model.canSave);
       break;
     case "NavMsg":
       nav.view(model.nav, dispatch);

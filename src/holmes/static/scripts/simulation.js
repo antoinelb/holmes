@@ -12,29 +12,23 @@ const WS_URL = "simulation/";
 /* model */
 /*********/
 
-function parseLocalStorageCalibration() {
-  const stored = window.localStorage.getItem("holmes--simulation--calibration");
-  if (stored === null) return [];
-  try {
-    return JSON.parse(stored) ?? [];
-  } catch (e) {
-    console.error("Failed to parse localStorage calibrations:", e);
-    return [];
-  }
-}
-
-export function initModel() {
+export function initModel(canSave) {
   return {
     loading: false,
     ws: null,
     availableConfig: null,
-    calibration: parseLocalStorageCalibration(),
+    calibration: canSave ? parseLocalStorageCalibration() : [],
     config: {
-      start: window.localStorage.getItem("holmes--simulation--start"),
-      end: window.localStorage.getItem("holmes--simulation--end"),
-      multimodel:
-        window.localStorage.getItem("holmes--simulation--multimodel") ===
-        "true",
+      start: canSave
+        ? window.localStorage.getItem("holmes--simulation--start")
+        : null,
+      end: canSave
+        ? window.localStorage.getItem("holmes--simulation--end")
+        : null,
+      multimodel: canSave
+        ? window.localStorage.getItem("holmes--simulation--multimodel") ===
+          "true"
+        : false,
     },
     observations: null,
     simulation: null,
@@ -46,6 +40,17 @@ export const initialMsg = {
   type: "SimulationMsg",
   data: { type: "Connect" },
 };
+
+function parseLocalStorageCalibration() {
+  const stored = window.localStorage.getItem("holmes--simulation--calibration");
+  if (stored === null) return [];
+  try {
+    return JSON.parse(stored) ?? [];
+  } catch (e) {
+    console.error("Failed to parse localStorage calibrations:", e);
+    return [];
+  }
+}
 
 function verifyCalibration(model, calibration) {
   const keys = [

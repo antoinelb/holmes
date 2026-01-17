@@ -12,6 +12,33 @@ const WS_URL = "projection/";
 /* model */
 /*********/
 
+export function initModel(canSave) {
+  return {
+    loading: false,
+    ws: null,
+    running: false,
+    availableConfig: null,
+    calibration: canSave ? parseLocalStorageCalibration() : null,
+    config: {
+      model: canSave
+        ? window.localStorage.getItem("holmes--projection--model")
+        : null,
+      scenario: canSave
+        ? window.localStorage.getItem("holmes--projection--scenario")
+        : null,
+      horizon: canSave
+        ? window.localStorage.getItem("holmes--projection--horizon")
+        : null,
+    },
+    projection: null,
+  };
+}
+
+export const initialMsg = {
+  type: "ProjectionMsg",
+  data: { type: "Connect" },
+};
+
 function parseLocalStorageCalibration() {
   const stored = window.localStorage.getItem("holmes--projection--calibration");
   if (stored === null) return null;
@@ -22,27 +49,6 @@ function parseLocalStorageCalibration() {
     return null;
   }
 }
-
-export function initModel() {
-  return {
-    loading: false,
-    ws: null,
-    running: false,
-    availableConfig: null,
-    calibration: parseLocalStorageCalibration(),
-    config: {
-      model: window.localStorage.getItem("holmes--projection--model"),
-      scenario: window.localStorage.getItem("holmes--projection--scenario"),
-      horizon: window.localStorage.getItem("holmes--projection--horizon"),
-    },
-    projection: null,
-  };
-}
-
-export const initialMsg = {
-  type: "ProjectionMsg",
-  data: { type: "Connect" },
-};
 
 function verifyCalibration(calibration) {
   const keys = [

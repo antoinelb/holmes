@@ -59,7 +59,7 @@
 .checkbox {
   height: 1em;
   position: relative;
-  width: 1em;
+  width: 2em;
 
   & input {
     cursor: pointer;
@@ -70,42 +70,54 @@
     position: absolute;
     top: 0;
     width: 100%;
+    z-index: 2;
 
-    &:checked ~ span {
+    &:checked ~ .checkbox__bg {
       background: oklch(var(--theme));
     }
 
-    &:hover ~ span,
-    &:focus ~ span {
-      border: 0.1em solid oklch(var(--theme-most));
+    &:checked ~ .checkbox__fg {
+      left: 55%;
     }
   }
 
-  & span {
-    background: none;
-    border: 0.1em solid oklch(var(--theme));
+  & .checkbox__bg {
+    background: oklch(var(--bg));
+    border: 1px solid oklch(var(--theme));
     border-radius: 1em;
     height: 100%;
     left: 0;
-    margin: 0;
     position: absolute;
     top: 0;
+    transition: background 150ms;
     width: 100%;
-    z-index: -1;
+    z-index: 0;
+  }
+
+  & .checkbox__fg {
+    background: oklch(var(--fg));
+    border: none;
+    border-radius: 1em;
+    height: 90%;
+    left: 5%;
+    position: absolute;
+    top: calc(5% + 1px);
+    transition: left 150ms;
+    width: 45%;
+    z-index: 1;
   }
 
   &[disabled] {
-    & span {
-      border: 0.1em solid oklch(var(--theme) / 0.5);
+    & .checkbox__bg {
+      border: 0.1em solid oklch(var(--fg) / 0.5);
+    }
+
+    & .checkbox__fg {
+      background: oklch(var(--fg) / 0.5);
     }
 
     & input {
       cursor: default;
-
-      &:hover ~ span,
-      &:focus ~ span {
-        border: 0.1em solid oklch(var(--theme) / 0.5);
-      }
     }
   }
 }

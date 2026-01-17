@@ -123,6 +123,7 @@ export function createLoading() {
 export function createCheckbox(attributes, events) {
   return create("div", { class: "checkbox" }, [
     create("input", { type: "checkbox", ...attributes }, [], events),
-    create("span"),
+    create("span", { class: "checkbox__bg" }),
+    create("span", { class: "checkbox__fg" }),
   ]);
 }

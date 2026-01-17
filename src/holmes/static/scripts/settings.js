@@ -1,4 +1,4 @@
-import { create } from "./utils/elements.js";
+import { create, createCheckbox, createIcon } from "./utils/elements.js";
 import { onKey } from "./utils/listeners.js";
 import { range } from "./utils/misc.js";
 
@@ -6,11 +6,13 @@ import { range } from "./utils/misc.js";
 /* model */
 /*********/
 
-export function initModel() {
+export function initModel(canSave) {
   return {
     loading: false,
     open: false,
-    theme: window.localStorage.getItem("holmes--settings--theme") ?? "dark",
+    theme: canSave
+      ? (window.localStorage.getItem("holmes--settings--theme") ?? "dark")
+      : "dark",
     version: null,
   };
 }
@@ -94,6 +96,7 @@ async function getVersion(dispatch) {
 /********/
 
 export function initView(dispatch) {
+  const globalDispatch = dispatch;
   dispatch = createDispatch(dispatch);
   document.addEventListener("keydown", (event) =>
     onKey(
@@ -167,6 +170,21 @@ export function initView(dispatch) {
           },
         ],
       ),
+      create(
+        "div",
+        { id: "allow-save" },
+        [
+          createIcon("save"),
+          create("label", { for: "allow-save__btn" }, ["Allow save"]),
+          createCheckbox({ id: "allow-save__btn" }),
+        ],
+        [
+          {
+            event: "click",
+            fct: () => globalDispatch({ type: "ToggleCanSave" }),
+          },
+        ],
+      ),
       create("div", { id: "version" }, [
         create("span", {}, ["Version: "]),
         create("span"),
@@ -175,7 +193,7 @@ export function initView(dispatch) {
   ]);
 }
 
-export function view(model, dispatch) {
+export function view(model, dispatch, allowSave) {
   dispatch = createDispatch(dispatch);
 
   const settingsEl = document.getElementById("settings");
@@ -191,6 +209,13 @@ export function view(model, dispatch) {
     document.body.classList.remove("light");
   } else {
     document.body.classList.add("light");
+  }
+
+  const allowSaveBtn = document.getElementById("allow-save__btn");
+  if (allowSave) {
+    allowSaveBtn.checked = true;
+  } else {
+    allowSaveBtn.checked = false;
   }
 
   const versionSpan = document.querySelector("#version span:last-child");

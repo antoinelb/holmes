@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-rs/CHANGELOG.md).
 
+## [3.3.7] - 2026-01-17
+
+### Added
+- Added "Allow save" button in settings to allow reading from saved configs
+
+### Fixed
+- Fixed date icon in dark mode for chromium browsers
+
 ## [3.3.6] - 2026-01-11
 
 ### Added
