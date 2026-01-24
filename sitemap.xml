@@ -9,7 +9,11 @@
          <lastmod>2026-01-24</lastmod>
     </url>
     <url>
-         <loc>https://antoinelb.github.io/holmes/api-reference/api/</loc>
+         <loc>https://antoinelb.github.io/holmes/api-reference/app/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/config/</loc>
          <lastmod>2026-01-24</lastmod>
     </url>
     <url>
@@ -17,7 +21,75 @@
          <lastmod>2026-01-24</lastmod>
     </url>
     <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/exceptions/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/logging/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/validation/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/api/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/calibration/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/projection/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/simulation/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/api/utils/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
          <loc>https://antoinelb.github.io/holmes/api-reference/models/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/models/calibration/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/models/hydro/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/models/snow/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/models/utils/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/utils/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/utils/paths/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/utils/print/</loc>
+         <lastmod>2026-01-24</lastmod>
+    </url>
+    <url>
+         <loc>https://antoinelb.github.io/holmes/api-reference/utils/websocket/</loc>
          <lastmod>2026-01-24</lastmod>
     </url>
     <url>

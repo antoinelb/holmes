@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#metrics" class="md-skip">
+        <a href="#performance-metrics" class="md-skip">
           Skip to content
         </a>
       
@@ -1147,6 +1147,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1163,6 +1181,340 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rmse-root-mean-square-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RMSE: Root Mean Square Error
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RMSE: Root Mean Square Error">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-rmse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use RMSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nse-nash-sutcliffe-efficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NSE: Nash-Sutcliffe Efficiency
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NSE: Nash-Sutcliffe Efficiency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpretation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rating-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rating Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-nse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use NSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kge-kling-gupta-efficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KGE: Kling-Gupta Efficiency
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="KGE: Kling-Gupta Efficiency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expanded-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expanded Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rating-guidelines_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rating Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-kge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use KGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advantages-over-nse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advantages Over NSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-of-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison of Metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-a-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Metric
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Tips
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1187,6 +1539,18 @@
       
         
           
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
         
       
         
@@ -1263,7 +1627,7 @@
   <span class="md-ellipsis">
     
   
-    Data Module
+    data
   
 
     
@@ -1284,14 +1648,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/" class="md-nav__link">
+      <a href="../../api-reference/app/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Models Package
+    app
   
 
     
@@ -1312,14 +1676,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/" class="md-nav__link">
+      <a href="../../api-reference/config/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Package
+    config
   
 
     
@@ -1328,6 +1692,675 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api-reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    api
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/api/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.api
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/api/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/api/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/api/projection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.projection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/api/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api-reference/models/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/models/hydro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.hydro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/models/snow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.snow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/models/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/models/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api-reference/utils/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_10" id="__nav_5_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    utils
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/utils/paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/utils/print/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.print
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/utils/websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.websocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1675,6 +2708,329 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rmse-root-mean-square-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RMSE: Root Mean Square Error
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RMSE: Root Mean Square Error">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-rmse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use RMSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nse-nash-sutcliffe-efficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NSE: Nash-Sutcliffe Efficiency
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NSE: Nash-Sutcliffe Efficiency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpretation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rating-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rating Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-nse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use NSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kge-kling-gupta-efficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KGE: Kling-Gupta Efficiency
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="KGE: Kling-Gupta Efficiency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definition_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expanded-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expanded Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rating-guidelines_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rating Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-kge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use KGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advantages-over-nse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advantages Over NSE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-of-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison of Metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-a-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Metric
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Tips
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1693,8 +3049,305 @@
   
 
 
-<h1 id="metrics">Metrics<a class="headerlink" href="#metrics" title="Permanent link">&para;</a></h1>
-<p><em>This page is under construction.</em></p>
+<h1 id="performance-metrics">Performance Metrics<a class="headerlink" href="#performance-metrics" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>After calibrating a hydrological model, we need to assess how well it performs. Performance metrics quantify the agreement between simulated and observed streamflow, providing objective measures of model quality.</p>
+<p>No single metric captures all aspects of model performance. Peak flows, low flows, timing, volume, and variability each tell part of the story. Using multiple metrics provides a more complete picture of model strengths and weaknesses.</p>
+<p>HOLMES implements three widely-used metrics: RMSE (Root Mean Square Error), NSE (Nash-Sutcliffe Efficiency), and KGE (Kling-Gupta Efficiency). Each emphasizes different aspects of performance and is appropriate for different applications.</p>
+<h2 id="notation">Notation<a class="headerlink" href="#notation" title="Permanent link">&para;</a></h2>
+<p>Throughout this page:</p>
+<ul>
+<li><span class="arithmatex">\(O_i\)</span> = observed streamflow at time step <span class="arithmatex">\(i\)</span></li>
+<li><span class="arithmatex">\(S_i\)</span> = simulated streamflow at time step <span class="arithmatex">\(i\)</span></li>
+<li><span class="arithmatex">\(\bar{O}\)</span> = mean of observed streamflow</li>
+<li><span class="arithmatex">\(\bar{S}\)</span> = mean of simulated streamflow</li>
+<li><span class="arithmatex">\(\sigma_O\)</span> = standard deviation of observations</li>
+<li><span class="arithmatex">\(\sigma_S\)</span> = standard deviation of simulations</li>
+<li><span class="arithmatex">\(n\)</span> = number of time steps</li>
+</ul>
+<h2 id="rmse-root-mean-square-error">RMSE: Root Mean Square Error<a class="headerlink" href="#rmse-root-mean-square-error" title="Permanent link">&para;</a></h2>
+<h3 id="definition">Definition<a class="headerlink" href="#definition" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(O_i - S_i)^2}\]</div>
+<h3 id="interpretation">Interpretation<a class="headerlink" href="#interpretation" title="Permanent link">&para;</a></h3>
+<p>RMSE measures the average magnitude of errors between simulated and observed values. It has the same units as the data (e.g., mm/day or m³/s), making it directly interpretable as "typical error size."</p>
+<p><strong>Key properties:</strong></p>
+<ul>
+<li><strong>Range</strong>: <span class="arithmatex">\([0, \infty)\)</span></li>
+<li><strong>Perfect score</strong>: 0 (no errors)</li>
+<li><strong>Units</strong>: Same as input data</li>
+<li><strong>Squaring</strong>: Large errors contribute disproportionately (a 10 mm/day error counts 100 times more than a 1 mm/day error)</li>
+</ul>
+<h3 id="when-to-use-rmse">When to Use RMSE<a class="headerlink" href="#when-to-use-rmse" title="Permanent link">&para;</a></h3>
+<ul>
+<li>When you need error magnitude in physical units</li>
+<li>When large errors are particularly problematic</li>
+<li>For comparing models applied to the same catchment (not for cross-catchment comparison, as RMSE scales with flow magnitude)</li>
+</ul>
+<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Scale-dependent</strong>: A large catchment with high flows will naturally have higher RMSE than a small catchment, even if both models perform equally well relatively</li>
+<li><strong>Sensitive to outliers</strong>: A few large errors can dominate the metric</li>
+<li><strong>No skill reference</strong>: RMSE doesn't tell you whether the model is better than a simple baseline</li>
+</ul>
+<h3 id="example-interpretation">Example Interpretation<a class="headerlink" href="#example-interpretation" title="Permanent link">&para;</a></h3>
+<p>If RMSE = 2.5 mm/day for a catchment with mean flow of 5 mm/day, the typical error is about 50% of mean flow—indicating moderate performance. For a catchment with mean flow of 25 mm/day, the same RMSE would indicate excellent performance (10% error).</p>
+<h2 id="nse-nash-sutcliffe-efficiency">NSE: Nash-Sutcliffe Efficiency<a class="headerlink" href="#nse-nash-sutcliffe-efficiency" title="Permanent link">&para;</a></h2>
+<h3 id="definition_1">Definition<a class="headerlink" href="#definition_1" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[NSE = 1 - \frac{\sum_{i=1}^{n}(O_i - S_i)^2}{\sum_{i=1}^{n}(O_i - \bar{O})^2}\]</div>
+<h3 id="interpretation_1">Interpretation<a class="headerlink" href="#interpretation_1" title="Permanent link">&para;</a></h3>
+<p>NSE compares model errors to the variance of observations. It answers: "Is the model better than simply using the observed mean as a predictor?"</p>
+<p><strong>Key properties:</strong></p>
+<ul>
+<li><strong>Range</strong>: <span class="arithmatex">\((-\infty, 1]\)</span></li>
+<li><strong>Perfect score</strong>: 1 (simulations exactly match observations)</li>
+<li><strong>Benchmark score</strong>: 0 (model is as good as using the mean)</li>
+<li><strong>Negative values</strong>: Model is worse than the mean</li>
+<li><strong>Dimensionless</strong>: Can compare across catchments</li>
+</ul>
+<h3 id="decomposition">Decomposition<a class="headerlink" href="#decomposition" title="Permanent link">&para;</a></h3>
+<p>NSE can be understood as:</p>
+<div class="arithmatex">\[NSE = 1 - \frac{MSE}{Var(O)}\]</div>
+<p>where MSE is the mean squared error and Var(O) is the variance of observations. The model must explain more variance than it introduces as error to achieve positive NSE.</p>
+<h3 id="rating-guidelines">Rating Guidelines<a class="headerlink" href="#rating-guidelines" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>NSE</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt; 0.75</td>
+<td>Very good</td>
+</tr>
+<tr>
+<td>0.65 – 0.75</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>0.50 – 0.65</td>
+<td>Satisfactory</td>
+</tr>
+<tr>
+<td>0.40 – 0.50</td>
+<td>Acceptable for some purposes</td>
+</tr>
+<tr>
+<td>&lt; 0.40</td>
+<td>Unsatisfactory</td>
+</tr>
+</tbody>
+</table>
+<p>These thresholds are guidelines, not strict rules. Acceptable performance depends on the application.</p>
+<h3 id="when-to-use-nse">When to Use NSE<a class="headerlink" href="#when-to-use-nse" title="Permanent link">&para;</a></h3>
+<ul>
+<li>For general performance assessment</li>
+<li>When comparing models across different catchments</li>
+<li>For research publications (NSE is the most commonly reported metric)</li>
+</ul>
+<h3 id="limitations_1">Limitations<a class="headerlink" href="#limitations_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Emphasis on high flows</strong>: Because errors are squared, NSE is dominated by performance during peak flows. A model that captures peaks well but misses low flows may still have high NSE.</li>
+<li><strong>Sensitive to timing</strong>: A simulation that is correct in magnitude but shifted in time will have poor NSE.</li>
+<li><strong>Mean benchmark</strong>: Using the mean as a benchmark may be too easy in catchments with high autocorrelation.</li>
+</ul>
+<h2 id="kge-kling-gupta-efficiency">KGE: Kling-Gupta Efficiency<a class="headerlink" href="#kge-kling-gupta-efficiency" title="Permanent link">&para;</a></h2>
+<h3 id="definition_2">Definition<a class="headerlink" href="#definition_2" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[KGE = 1 - \sqrt{(r-1)^2 + (\alpha-1)^2 + (\beta-1)^2}\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(r\)</span> = Pearson correlation coefficient between <span class="arithmatex">\(O\)</span> and <span class="arithmatex">\(S\)</span></li>
+<li><span class="arithmatex">\(\alpha = \frac{\sigma_S}{\sigma_O}\)</span> = ratio of standard deviations (variability ratio)</li>
+<li><span class="arithmatex">\(\beta = \frac{\bar{S}}{\bar{O}}\)</span> = ratio of means (bias ratio)</li>
+</ul>
+<h3 id="component-interpretation">Component Interpretation<a class="headerlink" href="#component-interpretation" title="Permanent link">&para;</a></h3>
+<p>KGE decomposes performance into three independent aspects:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Symbol</th>
+<th>Optimal Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Correlation</td>
+<td><span class="arithmatex">\(r\)</span></td>
+<td>1</td>
+<td>Timing and shape</td>
+</tr>
+<tr>
+<td>Variability ratio</td>
+<td><span class="arithmatex">\(\alpha\)</span></td>
+<td>1</td>
+<td>Amplitude of variations</td>
+</tr>
+<tr>
+<td>Bias ratio</td>
+<td><span class="arithmatex">\(\beta\)</span></td>
+<td>1</td>
+<td>Mean water balance</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Correlation (<span class="arithmatex">\(r\)</span>)</strong>: Measures how well the timing and pattern of simulated flows match observations. High correlation means peaks and troughs occur at the right times, even if magnitudes differ.</p>
+<p><strong>Variability ratio (<span class="arithmatex">\(\alpha\)</span>)</strong>: Compares the "spread" of simulations to observations. <span class="arithmatex">\(\alpha &gt; 1\)</span> means simulations are too variable; <span class="arithmatex">\(\alpha &lt; 1\)</span> means simulations are too damped.</p>
+<p><strong>Bias ratio (<span class="arithmatex">\(\beta\)</span>)</strong>: Compares mean flows. <span class="arithmatex">\(\beta &gt; 1\)</span> means the model overestimates on average; <span class="arithmatex">\(\beta &lt; 1\)</span> means underestimation.</p>
+<h3 id="expanded-form">Expanded Form<a class="headerlink" href="#expanded-form" title="Permanent link">&para;</a></h3>
+<p>The components are calculated as:</p>
+<div class="arithmatex">\[r = \frac{\sum_{i=1}^{n}(O_i - \bar{O})(S_i - \bar{S})}{\sqrt{\sum_{i=1}^{n}(O_i - \bar{O})^2} \cdot \sqrt{\sum_{i=1}^{n}(S_i - \bar{S})^2}}\]</div>
+<div class="arithmatex">\[\alpha = \frac{\sigma_S}{\sigma_O} = \frac{\sqrt{\frac{1}{n}\sum_{i=1}^{n}(S_i - \bar{S})^2}}{\sqrt{\frac{1}{n}\sum_{i=1}^{n}(O_i - \bar{O})^2}}\]</div>
+<div class="arithmatex">\[\beta = \frac{\bar{S}}{\bar{O}}\]</div>
+<h3 id="key-properties">Key Properties<a class="headerlink" href="#key-properties" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Range</strong>: <span class="arithmatex">\((-\infty, 1]\)</span></li>
+<li><strong>Perfect score</strong>: 1 (all components equal 1)</li>
+<li><strong>Benchmark</strong>: KGE = -0.41 corresponds to using the observed mean (like NSE = 0)</li>
+<li><strong>Dimensionless</strong>: Can compare across catchments</li>
+<li><strong>Diagnostic</strong>: Components reveal which aspects need improvement</li>
+</ul>
+<h3 id="rating-guidelines_1">Rating Guidelines<a class="headerlink" href="#rating-guidelines_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>KGE</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt; 0.75</td>
+<td>Very good</td>
+</tr>
+<tr>
+<td>0.50 – 0.75</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>0.00 – 0.50</td>
+<td>Acceptable</td>
+</tr>
+<tr>
+<td>&lt; 0.00</td>
+<td>Poor</td>
+</tr>
+</tbody>
+</table>
+<h3 id="when-to-use-kge">When to Use KGE<a class="headerlink" href="#when-to-use-kge" title="Permanent link">&para;</a></h3>
+<ul>
+<li>When you want diagnostic information about model errors</li>
+<li>When water balance (bias) matters for your application</li>
+<li>When you want a more balanced assessment than NSE provides</li>
+<li>For operational hydrology where total volumes matter</li>
+</ul>
+<h3 id="advantages-over-nse">Advantages Over NSE<a class="headerlink" href="#advantages-over-nse" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Balanced assessment</strong>: NSE can be high even with significant bias if variability is captured. KGE explicitly penalizes bias.</p>
+</li>
+<li>
+<p><strong>Diagnostic value</strong>: The components tell you what to fix. Poor <span class="arithmatex">\(r\)</span>? Work on timing. Poor <span class="arithmatex">\(\beta\)</span>? Adjust the water balance.</p>
+</li>
+<li>
+<p><strong>More intuitive benchmark</strong>: NSE = 0 corresponds to using the mean, but KGE = 0 is a more meaningful threshold in practice.</p>
+</li>
+</ol>
+<h2 id="comparison-of-metrics">Comparison of Metrics<a class="headerlink" href="#comparison-of-metrics" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>RMSE</th>
+<th>NSE</th>
+<th>KGE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Units</strong></td>
+<td>Same as data</td>
+<td>Dimensionless</td>
+<td>Dimensionless</td>
+</tr>
+<tr>
+<td><strong>Range</strong></td>
+<td><span class="arithmatex">\([0, \infty)\)</span></td>
+<td><span class="arithmatex">\((-\infty, 1]\)</span></td>
+<td><span class="arithmatex">\((-\infty, 1]\)</span></td>
+</tr>
+<tr>
+<td><strong>Perfect</strong></td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Cross-catchment comparison</strong></td>
+<td>No</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Emphasis</strong></td>
+<td>All errors equally (squared)</td>
+<td>High flows</td>
+<td>Balanced</td>
+</tr>
+<tr>
+<td><strong>Diagnostic</strong></td>
+<td>No</td>
+<td>Limited</td>
+<td>Yes (3 components)</td>
+</tr>
+<tr>
+<td><strong>Bias sensitivity</strong></td>
+<td>Implicit</td>
+<td>Low</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Most common use</strong></td>
+<td>Error magnitude</td>
+<td>Research</td>
+<td>Operational</td>
+</tr>
+</tbody>
+</table>
+<h2 id="choosing-a-metric">Choosing a Metric<a class="headerlink" href="#choosing-a-metric" title="Permanent link">&para;</a></h2>
+<p>The choice of metric should align with your modeling objectives:</p>
+<p><strong>For flood forecasting</strong>: NSE or RMSE, as peak flow accuracy matters most.</p>
+<p><strong>For water resources planning</strong>: KGE, because water balance (total volumes) is critical.</p>
+<p><strong>For low flow assessment</strong>: Consider transforming flows (log or square root) before computing metrics, or use specific low-flow metrics.</p>
+<p><strong>For research and publication</strong>: Report multiple metrics. NSE for comparability with literature; KGE for diagnostic insight; RMSE for physical interpretation.</p>
+<p><strong>Best practice</strong>: Always report at least two metrics. High NSE with poor KGE components (e.g., biased mean) reveals important model limitations.</p>
+<h2 id="practical-tips">Practical Tips<a class="headerlink" href="#practical-tips" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Examine time series plots</strong> in addition to metrics. A metric is a summary; the plot shows details.</p>
+</li>
+<li>
+<p><strong>Calculate metrics for subperiods</strong>: Calibration vs. validation, wet vs. dry years, different seasons. Performance may vary.</p>
+</li>
+<li>
+<p><strong>Consider flow transformation</strong>: Log transformation emphasizes low flows; square root provides intermediate emphasis.</p>
+</li>
+<li>
+<p><strong>Watch for suspect values</strong>: A single missing observation coded as -999 can ruin all metrics. Check data quality first.</p>
+</li>
+<li>
+<p><strong>Report uncertainty</strong>: If you run multiple calibrations, report the range of metrics, not just the best run.</p>
+</li>
+</ol>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Nash, J. E., &amp; Sutcliffe, J. V. (1970). River flow forecasting through conceptual models part I—A discussion of principles. <em>Journal of Hydrology</em>, 10(3), 282-290. <a href="https://doi.org/10.1016/0022-1694(70)90255-6">https://doi.org/10.1016/0022-1694(70)90255-6</a></p>
+<p>The seminal paper introducing NSE, one of the most cited papers in hydrology. Establishes the concept of comparing model errors to observation variance.</p>
+<p>Gupta, H. V., Kling, H., Yilmaz, K. K., &amp; Martinez, G. F. (2009). Decomposition of the mean squared error and NSE performance criteria: Implications for improving hydrological modelling. <em>Journal of Hydrology</em>, 377(1-2), 80-91. <a href="https://doi.org/10.1016/j.jhydrol.2009.08.003">https://doi.org/10.1016/j.jhydrol.2009.08.003</a></p>
+<p>Introduces KGE and demonstrates its advantages over NSE. Shows how NSE can mask important model deficiencies.</p>
+<p>Moriasi, D. N., Arnold, J. G., Van Liew, M. W., Bingner, R. L., Harmel, R. D., &amp; Veith, T. L. (2007). Model evaluation guidelines for systematic quantification of accuracy in watershed simulations. <em>Transactions of the ASABE</em>, 50(3), 885-900.</p>
+<p>Provides widely-cited guidelines for acceptable performance levels (NSE &gt; 0.5 for satisfactory performance).</p>
 
 
 
@@ -1717,7 +3370,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 14:42:03 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 21:03:31 UTC">January 24, 2026</span>
   </span>
 
     
@@ -1845,7 +3498,7 @@
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="../../assets/javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
