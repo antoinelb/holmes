@@ -5,6 +5,7 @@ site_url: https://antoinelb.github.io/holmes/
 repo_url: https://github.com/antoinelb/holmes
 repo_name: antoinelb/holmes
 edit_uri: edit/main/docs/
+dev_addr: 127.0.0.1:8001
 
 theme:
   name: material

@@ -237,7 +237,7 @@
         stroke-width: 0.5px;
       }
 
-      & rect {
+      & .warmup-rect {
         opacity: 0.1;
       }
 
