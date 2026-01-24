@@ -5,8 +5,11 @@
 ![holmes-hydro pypi version](https://img.shields.io/pypi/v/holmes-hydro?label=holmes-hydro%20pypi%20package&color=green)
 ![holmes-rs pypi version](https://img.shields.io/pypi/v/holmes-rs?label=holmes-rs%20pypi%20package&color=green)
 [![Supported Python Version](https://img.shields.io/pypi/pyversions/holmes-hydro.svg?color=%2334D058)](https://pypi.org/project/holmes-hydro)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://antoinelb.github.io/holmes/)
 
 HOLMES (HydrOLogical Modeling Educational Software) is a software developed to teach operational hydrology. It is developed at Université Laval, Québec, Canada.
+
+📖 **[Documentation](https://antoinelb.github.io/holmes/)** · 📦 **[PyPI](https://pypi.org/project/holmes-hydro/)**
 
 ## Usage
 
