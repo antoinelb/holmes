@@ -1,5 +1,5 @@
-# data
+# config
 
-::: holmes.data
+::: holmes.config
     options:
       show_root_heading: false

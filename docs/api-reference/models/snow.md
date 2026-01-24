@@ -1,5 +1,5 @@
-# data
+# models.snow
 
-::: holmes.data
+::: holmes.models.snow
     options:
       show_root_heading: false

@@ -1,5 +1,5 @@
-# data
+# app
 
-::: holmes.data
+::: holmes.app
     options:
       show_root_heading: false

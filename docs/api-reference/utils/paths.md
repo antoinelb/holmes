@@ -1,5 +1,5 @@
-# data
+# utils.paths
 
-::: holmes.data
+::: holmes.utils.paths
     options:
       show_root_heading: false

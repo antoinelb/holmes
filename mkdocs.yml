@@ -54,6 +54,9 @@ plugins:
             docstring_style: numpy
             members_order: source
             show_signature_annotations: true
+            separate_signature: true
+            line_length: 80
+            signature_crossrefs: true
   - include-markdown
   - git-revision-date-localized:
       enable_creation_date: true
@@ -129,9 +132,30 @@ nav:
       - Metrics: concepts/metrics.md
   - API Reference:
       - api-reference/index.md
-      - api-reference/data.md
-      - api-reference/models.md
-      - api-reference/api.md
+      - data: api-reference/data.md
+      - app: api-reference/app.md
+      - config: api-reference/config.md
+      - exceptions: api-reference/exceptions.md
+      - logging: api-reference/logging.md
+      - validation: api-reference/validation.md
+      - api:
+          - api-reference/api/index.md
+          - api.api: api-reference/api/api.md
+          - api.calibration: api-reference/api/calibration.md
+          - api.simulation: api-reference/api/simulation.md
+          - api.projection: api-reference/api/projection.md
+          - api.utils: api-reference/api/utils.md
+      - models:
+          - api-reference/models/index.md
+          - models.hydro: api-reference/models/hydro.md
+          - models.snow: api-reference/models/snow.md
+          - models.calibration: api-reference/models/calibration.md
+          - models.utils: api-reference/models/utils.md
+      - utils:
+          - api-reference/utils/index.md
+          - utils.paths: api-reference/utils/paths.md
+          - utils.print: api-reference/utils/print.md
+          - utils.websocket: api-reference/utils/websocket.md
   - Data Formats:
       - data-formats/index.md
       - Observations CSV: data-formats/observations.md

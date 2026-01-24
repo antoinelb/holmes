@@ -1,5 +1,5 @@
-# data
+# api.simulation
 
-::: holmes.data
+::: holmes.api.simulation
     options:
       show_root_heading: false

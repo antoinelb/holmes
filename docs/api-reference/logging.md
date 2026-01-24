@@ -1,5 +1,5 @@
-# data
+# logging
 
-::: holmes.data
+::: holmes.logging
     options:
       show_root_heading: false

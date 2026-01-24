@@ -1,5 +1,5 @@
-# data
+# models.hydro
 
-::: holmes.data
+::: holmes.models.hydro
     options:
       show_root_heading: false

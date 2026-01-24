@@ -1,5 +1,5 @@
-# data
+# utils.print
 
-::: holmes.data
+::: holmes.utils.print
     options:
       show_root_heading: false

@@ -1,5 +1,5 @@
-# data
+# api.api
 
-::: holmes.data
+::: holmes.api.api
     options:
       show_root_heading: false

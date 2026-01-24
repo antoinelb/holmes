@@ -1,5 +1,5 @@
-# data
+# api.calibration
 
-::: holmes.data
+::: holmes.api.calibration
     options:
       show_root_heading: false

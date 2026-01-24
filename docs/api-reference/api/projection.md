@@ -1,5 +1,5 @@
-# data
+# api.projection
 
-::: holmes.data
+::: holmes.api.projection
     options:
       show_root_heading: false

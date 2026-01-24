@@ -1,5 +1,5 @@
-# data
+# utils.websocket
 
-::: holmes.data
+::: holmes.utils.websocket
     options:
       show_root_heading: false

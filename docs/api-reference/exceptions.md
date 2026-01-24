@@ -1,5 +1,5 @@
-# data
+# exceptions
 
-::: holmes.data
+::: holmes.exceptions
     options:
       show_root_heading: false
