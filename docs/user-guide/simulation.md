@@ -12,7 +12,7 @@ Common use cases:
 - **Model comparison**: Compare performance of different models or calibrations
 - **Multimodel averaging**: Combine predictions from multiple calibrations
 
-<!-- ![Simulation page](../assets/images/screenshots/simulation-config.png) -->
+![Simulation page](../assets/images/screenshots/simulation-config.png)
 
 ## Importing Calibration Results
 
@@ -86,7 +86,7 @@ This is disabled when only one calibration is loaded.
 
 Results appear in the charts on the right.
 
-<!-- ![Simulation results](../assets/images/screenshots/simulation-results.png) -->
+![Simulation results](../assets/images/screenshots/simulation-results.png)
 
 ## Understanding Results
 

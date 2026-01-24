@@ -11,7 +11,7 @@ Climate projection simulates streamflow using:
 
 Results show potential changes in streamflow seasonality and magnitude under different climate scenarios and time horizons.
 
-<!-- ![Projection page](../assets/images/screenshots/projection-config.png) -->
+![Projection page](../assets/images/screenshots/projection-config.png)
 
 ## Prerequisites
 
@@ -85,7 +85,7 @@ Select the climate scenario. Available scenarios depend on the projection data f
 
 A loading indicator shows while the projection runs (this may take longer than calibration/simulation due to the longer time series).
 
-<!-- ![Projection results](../assets/images/screenshots/projection-results.png) -->
+![Projection results](../assets/images/screenshots/projection-results.png)
 
 ## Understanding Results
 

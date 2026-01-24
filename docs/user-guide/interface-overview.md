@@ -4,7 +4,7 @@ This page describes the common elements of the HOLMES interface that appear acro
 
 ## Navigation
 
-<!-- ![Navigation menu](../assets/images/screenshots/interface-navigation.png) -->
+![Navigation menu](../assets/images/screenshots/interface-navigation.png)
 
 The navigation menu is accessed by clicking the grid icon in the top-left corner. It provides access to the three main pages:
 

@@ -6,7 +6,7 @@ The Settings panel provides options to customize your HOLMES experience, includi
 
 Click the hamburger menu icon (three horizontal lines) in the top-right corner to open the settings panel.
 
-<!-- ![Settings panel](../assets/images/screenshots/settings-panel.png) -->
+![Settings panel](../assets/images/screenshots/settings-panel.png)
 
 ## Available Settings
 

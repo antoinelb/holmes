@@ -21,7 +21,7 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 
 If the browser doesn't open automatically, navigate to [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-<!-- ![HOLMES home page](../assets/images/screenshots/quickstart-home.png) -->
+![HOLMES home page](../assets/images/screenshots/quickstart-home.png)
 
 ## Step 2: Configure Your Model
 
@@ -102,7 +102,7 @@ Watch as the algorithm iteratively improves the parameters. The charts update in
 
 Click **Stop calibration** at any time to halt the process.
 
-<!-- ![Completed calibration](../assets/images/screenshots/quickstart-calibration-result.png) -->
+![Completed calibration](../assets/images/screenshots/quickstart-calibration-result.png)
 
 ## Step 5: Export Your Results
 

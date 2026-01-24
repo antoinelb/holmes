@@ -16,7 +16,7 @@ HOLMES provides three main workflows, each accessible from the navigation menu:
 
 The HOLMES interface consists of:
 
-<!-- ![Interface overview](../assets/images/screenshots/interface-navigation.png) -->
+![Interface overview](../assets/images/screenshots/interface-navigation.png)
 
 1. **Navigation Menu** (top left corner) - Switch between Calibration, Simulation, and Projection
 2. **Settings Menu** (top right corner) - Theme toggle, data persistence, version info

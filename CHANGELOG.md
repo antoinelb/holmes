@@ -12,6 +12,15 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ## [Unreleased]
 
 ### Documentation
+- Added comprehensive Concepts documentation with mathematical formulations:
+  - GR4J model: production store, unit hydrographs, routing store equations
+  - Bucket model: linear reservoir theory, flow partitioning, comparison with GR4J
+  - CemaNeige snow model: degree-day method, thermal state, elevation layers
+  - Oudin PET: solar geometry calculations, extraterrestrial radiation
+  - SCE-UA calibration: algorithm steps, convergence criteria, practical guidance
+  - Performance metrics: RMSE, NSE, KGE definitions and interpretation
+  - Concepts overview: rainfall-runoff modeling introduction, modeling chain
+- Added MathJax configuration for proper LaTeX equation rendering in documentation
 - Added auto-generated API reference using mkdocstrings (generates docs from Python docstrings)
 - Restructured API reference to mirror Python module hierarchy (one page per module)
 - Improved function signature formatting with line wrapping and cross-references

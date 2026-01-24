@@ -10,7 +10,7 @@ Calibration is the process of finding model parameters that produce simulated st
 - **Simulated streamflow** using current parameters
 - **Performance metrics** quantifying the fit
 
-<!-- ![Calibration page](../assets/images/screenshots/calibration-config.png) -->
+![Calibration page](../assets/images/screenshots/calibration-config.png)
 
 ## General Settings
 
@@ -99,7 +99,7 @@ Choose between manual and automatic calibration:
 
 Manual calibration lets you adjust parameters directly and see immediate results.
 
-<!-- ![Manual calibration](../assets/images/screenshots/calibration-manual.png) -->
+![Manual calibration](../assets/images/screenshots/calibration-manual.png)
 
 ### Manual calibration settings
 
@@ -139,7 +139,7 @@ For **Bucket**:
 
 Automatic calibration uses optimization algorithms to find parameters that maximize (or minimize) the objective function.
 
-<!-- ![Automatic calibration](../assets/images/screenshots/calibration-auto-running.png) -->
+![Automatic calibration](../assets/images/screenshots/calibration-auto-running.png)
 
 ### Automatic - SCE calibration settings
 
@@ -165,7 +165,7 @@ The Shuffled Complex Evolution (SCE-UA) algorithm is a global optimization metho
     - Simulated streamflow matching observations
 4. Click **Stop calibration** to halt early, or wait for completion
 
-<!-- ![Calibration complete](../assets/images/screenshots/calibration-complete.png) -->
+![Calibration complete](../assets/images/screenshots/calibration-complete.png)
 
 ### Understanding the Results
 
