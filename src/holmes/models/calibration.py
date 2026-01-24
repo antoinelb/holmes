@@ -92,6 +92,7 @@ async def calibrate(
     elevation_layers: npt.NDArray[np.float64] | None,
     median_elevation: float | None,
     qnbv: float | None,
+    warmup_steps: int,
     hydro_model: str,
     snow_model: SnowModel | None,
     objective: Objective,
@@ -179,6 +180,7 @@ async def calibrate(
                     elevation_layers,
                     median_elevation,
                     observations,
+                    warmup_steps,
                 )
             except (HolmesNumericalError, HolmesValidationError) as exc:
                 logger.error(f"Failed to initialize SCE-UA with data: {exc}")
@@ -201,6 +203,7 @@ async def calibrate(
                         elevation_layers,
                         median_elevation,
                         observations,
+                        warmup_steps,
                     )
                 except (HolmesNumericalError, HolmesValidationError) as exc:
                     logger.error(f"SCE-UA step failed: {exc}")

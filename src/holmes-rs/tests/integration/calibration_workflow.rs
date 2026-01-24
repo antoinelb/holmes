@@ -48,6 +48,7 @@ fn test_sce_synthetic_convergence() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -67,6 +68,7 @@ fn test_sce_synthetic_convergence() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -133,6 +135,7 @@ fn test_sce_rmse_objective() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -150,6 +153,7 @@ fn test_sce_rmse_objective() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -199,6 +203,7 @@ fn test_sce_kge_objective() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -216,6 +221,7 @@ fn test_sce_kge_objective() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -269,6 +275,7 @@ fn test_sce_log_transformation() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(init_result.is_ok(), "Log transformation should work");
@@ -281,6 +288,7 @@ fn test_sce_log_transformation() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(
@@ -330,6 +338,7 @@ fn test_sce_sqrt_transformation() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(init_result.is_ok(), "Sqrt transformation should work");
@@ -342,6 +351,7 @@ fn test_sce_sqrt_transformation() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(
@@ -386,6 +396,7 @@ fn test_sce_max_evaluations() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -402,6 +413,7 @@ fn test_sce_max_evaluations() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
         done = d;
@@ -474,6 +486,7 @@ fn test_sce_snow_hydro_calibration() {
         Some(elevation_layers.view()),
         Some(median_elevation),
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -492,6 +505,7 @@ fn test_sce_snow_hydro_calibration() {
                 Some(elevation_layers.view()),
                 Some(median_elevation),
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -558,6 +572,7 @@ fn test_sce_reproducibility() {
             None,
             None,
             obs.view(),
+            0,
         )
         .unwrap();
 
@@ -570,6 +585,7 @@ fn test_sce_reproducibility() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -628,6 +644,7 @@ fn test_full_calibration_workflow() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -647,6 +664,7 @@ fn test_full_calibration_workflow() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 

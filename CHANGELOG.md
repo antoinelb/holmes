@@ -10,24 +10,28 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ## [Unreleased]
 
 ### Added
-- Cache busting for static CSS and JS files using version query parameters
-- Versioned `@import` URLs in CSS files and ES module imports in JS files
+- Warmup period exclusion from objective function calculations
+  - `read_data()` now returns a tuple `(DataFrame, warmup_steps)` indicating rows before user-requested start date
+  - Calibration and simulation metrics are computed only on data after the warmup period
+  - SCE-UA calibration passes `warmup_steps` to Rust extension for consistent metric calculation
 
 ### Changed
 - MkDocs serve now defaults to port 8001 to avoid conflict with HOLMES on port 8000
 
 ### Fixed
 - CSS selector specificity for warmup rectangle in calibration and simulation charts (changed `rect` to `.warmup-rect`)
+- Simulation remove button icon stroke color now uses theme foreground color
 
 ### Documentation
 - Added MkDocs Material documentation site with full navigation structure
 - Created `mkdocs.yml` configuration with Material theme, dark mode, code copy, and MathJax
 - Added landing page (`docs/index.md`) with features overview and quick start
-- Created placeholder pages for all documentation sections
 - Added GitHub Actions workflow for automatic deployment to GitHub Pages
 - Added `mkdocs-include-markdown-plugin` and `mkdocs-git-revision-date-localized-plugin` dependencies
 - Written Getting Started guide: installation, quickstart tutorial, and configuration reference
 - Written User Guide: interface overview, calibration, simulation, projection, and settings documentation
+- Simplified documentation structure: removed Developer Guide section, flattened Concepts/Models and API Reference
+- Added Documentation section to CLAUDE.md noting Rust docs location
 
 ## [3.3.7] - 2026-01-17
 

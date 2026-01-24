@@ -216,9 +216,11 @@ class TestCalibrationWebSocketSnowModelMissingTemperature:
 
         def mock_read_data(catchment, start, end, **kwargs):
             """Return data without temperature column."""
-            df = original_read_data(catchment, start, end, **kwargs)
+            df, warmup_steps = original_read_data(
+                catchment, start, end, **kwargs
+            )
             # Remove temperature column to simulate catchment without temp data
-            return df.drop("temperature")
+            return df.drop("temperature"), warmup_steps
 
         monkeypatch.setattr(data_module, "read_data", mock_read_data)
 
@@ -252,9 +254,11 @@ class TestCalibrationWebSocketSnowModelMissingTemperature:
 
         def mock_read_data(catchment, start, end, **kwargs):
             """Return data without temperature column."""
-            df = original_read_data(catchment, start, end, **kwargs)
+            df, warmup_steps = original_read_data(
+                catchment, start, end, **kwargs
+            )
             # Remove temperature column to simulate catchment without temp data
-            return df.drop("temperature")
+            return df.drop("temperature"), warmup_steps
 
         monkeypatch.setattr(data_module, "read_data", mock_read_data)
 

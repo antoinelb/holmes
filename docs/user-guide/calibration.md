@@ -20,10 +20,10 @@ The left panel contains configuration options that apply to both manual and auto
 
 Select the rainfall-runoff model to calibrate:
 
-| Model | Parameters | Description |
-|-------|------------|-------------|
-| **gr4j** | 4 | GR4J - widely used conceptual model |
-| **bucket** | 2 | Simple bucket model for teaching |
+| Model | Parameters |
+|-------|------------|
+| **gr4j** | 4 |
+| **bucket** | 6 |
 
 See [Concepts: Models](../concepts/index.md) for detailed model descriptions.
 
@@ -81,10 +81,10 @@ Set the start and end dates for calibration:
 
 - Dates are constrained to the catchment's data availability
 - Click **Reset** to restore the full available range
-- A warm-up period (typically one year before the start date) is automatically included
+- A warm-up period is automatically included before the start date
 
 !!! info "Warm-up Period"
-    The warm-up period allows model stores to reach realistic levels before the calibration period begins. This period is shown as a shaded area on the chart and is excluded from performance calculations.
+    The warm-up period (3 years, or up to the minimum available data) allows model stores to reach realistic levels before the calibration period begins. This period is shown as a shaded area on the chart.
 
 ### Calibration Algorithm
 
@@ -101,25 +101,29 @@ Manual calibration lets you adjust parameters directly and see immediate results
 
 <!-- ![Manual calibration](../assets/images/screenshots/calibration-manual.png) -->
 
-### Manual Calibration Settings
+### Manual calibration settings
 
 When **Manual** is selected, parameter sliders appear:
 
 For **GR4J**:
 
-| Parameter | Description | Typical Range |
-|-----------|-------------|---------------|
-| **X1** | Production store capacity | 100-1500 mm |
-| **X2** | Groundwater exchange | -5 to +5 mm/day |
-| **X3** | Routing store capacity | 10-500 mm |
-| **X4** | Unit hydrograph time base | 0.5-5 days |
+| Parameter | Description |
+|-----------|-------------|
+| **x1** | Production store capacity (mm) |
+| **x2** | Groundwater exchange (mm/day) |
+| **x3** | Routing store capacity (mm) |
+| **x4** | Unit hydrograph time base (days) |
 
 For **Bucket**:
 
-| Parameter | Description | Typical Range |
-|-----------|-------------|---------------|
-| **capacity** | Bucket storage capacity | Model-defined |
-| **recession** | Recession coefficient | Model-defined |
+| Parameter | Description |
+|-----------|-------------|
+| **c_soil** | Soil storage capacity (mm) |
+| **alpha** | Split factor for slow/fast routing |
+| **k_r** | Slow reservoir recession coefficient |
+| **delta** | Routing delay (days) |
+| **beta** | Precipitation split factor |
+| **k_t** | Fast reservoir recession coefficient |
 
 ### Running a Manual Calibration
 
@@ -137,14 +141,17 @@ Automatic calibration uses optimization algorithms to find parameters that maxim
 
 <!-- ![Automatic calibration](../assets/images/screenshots/calibration-auto-running.png) -->
 
-### SCE-UA Algorithm Settings
+### Automatic - SCE calibration settings
 
 When **Automatic - SCE** is selected, algorithm parameters appear:
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| **ngs** | Number of complexes | Model-dependent |
-| **max_iterations** | Maximum iterations | Model-dependent |
+| Parameter | Description |
+|-----------|-------------|
+| **n_complexes** | Number of complexes |
+| **max_evaluations** | Maximum function evaluations |
+| **k_stop** | Iterations to check for convergence |
+| **p_convergence_threshold** | Relative change threshold |
+| **geometric_range_threshold** | Parameter space convergence |
 
 The Shuffled Complex Evolution (SCE-UA) algorithm is a global optimization method well-suited for hydrological model calibration.
 
@@ -179,14 +186,14 @@ During and after calibration, the results panel shows:
 **Streamflow Chart**
 
 - Blue line: Observed streamflow
-- Orange line: Simulated streamflow (updates with each iteration)
-- Shaded area: Warm-up period (excluded from metrics)
+- Green line: Simulated streamflow (updates with each iteration)
+- Blue shaded area: Warm-up period (excluded from metrics)
 
 ## Exporting Results
 
 After calibration, export your results using the buttons below the settings:
 
-### Export Parameters
+### Export parameters
 
 Saves the calibrated parameters as a JSON file:
 
@@ -200,47 +207,22 @@ Saves the calibrated parameters as a JSON file:
   "start": "1990-01-01",
   "end": "2000-12-31",
   "hydroParams": {
-    "X1": 350.5,
-    "X2": 0.12,
-    "X3": 95.3,
-    "X4": 1.85
+    "x1": 350.5,
+    "x2": 0.12,
+    "x3": 95.3,
+    "x4": 1.85
   }
 }
 ```
 
 This file can be imported into the **Simulation** or **Projection** pages.
 
-### Export Data
+### Export data
 
 Saves two files:
 
 1. **Calibration results (JSON)**: Complete parameter evolution and objective values
 2. **Timeseries data (CSV)**: Date, observed streamflow, simulated streamflow
-
-## Best Practices
-
-### Calibration Period Selection
-
-- Include multiple years to capture hydrological variability
-- Include both wet and dry years if possible
-- Reserve a separate period for validation (test on Simulation page)
-
-### Objective Function Choice
-
-- **NSE** is standard for general use
-- **KGE** provides more balanced assessment of bias, correlation, and variability
-- **RMSE** penalizes large errors more heavily
-
-### Transformation Selection
-
-- Match the transformation to your application
-- If unsure, **sqrt** provides a reasonable balance
-
-### Algorithm Tuning
-
-- Default SCE parameters work well for most cases
-- Increase **ngs** for complex parameter spaces
-- Increase **max_iterations** if convergence is slow
 
 ## Common Issues
 
@@ -257,7 +239,7 @@ If the objective value is far from optimal:
 
 If automatic calibration doesn't improve:
 
-1. Increase **max_iterations**
+1. Increase **max_evaluations**
 2. Try different initial conditions (run multiple times)
 3. Consider if the objective function is appropriate
 

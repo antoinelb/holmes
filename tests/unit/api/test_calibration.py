@@ -327,7 +327,8 @@ class TestCalibrationDataErrors:
 
         with (
             patch(
-                "holmes.api.calibration.data.read_data", return_value=mock_data
+                "holmes.api.calibration.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.calibration.data.read_cemaneige_info",
@@ -377,7 +378,8 @@ class TestCalibrationDataErrors:
 
         with (
             patch(
-                "holmes.api.calibration.data.read_data", return_value=mock_data
+                "holmes.api.calibration.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.calibration.data.read_cemaneige_info",
@@ -421,7 +423,8 @@ class TestCalibrationDataErrors:
 
         with (
             patch(
-                "holmes.api.calibration.data.read_data", return_value=mock_data
+                "holmes.api.calibration.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.calibration.data.read_cemaneige_info",
@@ -478,7 +481,8 @@ class TestCalibrationDataErrors:
 
         with (
             patch(
-                "holmes.api.calibration.data.read_data", return_value=mock_data
+                "holmes.api.calibration.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.calibration.data.read_cemaneige_info",

@@ -246,8 +246,10 @@ export async function update(model, msg, dispatch, createNotification) {
           calibration.length === 0 ? null : model.availableConfig,
         config:
           calibration.length === 0
-            ? { ...model.config, start: null, end: null }
-            : model.config,
+            ? { ...model.config, start: null, end: null, multimodel: false }
+            : calibration.length === 1
+              ? { ...model.config, multimodel: false }
+              : model.config,
         simulation: null,
         results: null,
       };

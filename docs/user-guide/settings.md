@@ -37,22 +37,21 @@ Click **Reset all** to clear all saved settings and data:
 
 ### Allow Save
 
-Toggle data persistence between browser sessions:
+Controls whether saved settings are loaded on page load:
 
 | State | Behavior |
 |-------|----------|
-| **Enabled** | Settings and configurations are saved in browser localStorage |
-| **Disabled** | Each session starts fresh with defaults |
+| **Enabled** | Saved settings are loaded from localStorage on page load |
+| **Disabled** | Saved settings are ignored on page load (defaults are used instead) |
 
-When enabled, HOLMES remembers:
+When **Allow save** is disabled, saved settings are ignored on page load (defaults are used instead). However, changes you make during the session are still written to localStorage.
+
+Settings that can be persisted include:
 
 - Selected model, catchment, objective, etc.
 - Calibration date ranges
 - Imported calibrations (Simulation/Projection pages)
 - Theme preference
-
-!!! tip "Shared Computers"
-    Disable **Allow save** on shared or public computers to prevent your settings from persisting for other users.
 
 ### Version
 

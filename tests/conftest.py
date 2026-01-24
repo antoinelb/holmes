@@ -47,19 +47,19 @@ def hydro_model(request):
 
 
 @pytest.fixture
-def au_saumon_data() -> pl.DataFrame:
+def au_saumon_data() -> tuple[pl.DataFrame, int]:
     """Load Au Saumon catchment data for testing."""
     return data.read_data("Au Saumon", "2000-01-01", "2005-12-31")
 
 
 @pytest.fixture
-def baskatong_data() -> pl.DataFrame:
+def baskatong_data() -> tuple[pl.DataFrame, int]:
     """Load Baskatong catchment data for testing."""
     return data.read_data("Baskatong", "2000-01-01", "2005-12-31")
 
 
 @pytest.fixture
-def leaf_data() -> pl.DataFrame:
+def leaf_data() -> tuple[pl.DataFrame, int]:
     """Load Leaf catchment data for testing."""
     return data.read_data("Leaf", "2000-01-01", "2005-12-31")
 

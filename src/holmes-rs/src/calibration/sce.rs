@@ -158,6 +158,7 @@ impl Sce {
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
+        warmup_steps: usize,
     ) -> Result<(), CalibrationError> {
         let objective_idx = match self.calibration_params.objective {
             Objective::Rmse => 0,
@@ -181,6 +182,7 @@ impl Sce {
             elevation_bands,
             median_elevation,
             observations,
+            warmup_steps,
             population,
             self.calibration_params.objective,
             self.calibration_params.transformation,
@@ -204,6 +206,7 @@ impl Sce {
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
+        warmup_steps: usize,
     ) -> Result<(bool, Array1<f64>, Array1<f64>, Array1<f64>), CalibrationError>
     {
         if self.calibration_params.done {
@@ -250,6 +253,7 @@ impl Sce {
             elevation_bands,
             median_elevation,
             observations,
+            warmup_steps,
             objective_idx,
             is_minimization,
             self.calibration_params.transformation,
@@ -390,6 +394,7 @@ impl Sce {
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
+        warmup_steps: usize,
     ) -> PyResult<()> {
         self.init(
             precipitation.as_array(),
@@ -399,6 +404,7 @@ impl Sce {
             elevation_bands.as_ref().map(|e| e.as_array()),
             median_elevation,
             observations.as_array(),
+            warmup_steps,
         )
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
     }
@@ -414,6 +420,7 @@ impl Sce {
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
+        warmup_steps: usize,
     ) -> PyResult<(
         bool,
         Bound<'py, PyArray1<f64>>,
@@ -429,6 +436,7 @@ impl Sce {
                 elevation_bands.as_ref().map(|e| e.as_array()),
                 median_elevation,
                 observations.as_array(),
+                warmup_steps,
             )
             .map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(e.to_string())
@@ -480,6 +488,7 @@ fn evaluate_initial_population(
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
+    warmup_steps: usize,
     mut population: Array2<f64>,
     objective: Objective,
     transformation: Transformation,
@@ -505,6 +514,7 @@ fn evaluate_initial_population(
                 observations,
                 simulation.view(),
                 transformation,
+                warmup_steps,
             )
         })
         .collect();
@@ -532,7 +542,10 @@ fn evaluate_simulation(
     observations: ArrayView1<f64>,
     simulations: ArrayView1<f64>,
     transformation: Transformation,
+    warmup_steps: usize,
 ) -> Result<Array1<f64>, CalibrationError> {
+    let observations = observations.slice(s![warmup_steps..]);
+    let simulations = simulations.slice(s![warmup_steps..]);
     let (observations, simulations) = match transformation {
         Transformation::Log => (
             observations.mapv(|x| x.max(1e-5).ln()),
@@ -553,8 +566,6 @@ fn evaluate_simulation(
     ]))
 }
 
-/// Sort population by objectives, placing NaN values at the end (worst position).
-/// This function is public for testing purposes.
 pub fn sort_population(
     population: &mut Array2<f64>,
     objectives: &mut Array2<f64>,
@@ -642,6 +653,7 @@ fn evolve_complexes(
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
+    warmup_steps: usize,
     objective_idx: usize,
     is_minimization: bool,
     transformation: Transformation,
@@ -675,6 +687,7 @@ fn evolve_complexes(
                 elevation_bands,
                 median_elevation,
                 observations,
+                warmup_steps,
                 objective_idx,
                 is_minimization,
                 transformation,
@@ -713,6 +726,7 @@ fn evolve_complex_step(
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
+    warmup_steps: usize,
     objective_idx: usize,
     is_minimization: bool,
     transformation: Transformation,
@@ -770,8 +784,12 @@ fn evolve_complex_step(
         elevation_bands,
         median_elevation,
     )?;
-    let mut fnew =
-        evaluate_simulation(observations, simulation.view(), transformation)?;
+    let mut fnew = evaluate_simulation(
+        observations,
+        simulation.view(),
+        transformation,
+        warmup_steps,
+    )?;
     calls += 1;
 
     // if reflection failed (worse than worst), try contraction
@@ -790,6 +808,7 @@ fn evolve_complex_step(
             observations,
             simulation.view(),
             transformation,
+            warmup_steps,
         )?;
         calls += 1;
 
@@ -814,6 +833,7 @@ fn evolve_complex_step(
                 observations,
                 simulation.view(),
                 transformation,
+                warmup_steps,
             )?;
             calls += 1;
         }

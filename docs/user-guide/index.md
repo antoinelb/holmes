@@ -18,21 +18,14 @@ The HOLMES interface consists of:
 
 <!-- ![Interface overview](../assets/images/screenshots/interface-navigation.png) -->
 
-1. **Navigation Menu** (top left) - Switch between Calibration, Simulation, and Projection
-2. **Settings Menu** (top right) - Theme toggle, data persistence, version info
-3. **Configuration Panel** (left side) - Model and run settings
-4. **Results Panel** (right side) - Charts and metrics
+1. **Navigation Menu** (top left corner) - Switch between Calibration, Simulation, and Projection
+2. **Settings Menu** (top right corner) - Theme toggle, data persistence, version info
+3. **Configuration Panel** (top) - Model and run settings
+4. **Results Panel** (bottom) - Charts and metrics
 
 ## Typical Workflow
 
 A typical HOLMES session follows this pattern:
-
-```mermaid
-graph LR
-    A[Calibration] --> B[Export Parameters]
-    B --> C[Simulation]
-    B --> D[Projection]
-```
 
 1. **Calibrate** a model against observed streamflow data
 2. **Export** the calibrated parameters to a JSON file

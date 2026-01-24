@@ -349,7 +349,8 @@ class TestSimulationDataErrors:
 
         with (
             patch(
-                "holmes.api.simulation.data.read_data", return_value=mock_data
+                "holmes.api.simulation.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.simulation.data.read_cemaneige_info",
@@ -403,7 +404,8 @@ class TestSimulationDataErrors:
 
         with (
             patch(
-                "holmes.api.simulation.data.read_data", return_value=mock_data
+                "holmes.api.simulation.data.read_data",
+                return_value=(mock_data, 0),
             ),
             patch(
                 "holmes.api.simulation.data.read_cemaneige_info",

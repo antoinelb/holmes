@@ -57,7 +57,7 @@ class TestCalibrate:
     @pytest.fixture
     def sample_data(self):
         """Load sample data for calibration tests."""
-        catchment_data = data.read_data(
+        catchment_data, warmup_steps = data.read_data(
             "Au Saumon", "2000-01-01", "2001-12-31"
         )
         cemaneige_info = data.read_cemaneige_info("Au Saumon")
@@ -76,6 +76,7 @@ class TestCalibrate:
             "elevation_layers": np.array(cemaneige_info["altitude_layers"]),
             "median_elevation": cemaneige_info["median_altitude"],
             "qnbv": cemaneige_info["qnbv"],
+            "warmup_steps": warmup_steps,
         }
 
     @pytest.fixture
@@ -101,6 +102,7 @@ class TestCalibrate:
             sample_data["elevation_layers"],
             sample_data["median_elevation"],
             sample_data["qnbv"],
+            sample_data["warmup_steps"],
             hydro_model="gr4j",
             snow_model=None,
             objective="nse",
@@ -122,6 +124,7 @@ class TestCalibrate:
             sample_data["elevation_layers"],
             sample_data["median_elevation"],
             sample_data["qnbv"],
+            sample_data["warmup_steps"],
             hydro_model="gr4j",
             snow_model="cemaneige",
             objective="nse",
@@ -160,6 +163,7 @@ class TestCalibrate:
             sample_data["elevation_layers"],
             sample_data["median_elevation"],
             sample_data["qnbv"],
+            sample_data["warmup_steps"],
             hydro_model="gr4j",
             snow_model=None,
             objective="nse",
@@ -205,6 +209,7 @@ class TestCalibrate:
             sample_data["elevation_layers"],
             sample_data["median_elevation"],
             sample_data["qnbv"],
+            sample_data["warmup_steps"],
             hydro_model="gr4j",
             snow_model=None,
             objective="nse",
@@ -231,7 +236,7 @@ class TestCalibrateErrorHandling:
     @pytest.fixture
     def sample_data(self):
         """Load sample data for calibration tests."""
-        catchment_data = data.read_data(
+        catchment_data, warmup_steps = data.read_data(
             "Au Saumon", "2000-01-01", "2001-12-31"
         )
         cemaneige_info = data.read_cemaneige_info("Au Saumon")
@@ -250,6 +255,7 @@ class TestCalibrateErrorHandling:
             "elevation_layers": np.array(cemaneige_info["altitude_layers"]),
             "median_elevation": cemaneige_info["median_altitude"],
             "qnbv": cemaneige_info["qnbv"],
+            "warmup_steps": warmup_steps,
         }
 
     @pytest.fixture
@@ -284,6 +290,7 @@ class TestCalibrateErrorHandling:
                     sample_data["elevation_layers"],
                     sample_data["median_elevation"],
                     sample_data["qnbv"],
+                    sample_data["warmup_steps"],
                     hydro_model="gr4j",
                     snow_model="cemaneige",
                     objective="nse",
@@ -309,6 +316,7 @@ class TestCalibrateErrorHandling:
                     sample_data["elevation_layers"],
                     sample_data["median_elevation"],
                     sample_data["qnbv"],
+                    sample_data["warmup_steps"],
                     hydro_model="gr4j",
                     snow_model=None,
                     objective="nse",
@@ -336,6 +344,7 @@ class TestCalibrateErrorHandling:
                     sample_data["elevation_layers"],
                     sample_data["median_elevation"],
                     sample_data["qnbv"],
+                    sample_data["warmup_steps"],
                     hydro_model="gr4j",
                     snow_model=None,
                     objective="nse",
@@ -361,6 +370,7 @@ class TestCalibrateErrorHandling:
                     sample_data["elevation_layers"],
                     sample_data["median_elevation"],
                     sample_data["qnbv"],
+                    sample_data["warmup_steps"],
                     hydro_model="gr4j",
                     snow_model=None,
                     objective="nse",
@@ -384,6 +394,7 @@ class TestCalibrateErrorHandling:
                 None,  # elevation_layers is None
                 None,  # median_elevation is None
                 None,  # qnbv is None
+                0,  # warmup_steps
                 hydro_model="gr4j",
                 snow_model="cemaneige",  # Snow model set but params missing
                 objective="nse",

@@ -120,45 +120,18 @@ nav:
       - Settings: user-guide/settings.md
   - Concepts:
       - concepts/index.md
-      - Models:
-          - GR4J: concepts/models/gr4j.md
-          - Bucket: concepts/models/bucket.md
-          - CemaNeige: concepts/models/cemaneige.md
-      - PET Calculation: concepts/pet.md
+      - Hydrological models:
+          - GR4J: concepts/gr4j.md
+          - Bucket: concepts/bucket.md
+      - Snow models: concepts/snow-models.md
+      - Potential evapotranspiration models: concepts/pet-models.md
       - Calibration: concepts/calibration-algorithms.md
       - Metrics: concepts/metrics.md
-  - Developer Guide:
-      - developer-guide/index.md
-      - Architecture: developer-guide/architecture.md
-      - Backend:
-          - developer-guide/backend/index.md
-          - API Structure: developer-guide/backend/api-structure.md
-          - WebSocket Protocol: developer-guide/backend/websocket-protocol.md
-          - Data Loading: developer-guide/backend/data-loading.md
-          - Model Registry: developer-guide/backend/model-registry.md
-      - Rust Extension:
-          - developer-guide/rust-extension/index.md
-          - Building: developer-guide/rust-extension/building.md
-          - Implementing Models: developer-guide/rust-extension/implementing-models.md
-          - Python Bindings: developer-guide/rust-extension/python-bindings.md
-      - Frontend:
-          - developer-guide/frontend/index.md
-          - MEV Architecture: developer-guide/frontend/mev-architecture.md
-          - Page Modules: developer-guide/frontend/pages.md
-          - D3.js Charts: developer-guide/frontend/charts.md
-      - Testing: developer-guide/testing.md
   - API Reference:
       - api-reference/index.md
-      - Python API:
-          - api-reference/python/data.md
-          - api-reference/python/models.md
-          - api-reference/python/api.md
-      - Rust API: api-reference/rust/index.md
-      - WebSocket Protocol:
-          - api-reference/websocket/index.md
-          - Calibration: api-reference/websocket/calibration.md
-          - Simulation: api-reference/websocket/simulation.md
-          - Projection: api-reference/websocket/projection.md
+      - api-reference/data.md
+      - api-reference/models.md
+      - api-reference/api.md
   - Data Formats:
       - data-formats/index.md
       - Observations CSV: data-formats/observations.md

@@ -70,12 +70,15 @@
               opacity: 0;
               padding: 0.1em;
               user-select: none;
-              /* position: absolute; */
               width: 1em;
               z-index: 1;
 
               &:hover {
                 background: oklch(var(--fg) / 0.1);
+              }
+
+              & .icon {
+                stroke: oklch(var(--fg));
               }
             }
           }

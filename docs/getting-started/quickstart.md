@@ -67,8 +67,8 @@ For your first calibration, start with manual mode to understand how parameters 
 
 The chart on the right shows:
 
-- **Observations** (blue line): Measured streamflow
-- **Simulation** (orange line): Model output with your parameters
+- **observations**: Measured streamflow (blue line)
+- **simulation**: Model output with your parameters (green line)
 - The objective function value (e.g., NSE) tells you how well the model matches observations
 
 !!! tip "Understanding Parameters"
@@ -87,8 +87,11 @@ Once you understand manual calibration, try automatic optimization:
 
 1. Set **Calibration algorithm** to **Automatic - SCE**
 2. Adjust algorithm settings if desired (default values work well):
-    - **ngs**: Number of complexes (controls search breadth)
-    - **max_iterations**: Maximum optimization iterations
+    - **n_complexes**: Number of complexes
+    - **max_evaluations**: Maximum function evaluations
+    - **k_stop**: Iterations to check for convergence
+    - **p_convergence_threshold**: Relative change threshold
+    - **geometric_range_threshold**: Parameter space convergence
 3. Click **Start calibration**
 
 Watch as the algorithm iteratively improves the parameters. The charts update in real-time showing:

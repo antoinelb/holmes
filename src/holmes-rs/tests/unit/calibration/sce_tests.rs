@@ -143,6 +143,7 @@ fn test_sce_init_basic() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(result.is_ok(), "Init should succeed: {:?}", result.err());
@@ -191,6 +192,7 @@ fn test_sce_step_returns_valid_output() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -202,6 +204,7 @@ fn test_sce_step_returns_valid_output() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     assert!(result.is_ok());
@@ -269,6 +272,7 @@ fn test_sce_converges() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -286,6 +290,7 @@ fn test_sce_converges() {
             None,
             None,
             obs.view(),
+            0,
         );
 
         assert!(result.is_ok());
@@ -331,6 +336,7 @@ fn test_sce_respects_max_evaluations() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -347,6 +353,7 @@ fn test_sce_respects_max_evaluations() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
         done = d;
@@ -449,6 +456,7 @@ proptest! {
             None,
             None,
             obs.view(),
+            0,
         ).unwrap();
 
         let (_, best_params, _, _) = sce.step(
@@ -459,6 +467,7 @@ proptest! {
             None,
             None,
             obs.view(),
+            0,
         ).unwrap();
 
         // Check params are within GR4J bounds
@@ -511,6 +520,7 @@ fn test_sce_step_when_already_done() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -526,6 +536,7 @@ fn test_sce_step_when_already_done() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
         done = d;
@@ -541,6 +552,7 @@ fn test_sce_step_when_already_done() {
             None,
             None,
             obs.view(),
+            0,
         )
         .unwrap();
 
@@ -584,6 +596,7 @@ fn test_sce_geometric_range_convergence() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -600,6 +613,7 @@ fn test_sce_geometric_range_convergence() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
         done = d;
@@ -644,6 +658,7 @@ fn test_sce_criteria_change_convergence() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -660,6 +675,7 @@ fn test_sce_criteria_change_convergence() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
         done = d;
@@ -725,6 +741,7 @@ fn test_sce_with_snow_model_calibration() {
         Some(elevation_layers.view()),
         Some(median_elevation),
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -737,6 +754,7 @@ fn test_sce_with_snow_model_calibration() {
             Some(elevation_layers.view()),
             Some(median_elevation),
             obs.view(),
+            0,
         )
         .unwrap();
 
@@ -786,6 +804,7 @@ fn test_sce_sqrt_transform_negative() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     // Should either handle gracefully or return error
@@ -798,6 +817,7 @@ fn test_sce_sqrt_transform_negative() {
             None,
             None,
             obs.view(),
+            0,
         );
         if let Ok((_, _, _, objectives)) = step_result {
             assert!(
@@ -840,6 +860,7 @@ fn test_sce_constant_observations() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     if init_result.is_ok() {
@@ -852,6 +873,7 @@ fn test_sce_constant_observations() {
                 None,
                 None,
                 obs.view(),
+                0,
             )
             .unwrap();
 
@@ -900,6 +922,7 @@ fn test_init_with_mismatched_observations_length() {
         None,
         None,
         obs.view(),
+        0,
     );
 
     // This should fail because observations length (60) != simulation length (50)
@@ -941,6 +964,7 @@ fn test_step_with_mismatched_observations_length() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -955,6 +979,7 @@ fn test_step_with_mismatched_observations_length() {
         None,
         None,
         wrong_obs.view(),
+        0,
     );
 
     // This should fail during evolution when evaluating simulations
@@ -1004,6 +1029,7 @@ fn test_convergence_with_perfect_match() {
         None,
         None,
         obs.view(),
+        0,
     )
     .unwrap();
 
@@ -1019,6 +1045,7 @@ fn test_convergence_with_perfect_match() {
             None,
             None,
             obs.view(),
+            0,
         );
 
         assert!(

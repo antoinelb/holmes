@@ -45,7 +45,7 @@ def load_catchment_data(catchment: str) -> dict:
         target_start = start_dt
     start_str = target_start.strftime("%Y-%m-%d")
 
-    catchment_data = data.read_data(catchment, start_str, end)
+    catchment_data, warmup_steps = data.read_data(catchment, start_str, end)
 
     result = {
         "precipitation": catchment_data["precipitation"].to_numpy(),
@@ -58,6 +58,7 @@ def load_catchment_data(catchment: str) -> dict:
             .to_numpy()
             .astype(np.uintp)
         ),
+        "warmup_steps": warmup_steps,
     }
 
     # Temperature is optional (only for snow catchments)

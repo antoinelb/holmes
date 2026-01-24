@@ -17,8 +17,12 @@ class TestReadData:
 
     def test_read_data_basic(self):
         """Load data with date range."""
-        result = data.read_data("Au Saumon", "2000-01-01", "2005-12-31")
+        result, warmup_steps = data.read_data(
+            "Au Saumon", "2000-01-01", "2005-12-31"
+        )
         assert isinstance(result, pl.DataFrame)
+        assert isinstance(warmup_steps, int)
+        assert warmup_steps >= 0
         assert "date" in result.columns
         assert "precipitation" in result.columns
         assert "pet" in result.columns
@@ -32,23 +36,31 @@ class TestReadData:
         # Use dates within the available data range (1975-03-01 to 2003-12-31)
         start = "2000-01-01"
         end = "2003-12-31"
-        result = data.read_data("Au Saumon", start, end)
+        result, warmup_steps = data.read_data("Au Saumon", start, end)
         expected_start = datetime.strptime(start, "%Y-%m-%d") - timedelta(
             days=365 * 3
         )
         min_date = result["date"].min()
         assert isinstance(min_date, date)
         assert min_date <= expected_start.date()
+        # Warmup steps should be approximately 3 years
+        assert warmup_steps > 0
 
     def test_read_data_custom_warmup(self):
         """Verify custom warmup period is shorter than default."""
         # Use dates within the available data range (1975-03-01 to 2003-12-31)
         start = "2000-01-01"
         end = "2003-12-31"
-        result_default = data.read_data("Au Saumon", start, end)
-        result_short = data.read_data("Au Saumon", start, end, warmup_length=1)
+        result_default, warmup_default = data.read_data(
+            "Au Saumon", start, end
+        )
+        result_short, warmup_short = data.read_data(
+            "Au Saumon", start, end, warmup_length=1
+        )
         # Shorter warmup should have fewer rows
         assert len(result_short) < len(result_default)
+        # Shorter warmup should have fewer warmup steps
+        assert warmup_short < warmup_default
 
     def test_read_data_all_catchments(self):
         """Verify all catchments can be read."""
@@ -58,8 +70,11 @@ class TestReadData:
             (start_avail, end_avail),
         ) in data.get_available_catchments():
             # Use the available date range for each catchment
-            result = data.read_data(catchment_name, start_avail, end_avail)
+            result, warmup_steps = data.read_data(
+                catchment_name, start_avail, end_avail
+            )
             assert isinstance(result, pl.DataFrame)
+            assert isinstance(warmup_steps, int)
             assert len(result) > 0
 
     def test_read_data_missing_catchment(self):

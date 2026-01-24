@@ -13,7 +13,6 @@ from typing import Any
 
 import numpy as np
 import polars as pl
-
 from holmes.exceptions import HolmesDataError
 from holmes.utils.paths import data_dir
 from holmes.validation import validate_catchment_exists, validate_date_range
@@ -41,7 +40,7 @@ def read_data(
     end: str,
     *,
     warmup_length: int = 3,
-) -> pl.DataFrame:
+) -> tuple[pl.DataFrame, int]:
     """
     Read observation data for a catchment within a date range.
 
@@ -60,19 +59,19 @@ def read_data(
     -------
     pl.DataFrame
         DataFrame with columns: date, precipitation, pet, streamflow, temperature
+    int
+        Number of warmup steps at the start of the dataframe (to exclude from objectives)
 
     Raises
     ------
     HolmesDataError
         If catchment doesn't exist, dates are invalid, or no data in range
     """
-    # Validate catchment exists
     try:
         validate_catchment_exists(catchment)
     except ValueError as exc:
         raise HolmesDataError(str(exc)) from exc
 
-    # Validate date range
     try:
         start_dt, end_dt = validate_date_range(start, end)
     except ValueError as exc:
@@ -92,19 +91,18 @@ def read_data(
         strict=False,
     )
 
-    # Filter to date range with warmup
     data_ = data_.filter(pl.col("date").is_between(warmup_start, end_dt))
-
     data_ = data_.collect()
 
-    # P4-DATA-04: Check for empty result set
+    warmup_steps = data_.filter(pl.col("date") < start_dt).shape[0]
+
     if len(data_) == 0:
         raise HolmesDataError(
             f"No data found for catchment '{catchment}' in period {start} to {end}. "
             f"Check that the date range falls within the available data period."
         )
 
-    return data_
+    return data_, warmup_steps
 
 
 @lru_cache(maxsize=1)

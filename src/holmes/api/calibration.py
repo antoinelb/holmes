@@ -121,7 +121,7 @@ async def _handle_observations_message(
         return
 
     try:
-        _data = data.read_data(
+        _data, _ = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
     except HolmesDataError as exc:
@@ -154,7 +154,7 @@ async def _handle_manual_calibration_message(
         return
 
     try:
-        _data = data.read_data(
+        _data, warmup_steps = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
     except HolmesDataError as exc:
@@ -211,9 +211,12 @@ async def _handle_manual_calibration_message(
         pl.Series("streamflow", streamflow)
     )
 
+    observations_evaluated = observations[warmup_steps:]
+    streamflow_evaluated = streamflow[warmup_steps:]
+
     objective = evaluate(
-        observations,
-        streamflow,
+        observations_evaluated,
+        streamflow_evaluated,
         msg_data["objective"],
         msg_data["transformation"],
     )
@@ -254,7 +257,7 @@ async def _handle_calibration_start_message(
         return
 
     try:
-        _data = data.read_data(
+        _data, warmup_steps = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
     except HolmesDataError as exc:
@@ -325,6 +328,7 @@ async def _handle_calibration_start_message(
         elevation_layers,
         median_elevation,
         qnbv,
+        warmup_steps,
         msg_data["hydroModel"],
         msg_data["snowModel"],
         msg_data["objective"],

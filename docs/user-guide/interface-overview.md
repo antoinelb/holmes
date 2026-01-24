@@ -18,19 +18,26 @@ Click any page name to navigate there. Your current settings and data are preser
 
 ## Page Layout
 
-Each page follows a consistent two-column layout:
+Each page follows a consistent vertical layout, with sections flowing from top to bottom:
 
-### Left Column: Configuration
+### Header
 
-The left side contains configuration options:
+The top area contains:
+
+- **Navigation menu** (grid icon, top-left)
+- **Settings menu** (hamburger icon, top-right)
+
+### Configuration Section
+
+Below the header, configuration options appear:
 
 - **Form fields** for selecting models, catchments, dates
 - **Parameter controls** (sliders for manual calibration, inputs for algorithms)
 - **Action buttons** (Run, Start, Stop, Export)
 
-### Right Column: Results
+### Results Section
 
-The right side displays results:
+Below the configuration, results are displayed:
 
 - **Time series charts** showing observed and simulated streamflow
 - **Parameter evolution** plots during calibration
@@ -87,9 +94,9 @@ Zoom into a specific time period:
 
 Hover over chart elements to see values. The legend identifies each line:
 
-- **Observations**: Measured streamflow (typically blue)
-- **Simulation**: Model output (typically orange/red)
-- **Warmup period**: Initial period excluded from metrics (shaded area)
+- **Observations**: Measured streamflow (blue)
+- **Simulation**: Model output (green)
+- **Warmup period**: Initial period excluded from metrics (blue shaded area)
 
 #### Chart Types
 
@@ -103,9 +110,9 @@ Hover over chart elements to see values. The legend identifies each line:
 
 ## Notifications
 
-HOLMES displays notifications in the bottom-right corner:
+HOLMES displays notifications at the top-center of the page:
 
-- **Success messages**: Operation completed (green/normal)
+- **Success messages**: Operation completed (default background)
 - **Error messages**: Something went wrong (red/emphasized)
 
 Notifications automatically dismiss after a few seconds. Errors provide guidance on how to resolve the issue.
@@ -144,11 +151,8 @@ JavaScript must be enabled for the application to function.
 
 ## Tips
 
-!!! tip "Responsive Design"
-    HOLMES adapts to different screen sizes. On narrower screens, the configuration and results panels may stack vertically.
-
 !!! tip "Data Persistence"
     Enable **Allow save** in settings to remember your configuration between browser sessions. This is especially useful when working on the same catchment over multiple sessions.
 
 !!! tip "Multiple Tabs"
-    You can open HOLMES in multiple browser tabs to compare different configurations side-by-side. Each tab maintains its own state.
+    You can open HOLMES in multiple browser tabs to compare different configurations side-by-side. Note that tabs share the same localStorage, so changes in one tab may affect others after page refresh. Disable **Allow save** in settings to prevent this.

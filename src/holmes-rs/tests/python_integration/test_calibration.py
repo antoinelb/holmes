@@ -200,6 +200,7 @@ class TestSceInit:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
 
@@ -237,6 +238,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         result = sce.step(
@@ -247,6 +249,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         assert isinstance(result, tuple)
@@ -283,6 +286,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         done, params, sim, objectives = sce.step(
@@ -293,6 +297,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         assert isinstance(done, bool)
@@ -331,6 +336,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         done, params, sim, objectives = sce.step(
@@ -341,6 +347,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         # GR4J has 4 parameters
@@ -381,6 +388,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         _, params, _, _ = sce.step(
@@ -391,6 +399,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         _, bounds = gr4j.init()
@@ -428,6 +437,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         _, params, sim, objectives = sce.step(
@@ -438,6 +448,7 @@ class TestSceStep:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         assert np.all(np.isfinite(params))
@@ -482,6 +493,7 @@ class TestSceConvergence:
             sample_elevation_layers,
             1000.0,
             obs,
+            0,
         )
 
         done = False
@@ -497,6 +509,7 @@ class TestSceConvergence:
                 sample_elevation_layers,
                 1000.0,
                 obs,
+                0,
             )
             iterations += 1
 
@@ -533,6 +546,7 @@ class TestSceConvergence:
             sample_elevation_layers,
             1000.0,
             sample_observations,
+            0,
         )
 
         done = False
@@ -547,6 +561,7 @@ class TestSceConvergence:
                 sample_elevation_layers,
                 1000.0,
                 sample_observations,
+                0,
             )
             iterations += 1
 
@@ -600,6 +615,7 @@ class TestSceWithSnow:
             sample_elevation_layers,
             1000.0,
             obs,
+            0,
         )
 
         _, params, sim, objectives = sce.step(
@@ -610,6 +626,7 @@ class TestSceWithSnow:
             sample_elevation_layers,
             1000.0,
             obs,
+            0,
         )
 
         # Should have 7 parameters (3 snow + 4 hydro)

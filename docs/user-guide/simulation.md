@@ -40,14 +40,14 @@ The table displays all imported calibrations:
 
 | Column | Description |
 |--------|-------------|
-| Hydrological model | GR4J, Bucket, etc. |
-| Catchment | The catchment used for calibration |
-| Objective | Calibration objective (NSE, KGE, RMSE) |
-| Transformation | Streamflow transformation used |
-| Algorithm | Manual or SCE |
-| Date start/end | Calibration period |
-| Snow model | CemaNeige or none |
-| Parameters | Calibrated parameter values |
+| hydrological model | GR4J, Bucket, etc. |
+| catchment | The catchment used for calibration |
+| objective | Calibration objective (NSE, KGE, RMSE) |
+| transformation | Streamflow transformation used |
+| algorithm | Manual or SCE |
+| date start/end | Calibration period |
+| snow model | CemaNeige or none |
+| parameters | Calibrated parameter values |
 
 Click the **X** button next to any calibration to remove it.
 
@@ -109,15 +109,14 @@ Each calibration appears as a separate bar, color-coded to match the streamflow 
 
 The time series chart shows:
 
-- **Observations** (first color): Measured streamflow
-- **Simulation 1, 2, ...** (subsequent colors): Output from each calibration
-- **Multimodel** (if enabled): Average of all simulations
+- **Observations** (blue): Measured streamflow
+- **Simulation 1, 2, ...** (green, purple, orange, ...): Output from each calibration
+- **Multimodel** (if enabled): Average of all simulations (color depends on number of loaded calibrations)
 
 #### Chart Interactions
 
 - **Zoom**: Click and drag to select a time range
 - **Reset**: Double-click to return to full view
-- **Legend**: Identifies each line's color
 
 ### Multimodel Performance
 
@@ -156,67 +155,6 @@ Click **Export data** to save:
     2001-01-02,11.8,12.5,12.15,12.1
     ...
     ```
-
-## Use Cases
-
-### Model Validation
-
-Test if calibrated parameters generalize beyond the calibration period:
-
-1. Calibrate on period A (e.g., 1990-2000)
-2. Simulate on period B (e.g., 2001-2010)
-3. Compare performance metrics
-
-Good validation performance indicates robust calibration.
-
-### Model Comparison
-
-Compare different models on the same catchment:
-
-1. Calibrate GR4J and Bucket separately
-2. Import both calibrations
-3. Run simulation on a common period
-4. Compare performance bars side-by-side
-
-### Objective Function Comparison
-
-Test how different calibration objectives affect performance:
-
-1. Calibrate the same model multiple times with different objectives (NSE, KGE)
-2. Import all calibrations
-3. Run simulation
-4. Examine which calibration performs best on each metric
-
-### Multimodel Ensemble
-
-Create a robust prediction by averaging multiple models:
-
-1. Import several calibrations (different models or different calibrations of the same model)
-2. Enable **Multimodel simulation**
-3. Run simulation
-4. The multimodel often outperforms individual models
-
-## Best Practices
-
-### Validation Period
-
-- Use a period independent of calibration
-- Include similar climatic conditions (wet years, dry years)
-- Minimum 5-10 years for robust evaluation
-
-### Interpreting Metrics
-
-- No single metric captures all aspects of model performance
-- Consider multiple metrics together
-- Pay attention to metrics relevant to your application
-
-### Model Diversity
-
-For multimodel ensembles:
-
-- Include structurally different models
-- Include calibrations with different objectives
-- More diversity typically improves ensemble robustness
 
 ## Common Issues
 

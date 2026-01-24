@@ -3,9 +3,6 @@ from typing import Any, cast
 import numpy as np
 import numpy.typing as npt
 import polars as pl
-from starlette.routing import BaseRoute, WebSocketRoute
-from starlette.websockets import WebSocket, WebSocketDisconnect
-
 from holmes import data
 from holmes.exceptions import HolmesDataError
 from holmes.logging import logger
@@ -13,6 +10,8 @@ from holmes.models import hydro, snow
 from holmes.models.utils import evaluate
 from holmes.utils.print import format_list
 from holmes.utils.websocket import cleanup_websocket, send
+from starlette.routing import BaseRoute, WebSocketRoute
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 ##########
 # public #
@@ -96,7 +95,7 @@ async def _handle_observations_message(
         return
 
     try:
-        _data = data.read_data(
+        _data, _ = data.read_data(
             msg_data["catchment"], msg_data["start"], msg_data["end"]
         )
     except HolmesDataError as exc:
@@ -140,7 +139,7 @@ async def _handle_simulation_message(
     end = msg_data["config"]["end"]
 
     try:
-        _data = data.read_data(catchment, start, end)
+        _data, warmup_steps = data.read_data(catchment, start, end)
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
@@ -200,6 +199,7 @@ async def _handle_simulation_message(
             calibration["hydroModel"],
             calibration["snowModel"],
             calibration["hydroParams"],
+            warmup_steps,
         )
         for calibration in msg_data["calibration"]
     ]
@@ -220,20 +220,37 @@ async def _handle_simulation_message(
             pl.mean_horizontal(pl.exclude("date")).alias("multimodel")
         )
         streamflow = simulation["multimodel"].to_numpy()
+        observations_evaluated = observations[warmup_steps:]
+        streamflow_evaluated = streamflow[warmup_steps:]
         results.append(
             {
                 "name": "multimodel",
-                "nse_none": evaluate(observations, streamflow, "nse", "none"),
-                "nse_sqrt": evaluate(observations, streamflow, "nse", "sqrt"),
-                "nse_log": evaluate(observations, streamflow, "nse", "log"),
+                "nse_none": evaluate(
+                    observations_evaluated, streamflow_evaluated, "nse", "none"
+                ),
+                "nse_sqrt": evaluate(
+                    observations_evaluated, streamflow_evaluated, "nse", "sqrt"
+                ),
+                "nse_log": evaluate(
+                    observations_evaluated, streamflow_evaluated, "nse", "log"
+                ),
                 "mean_bias": evaluate(
-                    observations, streamflow, "mean_bias", "none"
+                    observations_evaluated,
+                    streamflow_evaluated,
+                    "mean_bias",
+                    "none",
                 ),
                 "deviation_bias": evaluate(
-                    observations, streamflow, "deviation_bias", "none"
+                    observations_evaluated,
+                    streamflow_evaluated,
+                    "deviation_bias",
+                    "none",
                 ),
                 "correlation": evaluate(
-                    observations, streamflow, "correlation", "none"
+                    observations_evaluated,
+                    streamflow_evaluated,
+                    "correlation",
+                    "none",
                 ),
             }
         )
@@ -265,6 +282,7 @@ def _run_simulation(
     hydro_model: str,
     snow_model: str | None,
     hydro_params: dict[str, float],
+    warmup_steps: int,
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
 
     hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
@@ -289,16 +307,30 @@ def _run_simulation(
 
     streamflow = hydro_simulate(hydro_params_, precipitation, pet)
 
+    observations_evaluated = observations[warmup_steps:]
+    streamflow_evaluated = streamflow[warmup_steps:]
+
     results = {
-        "nse_none": evaluate(observations, streamflow, "nse", "none"),
-        "nse_sqrt": evaluate(observations, streamflow, "nse", "sqrt"),
-        "nse_log": evaluate(observations, streamflow, "nse", "log"),
-        "mean_bias": evaluate(observations, streamflow, "mean_bias", "none"),
+        "nse_none": evaluate(
+            observations_evaluated, streamflow_evaluated, "nse", "none"
+        ),
+        "nse_sqrt": evaluate(
+            observations_evaluated, streamflow_evaluated, "nse", "sqrt"
+        ),
+        "nse_log": evaluate(
+            observations_evaluated, streamflow_evaluated, "nse", "log"
+        ),
+        "mean_bias": evaluate(
+            observations_evaluated, streamflow_evaluated, "mean_bias", "none"
+        ),
         "deviation_bias": evaluate(
-            observations, streamflow, "deviation_bias", "none"
+            observations_evaluated,
+            streamflow_evaluated,
+            "deviation_bias",
+            "none",
         ),
         "correlation": evaluate(
-            observations, streamflow, "correlation", "none"
+            observations_evaluated, streamflow_evaluated, "correlation", "none"
         ),
     }
 

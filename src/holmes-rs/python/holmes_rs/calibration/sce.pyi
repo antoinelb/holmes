@@ -27,6 +27,7 @@ class Sce:
         elevation_layers: npt.NDArray[np.float64] | None,
         median_elevation: float | None,
         observations: npt.NDArray[np.float64],
+        warmup_steps: int,
     ) -> None: ...
     def step(
         self,
@@ -37,6 +38,7 @@ class Sce:
         elevation_layers: npt.NDArray[np.float64] | None,
         median_elevation: float | None,
         observations: npt.NDArray[np.float64],
+        warmup_steps: int,
     ) -> tuple[
         bool,
         npt.NDArray[np.float64],
