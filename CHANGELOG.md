@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-rs/CHANGELOG.md).
 
+## [Unreleased]
+
+### Documentation
+- Added MkDocs Material documentation site with full navigation structure
+- Created `mkdocs.yml` configuration with Material theme, dark mode, code copy, and MathJax
+- Added landing page (`docs/index.md`) with features overview and quick start
+- Created placeholder pages for all documentation sections
+- Added GitHub Actions workflow for automatic deployment to GitHub Pages
+- Added `mkdocs-include-markdown-plugin` and `mkdocs-git-revision-date-localized-plugin` dependencies
+
 ## [3.3.7] - 2026-01-17
 
 ### Added

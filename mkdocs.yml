@@ -1,0 +1,169 @@
+site_name: HOLMES Documentation
+site_description: HydrOLogical Modeling Educational Software - Documentation
+site_author: Université Laval
+site_url: https://antoinelb.github.io/holmes/
+repo_url: https://github.com/antoinelb/holmes
+repo_name: antoinelb/holmes
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            docstring_style: numpy
+            members_order: source
+            show_signature_annotations: true
+  - include-markdown
+  - git-revision-date-localized:
+      enable_creation_date: true
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/antoinelb/holmes
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - User Guide:
+      - user-guide/index.md
+      - Interface Overview: user-guide/interface-overview.md
+      - Calibration: user-guide/calibration.md
+      - Simulation: user-guide/simulation.md
+      - Projection: user-guide/projection.md
+      - Settings: user-guide/settings.md
+  - Concepts:
+      - concepts/index.md
+      - Models:
+          - GR4J: concepts/models/gr4j.md
+          - Bucket: concepts/models/bucket.md
+          - CemaNeige: concepts/models/cemaneige.md
+      - PET Calculation: concepts/pet.md
+      - Calibration: concepts/calibration-algorithms.md
+      - Metrics: concepts/metrics.md
+  - Developer Guide:
+      - developer-guide/index.md
+      - Architecture: developer-guide/architecture.md
+      - Backend:
+          - developer-guide/backend/index.md
+          - API Structure: developer-guide/backend/api-structure.md
+          - WebSocket Protocol: developer-guide/backend/websocket-protocol.md
+          - Data Loading: developer-guide/backend/data-loading.md
+          - Model Registry: developer-guide/backend/model-registry.md
+      - Rust Extension:
+          - developer-guide/rust-extension/index.md
+          - Building: developer-guide/rust-extension/building.md
+          - Implementing Models: developer-guide/rust-extension/implementing-models.md
+          - Python Bindings: developer-guide/rust-extension/python-bindings.md
+      - Frontend:
+          - developer-guide/frontend/index.md
+          - MEV Architecture: developer-guide/frontend/mev-architecture.md
+          - Page Modules: developer-guide/frontend/pages.md
+          - D3.js Charts: developer-guide/frontend/charts.md
+      - Testing: developer-guide/testing.md
+  - API Reference:
+      - api-reference/index.md
+      - Python API:
+          - api-reference/python/data.md
+          - api-reference/python/models.md
+          - api-reference/python/api.md
+      - Rust API: api-reference/rust/index.md
+      - WebSocket Protocol:
+          - api-reference/websocket/index.md
+          - Calibration: api-reference/websocket/calibration.md
+          - Simulation: api-reference/websocket/simulation.md
+          - Projection: api-reference/websocket/projection.md
+  - Data Formats:
+      - data-formats/index.md
+      - Observations CSV: data-formats/observations.md
+      - CemaNeige Info: data-formats/cemaneige-info.md
+      - Projections CSV: data-formats/projections.md
+      - Exported Files: data-formats/exports.md
+  - Reference:
+      - Changelog: reference/changelog.md
+      - License: reference/license.md
