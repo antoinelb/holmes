@@ -6,7 +6,7 @@
 
 In many catchments worldwide, snow plays a fundamental role in the hydrological cycle. Precipitation falls as snow during cold periods, accumulates in a snowpack, and releases water during spring melt—fundamentally altering the timing and magnitude of streamflow compared to rain-fed catchments. Understanding and modeling these processes is essential for water resources management in mountain regions.
 
-CemaNeige (pronounced "say-ma-nezh") is a degree-day snow accounting model developed alongside GR4J by researchers at IRSTEA (formerly Cemagref) in France. The name means "snow accounting" in French. Like GR4J, CemaNeige emphasizes parsimony: it captures the essential dynamics of snow accumulation and melt with just three parameters, making it practical for catchments where detailed snow observations are unavailable.
+CemaNeige is a degree-day snow accounting model developed alongside GR4J by researchers at IRSTEA (formerly Cemagref) in France. Like GR4J, CemaNeige emphasizes parsimony: it captures the essential dynamics of snow accumulation and melt with just three parameters, making it practical for catchments where detailed snow observations are unavailable.
 
 CemaNeige operates as a preprocessor to the hydrological model. It receives precipitation and temperature, tracks snowpack evolution across elevation bands, and outputs effective precipitation (rain plus snowmelt) that feeds into GR4J or the bucket model.
 
