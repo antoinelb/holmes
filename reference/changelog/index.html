@@ -3030,16 +3030,21 @@
 <ul>
 <li>CEQUEAU hydrological model support in model registry (<code>hydro.py</code>), config, and simulation dispatching</li>
 <li>Warmup period visual indicator (shaded rectangle with label) on simulation streamflow chart</li>
+<li>Parameter description tooltips on manual calibration sliders (hover info icon to see description)</li>
+<li><code>description</code> field in hydro model parameter configurations</li>
 </ul>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Parameter slider step precision increased from 0.1 to 0.01 for non-integer parameters</li>
+<li>Renamed bucket model parameters from descriptive names (<code>c_soil</code>, <code>alpha</code>, <code>k_r</code>, <code>delta</code>, <code>beta</code>, <code>k_t</code>) to generic names (<code>x1</code>–<code>x6</code>), matching the convention used by GR4J and CEQUEAU</li>
 <li>Calibration bar chart x-axis tick labels are now limited to 10 to prevent overlapping when many iterations are displayed</li>
+<li>Cleaned up model registry docstrings to avoid hardcoded model lists</li>
 </ul>
 <h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Calibration results view now detects stale parameter plots from a previously selected model and re-renders correctly</li>
 <li>Hydro parameters are explicitly cast to <code>float64</code> in manual calibration to prevent type errors</li>
+<li>Manual calibration parameter sliders now correctly recreate when switching from a model with more parameters to one with fewer (e.g., CEQUEAU → GR4J)</li>
 </ul>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
 <ul>
