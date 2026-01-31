@@ -993,6 +993,32 @@ function streamflowView(model) {
       .attr("class", "chart-content")
       .attr("clip-path", "url(#simulation-clip)");
 
+    // warmup
+    if (observations[0].date !== model.config.start) {
+      chartGroup
+        .append("rect")
+        .attr("x", xScale(new Date(observations[0].date)))
+        .attr("y", yScale.range()[1])
+        .attr(
+          "width",
+          xScale(new Date(model.config.start)) -
+            xScale(new Date(observations[0].date)),
+        )
+        .attr("height", yScale.range()[0] - yScale.range()[1])
+        .attr("fill", "currentColor")
+        .attr("class", `warmup-rect ${colours[0]}`);
+      chartGroup
+        .append("text")
+        .attr("class", `warmup warmup-text ${colours[0]}`)
+        .attr("text-anchor", "start")
+        .attr("dominant-baseline", "hanging")
+        .attr("x", xScale.range()[0])
+        .attr("y", yScale.range()[1])
+        .attr("dx", 5)
+        .attr("dy", 1)
+        .text("Warmup");
+    }
+
     // observations
     chartGroup
       .append("path")

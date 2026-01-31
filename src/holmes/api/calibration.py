@@ -162,7 +162,7 @@ async def _handle_manual_calibration_message(
         return
 
     hydro_simulate = hydro.get_model(msg_data["hydroModel"])
-    hydro_params = np.array(msg_data["hydroParams"])
+    hydro_params = np.array(msg_data["hydroParams"]).astype(np.float64)
 
     precipitation = _data["precipitation"].to_numpy()
     pet = _data["pet"].to_numpy()

@@ -3,7 +3,7 @@ use crate::fixtures::{
 };
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::hydro::{bucket, gr4j};
+use holmes_rs::hydro::{bucket, cequeau, gr4j};
 use holmes_rs::metrics::{calculate_kge, calculate_nse, calculate_rmse};
 use holmes_rs::pet::oudin;
 use holmes_rs::snow::cemaneige;
@@ -69,6 +69,142 @@ fn test_bucket_one_year() {
     assert!(
         streamflow.iter().all(|&q| q >= 0.0),
         "All positive flow values"
+    );
+}
+
+// =============================================================================
+// CEQUEAU Full Year Simulation Tests
+// =============================================================================
+
+#[test]
+fn test_cequeau_one_year() {
+    let (defaults, _) = cequeau::init();
+    let n = 365;
+
+    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
+    let pet = helpers::generate_pet(n, 3.0, 2.0, 43);
+
+    let streamflow =
+        cequeau::simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+
+    assert_eq!(streamflow.len(), n);
+    assert!(
+        streamflow.iter().all(|&q| !q.is_nan()),
+        "No NaN values in output"
+    );
+    assert!(
+        streamflow.iter().all(|&q| q >= 0.0),
+        "All positive flow values"
+    );
+    assert!(
+        streamflow.iter().any(|&q| q > 0.0),
+        "Should have some positive flow"
+    );
+}
+
+#[test]
+fn test_cequeau_cemaneige_one_year() {
+    let (snow_defaults, _) = cemaneige::init();
+    let (hydro_defaults, _) = cequeau::init();
+    let n = 365;
+
+    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
+    let temp = helpers::generate_temperature(n, 5.0, 15.0, 2.0, 43);
+    let pet = helpers::generate_pet(n, 3.0, 2.0, 44);
+    let doy = helpers::generate_doy(1, n);
+    let elevation_layers =
+        helpers::generate_elevation_layers(5, 500.0, 2000.0);
+    let median_elevation = 1250.0;
+
+    let effective_precip = cemaneige::simulate(
+        snow_defaults.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        median_elevation,
+    )
+    .unwrap();
+
+    assert_eq!(effective_precip.len(), n);
+    assert!(
+        effective_precip.iter().all(|&p| p.is_finite() && p >= 0.0),
+        "Effective precip should be valid"
+    );
+
+    let streamflow = cequeau::simulate(
+        hydro_defaults.view(),
+        effective_precip.view(),
+        pet.view(),
+    )
+    .unwrap();
+
+    assert_eq!(streamflow.len(), n);
+    assert!(
+        streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
+        "Streamflow should be valid"
+    );
+}
+
+#[test]
+fn test_cequeau_multi_year() {
+    let n = 365 * 3; // 3 years
+    let (defaults, _) = cequeau::init();
+
+    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
+    let pet = helpers::generate_pet(n, 3.0, 2.0, 43);
+
+    let streamflow =
+        cequeau::simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+
+    assert_eq!(streamflow.len(), n);
+    assert!(
+        streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
+        "Multi-year CEQUEAU simulation should be valid"
+    );
+
+    // Check that model reaches some kind of equilibrium
+    let year2_mean: f64 =
+        streamflow.slice(ndarray::s![365..730]).mean().unwrap();
+    let year3_mean: f64 = streamflow.slice(ndarray::s![730..]).mean().unwrap();
+
+    let diff_ratio = (year3_mean - year2_mean).abs() / year2_mean.max(0.01);
+    assert!(
+        diff_ratio < 0.5,
+        "Years 2 and 3 should have similar mean flows (ratio: {})",
+        diff_ratio
+    );
+}
+
+#[test]
+fn test_cequeau_extreme_precipitation_event() {
+    let (defaults, _) = cequeau::init();
+    let n = 100;
+
+    let mut precip = Array1::zeros(n);
+    precip[50] = 200.0; // Extreme event
+    let pet = Array1::from_elem(n, 2.0);
+
+    let streamflow =
+        cequeau::simulate(defaults.view(), precip.view(), pet.view()).unwrap();
+
+    assert_eq!(streamflow.len(), n);
+    assert!(
+        streamflow.iter().all(|&q| q.is_finite() && q >= 0.0),
+        "Should handle extreme precipitation"
+    );
+
+    // Peak should occur on or after the event
+    let peak_idx = streamflow
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .unwrap()
+        .0;
+
+    assert!(
+        peak_idx >= 50,
+        "Peak should occur on or after precipitation event"
     );
 }
 

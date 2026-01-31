@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from holmes_rs import HolmesValidationError
-from holmes_rs.hydro import bucket, gr4j
+from holmes_rs.hydro import bucket, cequeau, gr4j
 
 
 class TestGr4jInit:
@@ -214,6 +214,134 @@ class TestBucketParamNames:
         assert bucket.param_names == expected
 
 
+class TestCequeauInit:
+    """Tests for cequeau.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = cequeau.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 9 elements."""
+        defaults, _ = cequeau.init()
+
+        assert len(defaults) == 9
+
+    def test_bounds_shape(self):
+        """Bounds should be 9x2 array."""
+        _, bounds = cequeau.init()
+
+        assert bounds.shape == (9, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = cequeau.init()
+
+        for i in range(9):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = cequeau.init()
+
+        for i in range(9):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestCequeauSimulate:
+    """Tests for cequeau.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = cequeau.init()
+
+        streamflow = cequeau.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = cequeau.init()
+
+        streamflow = cequeau.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = cequeau.init()
+
+        streamflow = cequeau.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = cequeau.init()
+        precip = np.zeros(100)
+
+        streamflow = cequeau.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([100.0, 0.5, 50.0, 3.0])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            cequeau.simulate(
+                wrong_params, sample_precipitation, sample_pet
+            )
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = cequeau.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            cequeau.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array(
+            [100.0, 100.0, 10.0, 5.0, 500.0, 3.0, 100.0, 100.0, 100.0]
+        )
+
+        streamflow = cequeau.simulate(
+            params, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestCequeauParamNames:
+    """Tests for cequeau.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(cequeau, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 9 parameter names."""
+        assert len(cequeau.param_names) == 9
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
+        assert cequeau.param_names == expected
+
+
 class TestHydroModuleIntegration:
     """Integration tests for hydro module."""
 
@@ -223,13 +351,15 @@ class TestHydroModuleIntegration:
 
         assert hasattr(hydro, "gr4j")
         assert hasattr(hydro, "bucket")
+        assert hasattr(hydro, "cequeau")
 
-    def test_both_models_produce_output(
+    def test_all_models_produce_output(
         self, sample_precipitation, sample_pet
     ):
-        """Both models should produce valid streamflow."""
+        """All models should produce valid streamflow."""
         gr4j_defaults, _ = gr4j.init()
         bucket_defaults, _ = bucket.init()
+        cequeau_defaults, _ = cequeau.init()
 
         gr4j_flow = gr4j.simulate(
             gr4j_defaults, sample_precipitation, sample_pet
@@ -237,8 +367,13 @@ class TestHydroModuleIntegration:
         bucket_flow = bucket.simulate(
             bucket_defaults, sample_precipitation, sample_pet
         )
+        cequeau_flow = cequeau.simulate(
+            cequeau_defaults, sample_precipitation, sample_pet
+        )
 
         assert len(gr4j_flow) == len(sample_precipitation)
         assert len(bucket_flow) == len(sample_precipitation)
+        assert len(cequeau_flow) == len(sample_precipitation)
         assert np.all(np.isfinite(gr4j_flow))
         assert np.all(np.isfinite(bucket_flow))
+        assert np.all(np.isfinite(cequeau_flow))

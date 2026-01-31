@@ -9,7 +9,19 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [3.4.0] - 2026-01-31
+
+### Added
+- CEQUEAU hydrological model support in model registry (`hydro.py`), config, and simulation dispatching
+- Warmup period visual indicator (shaded rectangle with label) on simulation streamflow chart
+
+### Changed
+- Parameter slider step precision increased from 0.1 to 0.01 for non-integer parameters
+- Calibration bar chart x-axis tick labels are now limited to 10 to prevent overlapping when many iterations are displayed
+
+### Fixed
+- Calibration results view now detects stale parameter plots from a previously selected model and re-renders correctly
+- Hydro parameters are explicitly cast to `float64` in manual calibration to prevent type errors
 
 ### Documentation
 - Added comprehensive Concepts documentation with mathematical formulations:

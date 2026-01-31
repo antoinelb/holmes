@@ -1,6 +1,7 @@
-from . import bucket, gr4j
+from . import bucket, cequeau, gr4j
 
 __all__ = [
     "bucket",
+    "cequeau",
     "gr4j",
 ]

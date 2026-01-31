@@ -10,13 +10,12 @@ from typing import Callable, Literal, assert_never
 
 import numpy as np
 import numpy.typing as npt
-from holmes_rs.hydro import bucket, gr4j
-
 from holmes.exceptions import (
     HolmesError,
     HolmesNumericalError,
     HolmesValidationError,
 )
+from holmes_rs.hydro import bucket, cequeau, gr4j
 
 logger = logging.getLogger("holmes")
 
@@ -24,7 +23,7 @@ logger = logging.getLogger("holmes")
 # types #
 #########
 
-HydroModel = Literal["bucket", "gr4j"]
+HydroModel = Literal["gr4j", "bucket", "cequeau"]
 
 ##########
 # public #
@@ -47,14 +46,17 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
     """
     try:
         match model:
-            case "bucket":
-                param_names = bucket.param_names
-                defaults, bounds = bucket.init()
             case "gr4j":
                 param_names = gr4j.param_names
                 defaults, bounds = gr4j.init()
+            case "bucket":
+                param_names = bucket.param_names
+                defaults, bounds = bucket.init()
+            case "cequeau":
+                param_names = cequeau.param_names
+                defaults, bounds = cequeau.init()
             case _:  # pragma: no cover
-                assert_never(model)
+                assert_never(model)  # type: ignore
     except (HolmesNumericalError, HolmesValidationError) as exc:
         logger.error(f"Failed to initialize {model} model: {exc}")
         raise
@@ -101,12 +103,14 @@ def get_model(
         and returns streamflow
     """
     match model:
-        case "bucket":
-            simulate_fn = bucket.simulate
         case "gr4j":
             simulate_fn = gr4j.simulate
+        case "bucket":
+            simulate_fn = bucket.simulate
+        case "cequeau":
+            simulate_fn = cequeau.simulate
         case _:  # pragma: no cover
-            assert_never(model)
+            assert_never(model)  # type: ignore
 
     def wrapped_simulate(
         params: npt.NDArray[np.float64],

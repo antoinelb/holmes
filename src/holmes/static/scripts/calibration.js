@@ -1066,6 +1066,12 @@ function resultsView(model) {
           document.getElementById(
             `calibration__results__${param.name}-plot`,
           ) === null,
+      ) ||
+      [...div.querySelectorAll("[id$='-plot']")].some(
+        (el) =>
+          !hydro.params.some(
+            (p) => `calibration__results__${p.name}-plot` === el.id,
+          ),
       )
     ) {
       clear(div);
@@ -1460,7 +1466,18 @@ function metricView(model, param, i) {
       .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0, ${boundaries.b})`)
-      .call(d3.axisBottom(xScale).tickSize(0))
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickSize(0)
+          .tickValues(
+            xScale.domain().length <= 10
+              ? xScale.domain()
+              : xScale
+                  .domain()
+                  .filter((_, i, arr) => i % Math.ceil(arr.length / 10) === 0),
+          ),
+      )
       .call((g) => g.select(".domain").remove());
     xAxis.selectAll("text").attr("dy", 10);
     // y axis
@@ -1571,7 +1588,18 @@ function objectiveView(model) {
       .append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0, ${boundaries.b})`)
-      .call(d3.axisBottom(xScale).tickSize(0))
+      .call(
+        d3
+          .axisBottom(xScale)
+          .tickSize(0)
+          .tickValues(
+            xScale.domain().length <= 10
+              ? xScale.domain()
+              : xScale
+                  .domain()
+                  .filter((_, i, arr) => i % Math.ceil(arr.length / 10) === 0),
+          ),
+      )
       .call((g) => g.select(".domain").remove());
     xAxis.selectAll("text").attr("dy", 10);
     // y axis
