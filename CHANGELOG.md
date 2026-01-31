@@ -24,6 +24,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - Hydro parameters are explicitly cast to `float64` in manual calibration to prevent type errors
 
 ### Documentation
+- Added CEQUEAU model documentation: overview, mathematical formulation from Perrin (2000), 9-parameter description, and differences from original 11-parameter CEQUEAU
 - Added comprehensive Concepts documentation with mathematical formulations:
   - GR4J model: production store, unit hydrographs, routing store equations
   - Bucket model: linear reservoir theory, flow partitioning, comparison with GR4J

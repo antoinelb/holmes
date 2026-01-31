@@ -1,7 +1,7 @@
 """
 Hydrological model registry.
 
-This module provides access to hydrological models (bucket, GR4J)
+This module provides access to hydrological models
 implemented in the holmes_rs Rust extension.
 """
 
@@ -37,7 +37,7 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
     Parameters
     ----------
     model : HydroModel
-        Model name ("bucket" or "gr4j")
+        Model name (see HydroModel for valid options)
 
     Returns
     -------
@@ -94,7 +94,7 @@ def get_model(
     Parameters
     ----------
     model : HydroModel
-        Model name ("bucket" or "gr4j")
+        Model name (see HydroModel for valid options)
 
     Returns
     -------

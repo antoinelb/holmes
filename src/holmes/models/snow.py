@@ -1,7 +1,7 @@
 """
 Snow model registry.
 
-This module provides access to snow models (CemaNeige)
+This module provides access to snow models
 implemented in the holmes_rs Rust extension.
 """
 
@@ -53,7 +53,7 @@ def get_model(
     Parameters
     ----------
     model : SnowModel
-        Model name ("cemaneige")
+        Model name (see SnowModel for valid options)
 
     Returns
     -------

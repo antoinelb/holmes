@@ -20,7 +20,7 @@ pub enum HydroError {
     LengthMismatch(usize, usize),
     #[error("expected {0} params, got {1}")]
     ParamsMismatch(usize, usize),
-    #[error("Unknown model '{0}'. Valid options: gr4j, bucket")]
+    #[error("Unknown hydro model '{0}'")]
     WrongModel(String),
     #[error(
         "Parameter '{name}' value {value} outside bounds [{lower}, {upper}]"

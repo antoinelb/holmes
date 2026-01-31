@@ -126,6 +126,7 @@ nav:
       - Hydrological models:
           - GR4J: concepts/gr4j.md
           - Bucket: concepts/bucket.md
+          - CEQUEAU: concepts/cequeau.md
       - Snow models: concepts/snow-models.md
       - Potential evapotranspiration models: concepts/pet-models.md
       - Calibration: concepts/calibration-algorithms.md

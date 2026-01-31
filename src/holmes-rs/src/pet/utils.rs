@@ -10,7 +10,7 @@ pub enum PetError {
         "temperature and day_of_year must have the same length (got {0} and {1})"
     )]
     LengthMismatch(usize, usize),
-    #[error("Unknown model '{0}'. Valid options: oudin")]
+    #[error("Unknown PET model '{0}'")]
     WrongModel(String),
     #[error("Non-finite value in {name} at index {index}: {value}")]
     NonFiniteInput {
