@@ -1,6 +1,8 @@
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::hydro::cequeau::{init, param_descriptions, param_names, simulate};
+use holmes_rs::hydro::cequeau::{
+    init, param_descriptions, param_names, simulate,
+};
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;

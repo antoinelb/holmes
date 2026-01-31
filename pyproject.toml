@@ -19,7 +19,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "holmes-rs>=0.2.3",
+    "holmes-rs>=0.3.0",
     "numpy>=2.4.0",
     "polars>=1.36.0",
     "starlette>=0.50.0",

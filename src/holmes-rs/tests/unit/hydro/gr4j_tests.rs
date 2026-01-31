@@ -1,5 +1,7 @@
 use crate::helpers;
-use holmes_rs::hydro::gr4j::{init, param_descriptions, param_names, simulate};
+use holmes_rs::hydro::gr4j::{
+    init, param_descriptions, param_names, simulate,
+};
 use holmes_rs::hydro::utils::validate_output;
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};

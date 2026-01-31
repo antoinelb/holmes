@@ -63,15 +63,14 @@ pub fn simulate(
 
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
-    let (mut s, mut r, mut t, mut dl, mut hy) =
-        initialize_state(x1, x4);
+    let (mut s, mut r, mut t, mut dl, mut hy) = initialize_state(x1, x4);
 
     Zip::indexed(&precipitation)
         .and(&pet)
         .for_each(|i, &precip_t, &pet_t| {
             streamflow[i] = run_step(
-                precip_t, pet_t, x1, x2, x3, x5, x6, &mut s, &mut r,
-                &mut t, &mut dl, &mut hy,
+                precip_t, pet_t, x1, x2, x3, x5, x6, &mut s, &mut r, &mut t,
+                &mut dl, &mut hy,
             );
         });
 

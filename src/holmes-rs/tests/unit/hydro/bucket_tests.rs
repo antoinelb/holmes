@@ -1,6 +1,8 @@
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::hydro::bucket::{init, param_descriptions, param_names, simulate};
+use holmes_rs::hydro::bucket::{
+    init, param_descriptions, param_names, simulate,
+};
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -57,10 +59,7 @@ fn test_init_defaults_within_bounds() {
 #[test]
 fn test_param_names() {
     assert_eq!(param_names.len(), 6);
-    assert_eq!(
-        param_names,
-        &["x1", "x2", "x3", "x4", "x5", "x6"]
-    );
+    assert_eq!(param_names, &["x1", "x2", "x3", "x4", "x5", "x6"]);
 }
 
 #[test]

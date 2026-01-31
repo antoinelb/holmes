@@ -6,9 +6,8 @@ use ndarray::{array, Array1, Array2, ArrayView1, Axis, Zip};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 
-pub const param_names: &[&str] = &[
-    "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9",
-];
+pub const param_names: &[&str] =
+    &["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"];
 
 pub const param_descriptions: &[&str] = &[
     "Infiltration threshold (mm)",

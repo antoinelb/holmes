@@ -71,12 +71,12 @@ class TestGetConfig:
         for model in ("gr4j", "bucket", "cequeau"):
             config = hydro.get_config(model)
             for param in config:
-                assert isinstance(param["description"], str), (
-                    f"{model} param {param['name']} description is not a string"
-                )
-                assert len(param["description"]) > 0, (
-                    f"{model} param {param['name']} has empty description"
-                )
+                assert isinstance(
+                    param["description"], str
+                ), f"{model} param {param['name']} description is not a string"
+                assert (
+                    len(param["description"]) > 0
+                ), f"{model} param {param['name']} has empty description"
 
     def test_defaults_within_bounds(self):
         """Default values are within min/max bounds."""

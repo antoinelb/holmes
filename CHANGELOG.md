@@ -14,11 +14,14 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ### Added
 - CEQUEAU hydrological model support in model registry (`hydro.py`), config, and simulation dispatching
 - Warmup period visual indicator (shaded rectangle with label) on simulation streamflow chart
+- Parameter description tooltips on manual calibration sliders (hover info icon to see description)
+- `description` field in hydro model parameter configurations
 
 ### Changed
 - Parameter slider step precision increased from 0.1 to 0.01 for non-integer parameters
 - Renamed bucket model parameters from descriptive names (`c_soil`, `alpha`, `k_r`, `delta`, `beta`, `k_t`) to generic names (`x1`–`x6`), matching the convention used by GR4J and CEQUEAU
 - Calibration bar chart x-axis tick labels are now limited to 10 to prevent overlapping when many iterations are displayed
+- Cleaned up model registry docstrings to avoid hardcoded model lists
 
 ### Fixed
 - Calibration results view now detects stale parameter plots from a previously selected model and re-renders correctly
