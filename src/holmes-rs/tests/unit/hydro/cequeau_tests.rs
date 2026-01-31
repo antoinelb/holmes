@@ -1,6 +1,6 @@
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::hydro::cequeau::{init, param_names, simulate};
+use holmes_rs::hydro::cequeau::{init, param_descriptions, param_names, simulate};
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -61,6 +61,14 @@ fn test_param_names() {
         param_names,
         &["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
     );
+}
+
+#[test]
+fn test_param_descriptions() {
+    assert_eq!(param_descriptions.len(), param_names.len());
+    for desc in param_descriptions {
+        assert!(!desc.is_empty(), "Description should not be empty");
+    }
 }
 
 #[test]

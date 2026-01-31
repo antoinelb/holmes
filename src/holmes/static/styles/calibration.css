@@ -117,6 +117,38 @@
         grid-column: 1 / -1;
         height: 100%;
         width: 100%;
+
+        & .param-info {
+          cursor: help;
+          display: inline-flex;
+          position: relative;
+          min-width: unset;
+
+          & svg {
+            height: 1em;
+            opacity: 0.4;
+            width: 1em;
+          }
+
+          &:hover svg {
+            opacity: 1;
+          }
+
+          &:hover::after {
+            background: oklch(var(--fg));
+            border-radius: 0.25em;
+            color: oklch(var(--bg));
+            content: attr(data-tooltip);
+            font-size: 0.8rem;
+            left: 1.5em;
+            padding: 0.25em 0.5em;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            z-index: 10;
+          }
+        }
       }
 
       & > input {

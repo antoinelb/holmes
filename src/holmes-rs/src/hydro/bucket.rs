@@ -6,20 +6,28 @@ use ndarray::{array, Array1, Array2, ArrayView1, Axis, Zip};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 
-pub const param_names: &[&str] =
-    &["c_soil", "alpha", "k_r", "delta", "beta", "k_t"];
+pub const param_names: &[&str] = &["x1", "x2", "x3", "x4", "x5", "x6"];
+
+pub const param_descriptions: &[&str] = &[
+    "Soil reservoir capacity (mm)",
+    "Evapotranspiration fraction (-)",
+    "Runoff delay constant (d)",
+    "Non-linearity exponent (-)",
+    "Percolation fraction (-)",
+    "Transfer delay constant (d)",
+];
 
 const BOUNDS: [(&str, f64, f64); 6] = [
-    ("c_soil", 10.0, 1000.0),
-    ("alpha", 0.0, 1.0),
-    ("k_r", 1.0, 200.0),
-    ("delta", 2.0, 10.0),
-    ("beta", 0.0, 1.0),
-    ("k_t", 1.0, 400.0),
+    ("x1", 10.0, 1000.0),
+    ("x2", 0.0, 1.0),
+    ("x3", 1.0, 200.0),
+    ("x4", 2.0, 10.0),
+    ("x5", 0.0, 1.0),
+    ("x6", 1.0, 400.0),
 ];
 
 pub fn init() -> (Array1<f64>, Array2<f64>) {
-    // corresponds to c_soil, alpha, k_r, delta, beta, k_t
+    // corresponds to x1, x2, x3, x4, x5, x6
     let bounds = array![
         [BOUNDS[0].1, BOUNDS[0].2],
         [BOUNDS[1].1, BOUNDS[1].2],
@@ -37,14 +45,12 @@ pub fn simulate(
     precipitation: ArrayView1<f64>,
     pet: ArrayView1<f64>,
 ) -> Result<Array1<f64>, HydroError> {
-    let [c_soil, alpha, k_r, delta, beta, k_t]: [f64; 6] = params
+    let [x1, x2, x3, x4, x5, x6]: [f64; 6] = params
         .as_slice()
         .and_then(|s| s.try_into().ok())
         .ok_or_else(|| HydroError::ParamsMismatch(6, params.len()))?;
 
-    for (i, &param_value) in
-        [c_soil, alpha, k_r, delta, beta, k_t].iter().enumerate()
-    {
+    for (i, &param_value) in [x1, x2, x3, x4, x5, x6].iter().enumerate() {
         let (name, lower, upper) = BOUNDS[i];
         validate_parameter(param_value, name, lower, upper)?;
     }
@@ -58,14 +64,14 @@ pub fn simulate(
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
     let (mut s, mut r, mut t, mut dl, mut hy) =
-        initialize_state(c_soil, delta);
+        initialize_state(x1, x4);
 
     Zip::indexed(&precipitation)
         .and(&pet)
         .for_each(|i, &precip_t, &pet_t| {
             streamflow[i] = run_step(
-                precip_t, pet_t, c_soil, alpha, k_r, beta, k_t, &mut s,
-                &mut r, &mut t, &mut dl, &mut hy,
+                precip_t, pet_t, x1, x2, x3, x5, x6, &mut s, &mut r,
+                &mut t, &mut dl, &mut hy,
             );
         });
 
@@ -77,23 +83,23 @@ pub fn simulate(
 }
 
 fn initialize_state(
-    c_soil: f64,
-    delta: f64,
+    x1: f64,
+    x4: f64,
 ) -> (f64, f64, f64, Array1<f64>, Array1<f64>) {
     // initialization of the reservoir state
-    let s = c_soil * 0.5;
+    let s = x1 * 0.5;
     let r = 10.0;
     let t = 5.0;
 
     // array of ints from 0 to the routing delay
-    let n = delta.ceil() as usize;
+    let n = x4.ceil() as usize;
     let k = Array1::from_iter(0..n);
 
-    let mut dl = Array1::zeros(delta.ceil() as usize);
-    dl[n - 2] = 1.0 / (delta - k[n - 1] as f64 + 1.0);
+    let mut dl = Array1::zeros(x4.ceil() as usize);
+    dl[n - 2] = 1.0 / (x4 - k[n - 1] as f64 + 1.0);
     dl[n - 1] = 1.0 - dl[n - 2];
 
-    let hy = Array1::zeros(delta.ceil() as usize);
+    let hy = Array1::zeros(x4.ceil() as usize);
 
     (s, r, t, dl, hy)
 }
@@ -102,11 +108,11 @@ fn initialize_state(
 fn run_step(
     p: f64,
     e: f64,
-    c_soil: f64,
-    alpha: f64,
-    k_r: f64,
-    beta: f64,
-    k_t: f64,
+    x1: f64,
+    x2: f64,
+    x3: f64,
+    x5: f64,
+    x6: f64,
     s: &mut f64,
     r: &mut f64,
     t: &mut f64,
@@ -114,29 +120,29 @@ fn run_step(
     hy: &mut Array1<f64>,
 ) -> f64 {
     // slow flow precipitation
-    let p_s = (1.0 - beta) * p;
+    let p_s = (1.0 - x5) * p;
     // fast flow precipitation
-    let p_r = beta * p;
+    let p_r = x5 * p;
 
     // soil moisture accounting
     let mut i_s = 0.0;
     if p_s >= e {
         *s += p_s - e;
-        i_s = (*s - c_soil).max(0.0);
+        i_s = (*s - x1).max(0.0);
         *s -= i_s;
     } else {
         // dry conditions
-        *s *= ((p_s - e) / c_soil).exp();
+        *s *= ((p_s - e) / x1).exp();
     }
 
     // slow routing component
-    *r += i_s * (1.0 - alpha);
-    let q_r = *r / (k_r * k_t);
+    *r += i_s * (1.0 - x2);
+    let q_r = *r / (x3 * x6);
     *r -= q_r;
 
     // fast routing component
-    *t += p_r + i_s * alpha;
-    let q_t = *t / k_t;
+    *t += p_r + i_s * x2;
+    let q_t = *t / x6;
     *t -= q_t;
 
     // total flow calculation
@@ -177,6 +183,7 @@ pub fn py_simulate<'py>(
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "bucket")?;
     m.add("param_names", param_names)?;
+    m.add("param_descriptions", param_descriptions)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

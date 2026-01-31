@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CEQUEAU hydrological model (`hydro::cequeau`) with 9 parameters, surface/groundwater routing, and unit hydrograph delay
 - Python bindings and type stubs for the CEQUEAU module (`init`, `simulate`, `param_names`)
 
+### Changed
+- Renamed bucket model parameters from descriptive names (`c_soil`, `alpha`, `k_r`, `delta`, `beta`, `k_t`) to generic names (`x1`–`x6`), matching the convention used by GR4J and CEQUEAU
+
 ## [0.2.3] - 2026-01-24
 
 ### Added

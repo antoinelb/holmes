@@ -1,4 +1,4 @@
-import { create, clear, createSlider } from "./utils/elements.js";
+import { create, clear, createIcon, createSlider } from "./utils/elements.js";
 import {
   connect,
   incrementReconnectAttempt,
@@ -964,6 +964,12 @@ function manualCalibrationSettingsView(model) {
           document.getElementById(
             `calibration__manual-config__${param.name}`,
           ) === null,
+      ) ||
+      [...div.querySelectorAll("input[type='number']")].some(
+        (el) =>
+          !hydro.params.some(
+            (p) => `calibration__manual-config__${p.name}` === el.id,
+          ),
       )
     ) {
       clear(div);
@@ -972,7 +978,14 @@ function manualCalibrationSettingsView(model) {
           create(
             "label",
             { for: `calibration__manual-config__${param.name}` },
-            [param.name],
+            [
+              create(
+                "span",
+                { class: "param-info", "data-tooltip": param.description },
+                [createIcon("info")],
+              ),
+              param.name,
+            ],
           ),
         );
         div.appendChild(

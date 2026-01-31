@@ -1,5 +1,5 @@
 use crate::helpers;
-use holmes_rs::hydro::gr4j::{init, param_names, simulate};
+use holmes_rs::hydro::gr4j::{init, param_descriptions, param_names, simulate};
 use holmes_rs::hydro::utils::validate_output;
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
@@ -58,6 +58,14 @@ fn test_init_defaults_within_bounds() {
 fn test_param_names() {
     assert_eq!(param_names.len(), 4);
     assert_eq!(param_names, &["x1", "x2", "x3", "x4"]);
+}
+
+#[test]
+fn test_param_descriptions() {
+    assert_eq!(param_descriptions.len(), param_names.len());
+    for desc in param_descriptions {
+        assert!(!desc.is_empty(), "Description should not be empty");
+    }
 }
 
 // =============================================================================

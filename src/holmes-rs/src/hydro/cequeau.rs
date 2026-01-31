@@ -7,15 +7,19 @@ use numpy::{PyArray1, PyArray2, PyReadonlyArray1, ToPyArray};
 use pyo3::prelude::*;
 
 pub const param_names: &[&str] = &[
-    "x1", // infiltration threshold (mm)
-    "x2", // soil reservoir drainage threshold (mm)
-    "x3", // infiltration constant (-)
-    "x4", // upper lateral drainage constant (-)
-    "x5", // max soil reservoir capacity (mm)
-    "x6", // delay (days)
-    "x7", // groundwater drainage threshold (mm)
-    "x8", // lower lateral drainage constant (-)
-    "x9", // lower groundwater drainage constant (-)
+    "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9",
+];
+
+pub const param_descriptions: &[&str] = &[
+    "Infiltration threshold (mm)",
+    "Soil reservoir drainage threshold (mm)",
+    "Infiltration constant (-)",
+    "Upper lateral drainage constant (-)",
+    "Max soil reservoir capacity (mm)",
+    "Delay (days)",
+    "Groundwater drainage threshold (mm)",
+    "Lower lateral drainage constant (-)",
+    "Lower groundwater drainage constant (-)",
 ];
 
 const BOUNDS: [(&str, f64, f64); 9] = [
@@ -206,6 +210,7 @@ pub fn py_simulate<'py>(
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "cequeau")?;
     m.add("param_names", param_names)?;
+    m.add("param_descriptions", param_descriptions)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

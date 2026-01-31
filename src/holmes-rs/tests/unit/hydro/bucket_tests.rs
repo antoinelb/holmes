@@ -1,6 +1,6 @@
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::hydro::bucket::{init, param_names, simulate};
+use holmes_rs::hydro::bucket::{init, param_descriptions, param_names, simulate};
 use holmes_rs::hydro::HydroError;
 use ndarray::{array, Array1};
 use proptest::prelude::*;
@@ -59,35 +59,43 @@ fn test_param_names() {
     assert_eq!(param_names.len(), 6);
     assert_eq!(
         param_names,
-        &["c_soil", "alpha", "k_r", "delta", "beta", "k_t"]
+        &["x1", "x2", "x3", "x4", "x5", "x6"]
     );
+}
+
+#[test]
+fn test_param_descriptions() {
+    assert_eq!(param_descriptions.len(), param_names.len());
+    for desc in param_descriptions {
+        assert!(!desc.is_empty(), "Description should not be empty");
+    }
 }
 
 #[test]
 fn test_init_specific_bounds() {
     let (_, bounds) = init();
 
-    // c_soil: [10, 1000]
+    // x1 (soil moisture capacity): [10, 1000]
     assert_relative_eq!(bounds[[0, 0]], 10.0);
     assert_relative_eq!(bounds[[0, 1]], 1000.0);
 
-    // alpha: [0, 1]
+    // x2 (infiltration split ratio): [0, 1]
     assert_relative_eq!(bounds[[1, 0]], 0.0);
     assert_relative_eq!(bounds[[1, 1]], 1.0);
 
-    // k_r: [1, 200]
+    // x3 (slow recession constant): [1, 200]
     assert_relative_eq!(bounds[[2, 0]], 1.0);
     assert_relative_eq!(bounds[[2, 1]], 200.0);
 
-    // delta: [2, 10]
+    // x4 (routing delay): [2, 10]
     assert_relative_eq!(bounds[[3, 0]], 2.0);
     assert_relative_eq!(bounds[[3, 1]], 10.0);
 
-    // beta: [0, 1]
+    // x5 (direct runoff fraction): [0, 1]
     assert_relative_eq!(bounds[[4, 0]], 0.0);
     assert_relative_eq!(bounds[[4, 1]], 1.0);
 
-    // k_t: [1, 400]
+    // x6 (fast recession constant): [1, 400]
     assert_relative_eq!(bounds[[5, 0]], 1.0);
     assert_relative_eq!(bounds[[5, 1]], 400.0);
 }
@@ -199,8 +207,8 @@ fn test_simulate_length_mismatch() {
 // =============================================================================
 
 #[test]
-fn test_c_soil_sensitivity() {
-    // c_soil controls soil moisture capacity
+fn test_x1_sensitivity() {
+    // x1 controls soil moisture capacity
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
@@ -219,8 +227,8 @@ fn test_c_soil_sensitivity() {
 }
 
 #[test]
-fn test_beta_sensitivity() {
-    // beta controls fast flow fraction
+fn test_x5_sensitivity() {
+    // x5 controls direct runoff fraction
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
@@ -245,14 +253,14 @@ fn test_beta_sensitivity() {
 proptest! {
     #[test]
     fn prop_nonnegative_streamflow(
-        c_soil in 10.0f64..1000.0,
-        alpha in 0.0f64..1.0,
-        k_r in 1.0f64..200.0,
-        delta in 2.0f64..10.0,
-        beta in 0.0f64..1.0,
-        k_t in 1.0f64..400.0
+        x1 in 10.0f64..1000.0,
+        x2 in 0.0f64..1.0,
+        x3 in 1.0f64..200.0,
+        x4 in 2.0f64..10.0,
+        x5 in 0.0f64..1.0,
+        x6 in 1.0f64..400.0
     ) {
-        let params = array![c_soil, alpha, k_r, delta, beta, k_t];
+        let params = array![x1, x2, x3, x4, x5, x6];
         let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
         let pet = helpers::generate_pet(50, 3.0, 1.0, 43);
 
@@ -272,14 +280,14 @@ proptest! {
 
     #[test]
     fn prop_finite_output(
-        c_soil in 50.0f64..500.0,
-        alpha in 0.1f64..0.9,
-        k_r in 10.0f64..100.0,
-        delta in 3.0f64..8.0,
-        beta in 0.1f64..0.9,
-        k_t in 10.0f64..200.0
+        x1 in 50.0f64..500.0,
+        x2 in 0.1f64..0.9,
+        x3 in 10.0f64..100.0,
+        x4 in 3.0f64..8.0,
+        x5 in 0.1f64..0.9,
+        x6 in 10.0f64..200.0
     ) {
-        let params = array![c_soil, alpha, k_r, delta, beta, k_t];
+        let params = array![x1, x2, x3, x4, x5, x6];
         let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
         let pet = helpers::generate_pet(50, 3.0, 1.0, 43);
 
@@ -336,44 +344,44 @@ fn test_dry_conditions_p_less_than_e() {
 
 #[test]
 fn test_alpha_routing_split() {
-    // Test different alpha values (routing split between slow and fast)
+    // Test different x2 values (routing split between slow and fast)
     let n = 100;
     let precip = helpers::generate_precipitation(n, 10.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
 
-    // alpha = 0: all infiltration goes to slow routing
-    let params_alpha_0 = array![300.0, 0.0, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_0 =
-        simulate(params_alpha_0.view(), precip.view(), pet.view()).unwrap();
-    assert!(flow_alpha_0.iter().all(|&q| q.is_finite() && q >= 0.0));
+    // x2 = 0: all infiltration goes to slow routing
+    let params_x2_0 = array![300.0, 0.0, 50.0, 3.0, 0.3, 100.0];
+    let flow_x2_0 =
+        simulate(params_x2_0.view(), precip.view(), pet.view()).unwrap();
+    assert!(flow_x2_0.iter().all(|&q| q.is_finite() && q >= 0.0));
 
-    // alpha = 1: all infiltration goes to fast routing
-    let params_alpha_1 = array![300.0, 1.0, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_1 =
-        simulate(params_alpha_1.view(), precip.view(), pet.view()).unwrap();
-    assert!(flow_alpha_1.iter().all(|&q| q.is_finite() && q >= 0.0));
+    // x2 = 1: all infiltration goes to fast routing
+    let params_x2_1 = array![300.0, 1.0, 50.0, 3.0, 0.3, 100.0];
+    let flow_x2_1 =
+        simulate(params_x2_1.view(), precip.view(), pet.view()).unwrap();
+    assert!(flow_x2_1.iter().all(|&q| q.is_finite() && q >= 0.0));
 
-    // alpha = 0.5: split between both
-    let params_alpha_half = array![300.0, 0.5, 50.0, 3.0, 0.3, 100.0];
-    let flow_alpha_half =
-        simulate(params_alpha_half.view(), precip.view(), pet.view()).unwrap();
-    assert!(flow_alpha_half.iter().all(|&q| q.is_finite() && q >= 0.0));
+    // x2 = 0.5: split between both
+    let params_x2_half = array![300.0, 0.5, 50.0, 3.0, 0.3, 100.0];
+    let flow_x2_half =
+        simulate(params_x2_half.view(), precip.view(), pet.view()).unwrap();
+    assert!(flow_x2_half.iter().all(|&q| q.is_finite() && q >= 0.0));
 }
 
 #[test]
 fn test_delta_routing_delay() {
-    // Test different delta values (routing delay)
+    // Test different x4 values (routing delay)
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
 
-    // delta = 2 (minimum - short delay)
+    // x4 = 2 (minimum - short delay)
     let params_short = array![300.0, 0.5, 50.0, 2.0, 0.3, 100.0];
     let flow_short =
         simulate(params_short.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_short.iter().all(|&q| q.is_finite() && q >= 0.0));
 
-    // delta = 10 (maximum - long delay)
+    // x4 = 10 (maximum - long delay)
     let params_long = array![300.0, 0.5, 50.0, 10.0, 0.3, 100.0];
     let flow_long =
         simulate(params_long.view(), precip.view(), pet.view()).unwrap();
@@ -387,7 +395,7 @@ fn test_soil_moisture_overflow() {
     let precip = Array1::from_elem(n, 100.0); // Very high precipitation
     let pet = Array1::from_elem(n, 1.0); // Very low PET
 
-    // Small c_soil to force overflow quickly
+    // Small x1 to force overflow quickly
     let params = array![50.0, 0.5, 50.0, 3.0, 0.3, 100.0];
     let streamflow =
         simulate(params.view(), precip.view(), pet.view()).unwrap();
@@ -400,18 +408,18 @@ fn test_soil_moisture_overflow() {
 
 #[test]
 fn test_k_r_and_k_t_extreme() {
-    // Test with extreme k_r and k_t values
+    // Test with extreme x3 and x6 values
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
 
-    // Low k_r and k_t (fast routing)
+    // Low x3 and x6 (fast routing)
     let params_fast = array![300.0, 0.5, 1.0, 3.0, 0.3, 1.0];
     let flow_fast =
         simulate(params_fast.view(), precip.view(), pet.view()).unwrap();
     assert!(flow_fast.iter().all(|&q| q.is_finite() && q >= 0.0));
 
-    // High k_r and k_t (slow routing)
+    // High x3 and x6 (slow routing)
     let params_slow = array![300.0, 0.5, 200.0, 3.0, 0.3, 400.0];
     let flow_slow =
         simulate(params_slow.view(), precip.view(), pet.view()).unwrap();
@@ -419,10 +427,10 @@ fn test_k_r_and_k_t_extreme() {
 }
 
 #[test]
-#[ignore = "R5-NUM-05: Potential exp() instability with small c_soil"]
-fn test_bucket_small_c_soil() {
-    // Very small c_soil can cause exp() instability in dry conditions
-    let params = array![10.0, 0.5, 50.0, 3.0, 0.3, 100.0]; // c_soil at minimum
+#[ignore = "R5-NUM-05: Potential exp() instability with small x1"]
+fn test_bucket_small_x1() {
+    // Very small x1 can cause exp() instability in dry conditions
+    let params = array![10.0, 0.5, 50.0, 3.0, 0.3, 100.0]; // x1 at minimum
     let n = 100;
     let precip = Array1::zeros(n); // No precipitation
     let pet = Array1::from_elem(n, 5.0); // High PET (strong drying)
@@ -431,7 +439,7 @@ fn test_bucket_small_c_soil() {
         simulate(params.view(), precip.view(), pet.view()).unwrap();
     assert!(
         streamflow.iter().all(|&q| q.is_finite()),
-        "Should handle small c_soil without overflow"
+        "Should handle small x1 without overflow"
     );
 }
 

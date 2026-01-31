@@ -17,11 +17,13 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ### Changed
 - Parameter slider step precision increased from 0.1 to 0.01 for non-integer parameters
+- Renamed bucket model parameters from descriptive names (`c_soil`, `alpha`, `k_r`, `delta`, `beta`, `k_t`) to generic names (`x1`–`x6`), matching the convention used by GR4J and CEQUEAU
 - Calibration bar chart x-axis tick labels are now limited to 10 to prevent overlapping when many iterations are displayed
 
 ### Fixed
 - Calibration results view now detects stale parameter plots from a previously selected model and re-renders correctly
 - Hydro parameters are explicitly cast to `float64` in manual calibration to prevent type errors
+- Manual calibration parameter sliders now correctly recreate when switching from a model with more parameters to one with fewer (e.g., CEQUEAU → GR4J)
 
 ### Documentation
 - Added CEQUEAU model documentation: overview, mathematical formulation from Perrin (2000), 9-parameter description, and differences from original 11-parameter CEQUEAU

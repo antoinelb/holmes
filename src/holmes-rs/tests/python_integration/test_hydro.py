@@ -126,6 +126,24 @@ class TestGr4jParamNames:
         assert gr4j.param_names == ["x1", "x2", "x3", "x4"]
 
 
+class TestGr4jParamDescriptions:
+    """Tests for gr4j.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(gr4j, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(gr4j.param_descriptions) == len(gr4j.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in gr4j.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
 class TestBucketInit:
     """Tests for bucket.init function."""
 
@@ -210,8 +228,26 @@ class TestBucketParamNames:
 
     def test_param_names_values(self):
         """Parameter names should match expected values."""
-        expected = ["c_soil", "alpha", "k_r", "delta", "beta", "k_t"]
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6"]
         assert bucket.param_names == expected
+
+
+class TestBucketParamDescriptions:
+    """Tests for bucket.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(bucket, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(bucket.param_descriptions) == len(bucket.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in bucket.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
 
 
 class TestCequeauInit:
@@ -340,6 +376,24 @@ class TestCequeauParamNames:
         """Parameter names should match expected values."""
         expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
         assert cequeau.param_names == expected
+
+
+class TestCequeauParamDescriptions:
+    """Tests for cequeau.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(cequeau, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(cequeau.param_descriptions) == len(cequeau.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in cequeau.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
 
 
 class TestHydroModuleIntegration:

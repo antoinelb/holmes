@@ -8,6 +8,13 @@ use pyo3::prelude::*;
 
 pub const param_names: &[&str] = &["x1", "x2", "x3", "x4"];
 
+pub const param_descriptions: &[&str] = &[
+    "Production store capacity (mm)",
+    "Groundwater exchange coefficient (mm/d)",
+    "Routing store capacity (mm)",
+    "Unit hydrograph time base (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 4] = [
     ("x1", 10.0, 1500.0),
     ("x2", -5.0, 3.0),
@@ -238,6 +245,7 @@ pub fn py_simulate<'py>(
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "gr4j")?;
     m.add("param_names", param_names)?;
+    m.add("param_descriptions", param_descriptions)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

@@ -23,6 +23,7 @@ class TestGetConfig:
             assert "default" in param
             assert "min" in param
             assert "max" in param
+            assert "description" in param
 
     def test_get_config_bucket(self):
         """Bucket parameter config has expected structure."""
@@ -33,6 +34,7 @@ class TestGetConfig:
             assert "default" in param
             assert "min" in param
             assert "max" in param
+            assert "description" in param
 
     def test_get_config_cequeau(self):
         """CEQUEAU parameter config has expected structure."""
@@ -44,6 +46,7 @@ class TestGetConfig:
             assert "default" in param
             assert "min" in param
             assert "max" in param
+            assert "description" in param
 
     def test_gr4j_param_names(self):
         """GR4J has expected parameter names."""
@@ -55,13 +58,25 @@ class TestGetConfig:
         """Bucket has expected parameter names."""
         config = hydro.get_config("bucket")
         names = [p["name"] for p in config]
-        assert names == ["c_soil", "alpha", "k_r", "delta", "beta", "k_t"]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6"]
 
     def test_cequeau_param_names(self):
         """CEQUEAU has expected parameter names."""
         config = hydro.get_config("cequeau")
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
+
+    def test_descriptions_are_non_empty_strings(self):
+        """All parameters have a non-empty string description."""
+        for model in ("gr4j", "bucket", "cequeau"):
+            config = hydro.get_config(model)
+            for param in config:
+                assert isinstance(param["description"], str), (
+                    f"{model} param {param['name']} description is not a string"
+                )
+                assert len(param["description"]) > 0, (
+                    f"{model} param {param['name']} has empty description"
+                )
 
     def test_defaults_within_bounds(self):
         """Default values are within min/max bounds."""

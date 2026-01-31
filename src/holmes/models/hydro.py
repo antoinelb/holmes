@@ -42,18 +42,22 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
     Returns
     -------
     list[dict]
-        List of parameter configurations with name, default, min, max
+        List of parameter configurations with name, default, min, max,
+        description
     """
     try:
         match model:
             case "gr4j":
                 param_names = gr4j.param_names
+                descriptions = gr4j.param_descriptions
                 defaults, bounds = gr4j.init()
             case "bucket":
                 param_names = bucket.param_names
+                descriptions = bucket.param_descriptions
                 defaults, bounds = bucket.init()
             case "cequeau":
                 param_names = cequeau.param_names
+                descriptions = cequeau.param_descriptions
                 defaults, bounds = cequeau.init()
             case _:  # pragma: no cover
                 assert_never(model)  # type: ignore
@@ -70,8 +74,11 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
             "default": default,
             "min": bounds_[0],
             "max": bounds_[1],
+            "description": desc,
         }
-        for name, default, bounds_ in zip(param_names, defaults, bounds)
+        for name, desc, default, bounds_ in zip(
+            param_names, descriptions, defaults, bounds
+        )
     ]
 
 
