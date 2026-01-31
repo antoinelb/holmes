@@ -12,31 +12,31 @@
         <meta name="author" content="Université Laval">
       
       
-        <link rel="canonical" href="https://antoinelb.github.io/holmes/api-reference/">
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/cequeau/">
       
       
-        <link rel="prev" href="../concepts/metrics/">
+        <link rel="prev" href="../bucket/">
       
       
-        <link rel="next" href="data/">
+        <link rel="next" href="../snow-models/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>API Reference - HOLMES Documentation</title>
+        <title>CEQUEAU - HOLMES Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../assets/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#cequeau-model" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Reference
+              CEQUEAU
             
           </span>
         </div>
@@ -227,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -248,7 +248,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -270,7 +270,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../user-guide/" class="md-tabs__link">
+        <a href="../../user-guide/" class="md-tabs__link">
           
   
   
@@ -288,11 +288,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../concepts/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -310,13 +312,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../api-reference/" class="md-tabs__link">
           
   
   
@@ -338,7 +338,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../data-formats/" class="md-tabs__link">
+        <a href="../../data-formats/" class="md-tabs__link">
           
   
   
@@ -360,7 +360,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../reference/changelog/" class="md-tabs__link">
+        <a href="../../reference/changelog/" class="md-tabs__link">
           
   
   
@@ -402,7 +402,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -432,7 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -488,7 +488,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting-started/" class="md-nav__link ">
+            <a href="../../getting-started/" class="md-nav__link ">
               
   
   
@@ -532,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -560,7 +560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -588,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/configuration/" class="md-nav__link">
+      <a href="../../getting-started/configuration/" class="md-nav__link">
         
   
   
@@ -656,7 +656,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../user-guide/" class="md-nav__link ">
+            <a href="../../user-guide/" class="md-nav__link ">
               
   
   
@@ -700,7 +700,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/interface-overview/" class="md-nav__link">
+      <a href="../../user-guide/interface-overview/" class="md-nav__link">
         
   
   
@@ -728,7 +728,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/calibration/" class="md-nav__link">
+      <a href="../../user-guide/calibration/" class="md-nav__link">
         
   
   
@@ -756,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/simulation/" class="md-nav__link">
+      <a href="../../user-guide/simulation/" class="md-nav__link">
         
   
   
@@ -784,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/projection/" class="md-nav__link">
+      <a href="../../user-guide/projection/" class="md-nav__link">
         
   
   
@@ -812,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/settings/" class="md-nav__link">
+      <a href="../../user-guide/settings/" class="md-nav__link">
         
   
   
@@ -844,6 +844,8 @@
       
   
   
+    
+  
   
   
     
@@ -867,20 +869,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../concepts/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -898,13 +903,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -921,8 +926,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -937,18 +944,21 @@
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
             
   
   
@@ -966,7 +976,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -984,7 +994,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/gr4j/" class="md-nav__link">
+      <a href="../gr4j/" class="md-nav__link">
         
   
   
@@ -1012,7 +1022,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/bucket/" class="md-nav__link">
+      <a href="../bucket/" class="md-nav__link">
         
   
   
@@ -1037,10 +1047,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../concepts/cequeau/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CEQUEAU
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1056,6 +1093,186 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mathematical-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mathematical Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mathematical Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-precipitation-and-evapotranspiration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Precipitation and Evapotranspiration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-infiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Infiltration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-drainage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Drainage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groundwater-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groundwater Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-streamflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Total Streamflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-delay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing Delay
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#differences-from-the-original-cequeau" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Differences from the Original CEQUEAU
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1076,7 +1293,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/snow-models/" class="md-nav__link">
+      <a href="../snow-models/" class="md-nav__link">
         
   
   
@@ -1104,7 +1321,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/pet-models/" class="md-nav__link">
+      <a href="../pet-models/" class="md-nav__link">
         
   
   
@@ -1132,7 +1349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/calibration-algorithms/" class="md-nav__link">
+      <a href="../calibration-algorithms/" class="md-nav__link">
         
   
   
@@ -1160,7 +1377,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/metrics/" class="md-nav__link">
+      <a href="../metrics/" class="md-nav__link">
         
   
   
@@ -1192,8 +1409,6 @@
       
   
   
-    
-  
   
   
     
@@ -1225,23 +1440,20 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../api-reference/" class="md-nav__link ">
               
   
   
@@ -1259,13 +1471,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1285,7 +1497,7 @@
   
   
     <li class="md-nav__item">
-      <a href="data/" class="md-nav__link">
+      <a href="../../api-reference/data/" class="md-nav__link">
         
   
   
@@ -1313,7 +1525,7 @@
   
   
     <li class="md-nav__item">
-      <a href="app/" class="md-nav__link">
+      <a href="../../api-reference/app/" class="md-nav__link">
         
   
   
@@ -1341,7 +1553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="config/" class="md-nav__link">
+      <a href="../../api-reference/config/" class="md-nav__link">
         
   
   
@@ -1369,7 +1581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="exceptions/" class="md-nav__link">
+      <a href="../../api-reference/exceptions/" class="md-nav__link">
         
   
   
@@ -1397,7 +1609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="logging/" class="md-nav__link">
+      <a href="../../api-reference/logging/" class="md-nav__link">
         
   
   
@@ -1425,7 +1637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="validation/" class="md-nav__link">
+      <a href="../../api-reference/validation/" class="md-nav__link">
         
   
   
@@ -1475,13 +1687,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1489,7 +1698,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="api/" class="md-nav__link ">
+            <a href="../../api-reference/api/" class="md-nav__link ">
               
   
   
@@ -1507,7 +1716,7 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_8" id="__nav_5_8_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -1533,7 +1742,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/api/" class="md-nav__link">
+      <a href="../../api-reference/api/api/" class="md-nav__link">
         
   
   
@@ -1561,7 +1770,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/calibration/" class="md-nav__link">
+      <a href="../../api-reference/api/calibration/" class="md-nav__link">
         
   
   
@@ -1589,7 +1798,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/simulation/" class="md-nav__link">
+      <a href="../../api-reference/api/simulation/" class="md-nav__link">
         
   
   
@@ -1617,7 +1826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/projection/" class="md-nav__link">
+      <a href="../../api-reference/api/projection/" class="md-nav__link">
         
   
   
@@ -1645,7 +1854,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/utils/" class="md-nav__link">
+      <a href="../../api-reference/api/utils/" class="md-nav__link">
         
   
   
@@ -1701,13 +1910,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1715,7 +1921,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="models/" class="md-nav__link ">
+            <a href="../../api-reference/models/" class="md-nav__link ">
               
   
   
@@ -1733,7 +1939,7 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_9" id="__nav_5_9_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -1759,7 +1965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="models/hydro/" class="md-nav__link">
+      <a href="../../api-reference/models/hydro/" class="md-nav__link">
         
   
   
@@ -1787,7 +1993,7 @@
   
   
     <li class="md-nav__item">
-      <a href="models/snow/" class="md-nav__link">
+      <a href="../../api-reference/models/snow/" class="md-nav__link">
         
   
   
@@ -1815,7 +2021,7 @@
   
   
     <li class="md-nav__item">
-      <a href="models/calibration/" class="md-nav__link">
+      <a href="../../api-reference/models/calibration/" class="md-nav__link">
         
   
   
@@ -1843,7 +2049,7 @@
   
   
     <li class="md-nav__item">
-      <a href="models/utils/" class="md-nav__link">
+      <a href="../../api-reference/models/utils/" class="md-nav__link">
         
   
   
@@ -1897,13 +2103,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1911,7 +2114,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="utils/" class="md-nav__link ">
+            <a href="../../api-reference/utils/" class="md-nav__link ">
               
   
   
@@ -1929,7 +2132,7 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_10" id="__nav_5_10_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5_10" id="__nav_5_10_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -1955,7 +2158,7 @@
   
   
     <li class="md-nav__item">
-      <a href="utils/paths/" class="md-nav__link">
+      <a href="../../api-reference/utils/paths/" class="md-nav__link">
         
   
   
@@ -1983,7 +2186,7 @@
   
   
     <li class="md-nav__item">
-      <a href="utils/print/" class="md-nav__link">
+      <a href="../../api-reference/utils/print/" class="md-nav__link">
         
   
   
@@ -2011,7 +2214,7 @@
   
   
     <li class="md-nav__item">
-      <a href="utils/websocket/" class="md-nav__link">
+      <a href="../../api-reference/utils/websocket/" class="md-nav__link">
         
   
   
@@ -2085,7 +2288,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../data-formats/" class="md-nav__link ">
+            <a href="../../data-formats/" class="md-nav__link ">
               
   
   
@@ -2129,7 +2332,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-formats/observations/" class="md-nav__link">
+      <a href="../../data-formats/observations/" class="md-nav__link">
         
   
   
@@ -2157,7 +2360,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-formats/cemaneige-info/" class="md-nav__link">
+      <a href="../../data-formats/cemaneige-info/" class="md-nav__link">
         
   
   
@@ -2185,7 +2388,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-formats/projections/" class="md-nav__link">
+      <a href="../../data-formats/projections/" class="md-nav__link">
         
   
   
@@ -2213,7 +2416,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-formats/exports/" class="md-nav__link">
+      <a href="../../data-formats/exports/" class="md-nav__link">
         
   
   
@@ -2306,7 +2509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/changelog/" class="md-nav__link">
+      <a href="../../reference/changelog/" class="md-nav__link">
         
   
   
@@ -2334,7 +2537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/license/" class="md-nav__link">
+      <a href="../../reference/license/" class="md-nav__link">
         
   
   
@@ -2389,10 +2592,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#top-level-modules" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Top-level Modules
+        Overview
       
     </span>
   </a>
@@ -2400,10 +2603,148 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#packages" class="md-nav__link">
+  <a href="#key-concepts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Packages
+        Key Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mathematical-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mathematical Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mathematical Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-precipitation-and-evapotranspiration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Precipitation and Evapotranspiration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-infiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Infiltration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-store-drainage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Store: Drainage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groundwater-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groundwater Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-streamflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Total Streamflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-delay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing Delay
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#differences-from-the-original-cequeau" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Differences from the Original CEQUEAU
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -2430,23 +2771,184 @@
   
 
 
-<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<p>Auto-generated documentation from the HOLMES Python source code.</p>
-<h2 id="top-level-modules">Top-level Modules<a class="headerlink" href="#top-level-modules" title="Permanent link">&para;</a></h2>
+<h1 id="cequeau-model">CEQUEAU Model<a class="headerlink" href="#cequeau-model" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>CEQUEAU is a conceptual rainfall-runoff model originally developed at INRS-Eau (Institut National de la Recherche Scientifique) in Québec, Canada, by Girard, Morin, and Charbonneau (1972). The name comes from the former name of the institute. In its original form, CEQUEAU is a spatially distributed model designed for use with physiographic databases, but it can also operate in lumped mode.</p>
+<p>The version implemented in HOLMES follows the simplified "CEQU" variant described in Perrin (2000), which reduces the original 11-parameter formulation to 9 parameters. This simplified version removes the impervious surface partitioning mechanism, fixes the evapotranspiration threshold, and adds a pure time delay parameter. Despite these simplifications, the core two-reservoir structure of the original model is preserved.</p>
+<p>CEQUEAU represents the catchment using two interconnected reservoirs: a surface (soil) store that handles precipitation, evapotranspiration, and infiltration, and a groundwater store that receives percolated water and produces slower flow components. Both reservoirs generate multiple outflow pathways — some threshold-based, some continuous — giving the model considerable flexibility in reproducing different hydrograph shapes.</p>
+<h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="data/">data</a> - Data loading utilities</li>
-<li><a href="app/">app</a> - Application entry point</li>
-<li><a href="config/">config</a> - Configuration management</li>
-<li><a href="exceptions/">exceptions</a> - Custom exceptions</li>
-<li><a href="logging/">logging</a> - Logging setup</li>
-<li><a href="validation/">validation</a> - Input validation</li>
+<li>
+<p><strong>Surface store</strong>: The upper reservoir receiving precipitation directly. It produces three distinct outflow pathways (overflow, threshold-based drainage, and continuous drainage) and loses water to both evapotranspiration and infiltration to the groundwater store.</p>
+</li>
+<li>
+<p><strong>Groundwater store</strong>: The lower reservoir fed by infiltration from the surface store. It produces two outflow pathways (threshold-based hypodermic flow and continuous baseflow) and is also subject to evapotranspiration from remaining PET demand.</p>
+</li>
+<li>
+<p><strong>Threshold-based drainage</strong>: Several outflows in CEQUEAU activate only when the store level exceeds a threshold. This allows the model to represent nonlinear behavior where certain flow pathways only contribute during wet conditions.</p>
+</li>
+<li>
+<p><strong>Continuous drainage</strong>: Other outflows are proportional to the current store level regardless of any threshold, providing a baseline contribution at all times.</p>
+</li>
+<li>
+<p><strong>Routing delay</strong>: A pure time translation applied to the total streamflow before output, representing the travel time of water through the channel network to the catchment outlet.</p>
+</li>
 </ul>
-<h2 id="packages">Packages<a class="headerlink" href="#packages" title="Permanent link">&para;</a></h2>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p>CEQUEAU operates on a daily time step, processing precipitation and potential evapotranspiration through the following sequence:</p>
+<p><strong>Step 1: Precipitation input</strong>. All precipitation enters the surface store directly. Unlike the original CEQUEAU model, the simplified version does not partition precipitation between impervious surface runoff and soil input (the TRI coefficient is set to zero).</p>
+<p><strong>Step 2: Surface evapotranspiration</strong>. The surface store loses water to evapotranspiration. Actual evapotranspiration is limited by both the PET demand and the available water, with a linear scaling factor that depends on the ratio of the store level to half its capacity (<span class="arithmatex">\(X_5/2\)</span>). When the store is more than half full, actual ET equals potential ET; below that, it decreases linearly.</p>
+<p><strong>Step 3: Infiltration (percolation)</strong>. Water above the infiltration threshold <span class="arithmatex">\(X_1\)</span> percolates to the groundwater store at a rate controlled by the infiltration constant <span class="arithmatex">\(X_3\)</span>. This is the only pathway connecting the two reservoirs.</p>
+<p><strong>Step 4: Surface drainage</strong>. The surface store produces three outflows in sequence: threshold-based lateral drainage (above <span class="arithmatex">\(X_2\)</span>, controlled by <span class="arithmatex">\(X_4\)</span>), continuous lateral drainage (controlled by <span class="arithmatex">\(X_4 \cdot X_8\)</span>), and overflow if the store exceeds its capacity <span class="arithmatex">\(X_5\)</span>. Each outflow is subtracted from the store before the next is computed, so their order matters.</p>
+<p><strong>Step 5: Groundwater dynamics</strong>. The groundwater store receives the infiltrated water and produces two outflows: threshold-based hypodermic flow (above <span class="arithmatex">\(X_7\)</span>, controlled by <span class="arithmatex">\(X_4 \cdot X_9\)</span>) and continuous baseflow (controlled by <span class="arithmatex">\(X_4 \cdot X_8 \cdot X_9^2\)</span>). Any remaining PET demand after surface evapotranspiration is applied to the groundwater store, again with linear scaling relative to <span class="arithmatex">\(X_7\)</span>.</p>
+<p><strong>Step 6: Total streamflow and delay</strong>. The five outflow components are summed to produce total streamflow, which is then delayed by <span class="arithmatex">\(X_6\)</span> time steps using linear interpolation for non-integer delays.</p>
+<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
+<p>CEQUEAU (CEQU variant) has nine calibratable parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Range</th>
+<th>Units</th>
+<th>Physical Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(X_1\)</span></td>
+<td>Infiltration threshold</td>
+<td>0–3000</td>
+<td>mm</td>
+<td>Surface store level above which water infiltrates to the groundwater store. Higher values reduce percolation.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_2\)</span></td>
+<td>Soil drainage threshold</td>
+<td>1–3000</td>
+<td>mm</td>
+<td>Surface store level above which threshold-based lateral drainage occurs. Controls when quick lateral flow activates.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_3\)</span></td>
+<td>Infiltration constant</td>
+<td>1–100</td>
+<td>-</td>
+<td>Controls the rate of infiltration. Larger values slow infiltration to the groundwater store.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_4\)</span></td>
+<td>Upper drainage constant</td>
+<td>1–50</td>
+<td>-</td>
+<td>Primary drainage time constant for the surface store. Also appears as a factor in groundwater drainage constants.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_5\)</span></td>
+<td>Surface store capacity</td>
+<td>1–8000</td>
+<td>mm</td>
+<td>Maximum capacity of the surface (soil) reservoir. Also determines the evapotranspiration scaling threshold at <span class="arithmatex">\(X_5/2\)</span>.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_6\)</span></td>
+<td>Routing delay</td>
+<td>0.1–20</td>
+<td>days</td>
+<td>Pure time translation applied to total streamflow. Reflects channel travel time to the outlet.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_7\)</span></td>
+<td>Groundwater drainage threshold</td>
+<td>0.01–500</td>
+<td>mm</td>
+<td>Groundwater store level above which hypodermic flow occurs. Also scales groundwater evapotranspiration.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_8\)</span></td>
+<td>Lower drainage constant</td>
+<td>1–1000</td>
+<td>-</td>
+<td>Multiplier for continuous (slow) drainage from the surface store. Also contributes to groundwater baseflow constant.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_9\)</span></td>
+<td>Groundwater drainage constant</td>
+<td>1–3000</td>
+<td>-</td>
+<td>Controls both hypodermic flow rate (as <span class="arithmatex">\(X_4 \cdot X_9\)</span>) and baseflow rate (as <span class="arithmatex">\(X_4 \cdot X_8 \cdot X_9^2\)</span>).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Understanding the parameters:</strong></p>
 <ul>
-<li><a href="api/">api</a> - HTTP and WebSocket route handlers</li>
-<li><a href="models/">models</a> - Model orchestration layer</li>
-<li><a href="utils/">utils</a> - Utility functions</li>
+<li><strong><span class="arithmatex">\(X_1\)</span> and <span class="arithmatex">\(X_2\)</span></strong> are thresholds that control when different drainage pathways activate. If <span class="arithmatex">\(X_1\)</span> is very large, almost no water reaches the groundwater store; if <span class="arithmatex">\(X_2\)</span> is very large, the threshold-based surface drainage rarely activates.</li>
+<li><strong><span class="arithmatex">\(X_3\)</span> and <span class="arithmatex">\(X_4\)</span></strong> are the primary drainage constants. <span class="arithmatex">\(X_4\)</span> appears in multiple outflow equations, making it a central parameter that influences the overall speed of the catchment response.</li>
+<li><strong><span class="arithmatex">\(X_5\)</span></strong> plays a dual role: it sets the overflow threshold for the surface store and determines when evapotranspiration becomes water-limited (at <span class="arithmatex">\(X_5/2\)</span>).</li>
+<li><strong><span class="arithmatex">\(X_6\)</span></strong> is purely a timing parameter — it shifts the entire hydrograph without changing its shape.</li>
+<li><strong><span class="arithmatex">\(X_8\)</span> and <span class="arithmatex">\(X_9\)</span></strong> interact with <span class="arithmatex">\(X_4\)</span> to form composite drainage constants for the slower flow pathways. This parameterization means that adjusting <span class="arithmatex">\(X_4\)</span> affects all drainage rates simultaneously.</li>
 </ul>
+<h2 id="mathematical-formulation">Mathematical Formulation<a class="headerlink" href="#mathematical-formulation" title="Permanent link">&para;</a></h2>
+<h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
+<p>The surface store is initialized at a fixed level, while the groundwater store is set to 20% of its capacity parameter:</p>
+<div class="arithmatex">\[S_0 = 500, \quad T_0 = 0.2 \cdot X_5\]</div>
+<p>where <span class="arithmatex">\(S\)</span> is the surface store level and <span class="arithmatex">\(T\)</span> is the groundwater store level.</p>
+<h3 id="surface-store-precipitation-and-evapotranspiration">Surface Store: Precipitation and Evapotranspiration<a class="headerlink" href="#surface-store-precipitation-and-evapotranspiration" title="Permanent link">&para;</a></h3>
+<p>Precipitation is added directly to the surface store:</p>
+<div class="arithmatex">\[S \leftarrow S + P\]</div>
+<p>Actual evapotranspiration from the surface store is limited by both the PET demand and available water, with linear scaling when the store is below half capacity:</p>
+<div class="arithmatex">\[E_s = \min\!\left(S,\ E \cdot \min\!\left(1,\ \frac{2S}{X_5}\right)\right)\]</div>
+<p>The store is updated and the remaining PET demand is computed:</p>
+<div class="arithmatex">\[S \leftarrow S - E_s, \quad E' = E - E_s\]</div>
+<h3 id="surface-store-infiltration">Surface Store: Infiltration<a class="headerlink" href="#surface-store-infiltration" title="Permanent link">&para;</a></h3>
+<p>Water above the infiltration threshold percolates to the groundwater store:</p>
+<div class="arithmatex">\[I_s = \frac{\max(0,\ S - X_1)}{X_3}\]</div>
+<div class="arithmatex">\[S \leftarrow S - I_s\]</div>
+<h3 id="surface-store-drainage">Surface Store: Drainage<a class="headerlink" href="#surface-store-drainage" title="Permanent link">&para;</a></h3>
+<p>Three outflows are computed sequentially, each depleting the store before the next:</p>
+<p><strong>Threshold-based lateral drainage</strong> (activated when <span class="arithmatex">\(S &gt; X_2\)</span>):</p>
+<div class="arithmatex">\[Q_{s2} = \frac{\max(0,\ S - X_2)}{X_4}\]</div>
+<div class="arithmatex">\[S \leftarrow S - Q_{s2}\]</div>
+<p><strong>Continuous lateral drainage</strong> (always active):</p>
+<div class="arithmatex">\[Q_{s3} = \frac{S}{X_4 \cdot X_8}\]</div>
+<div class="arithmatex">\[S \leftarrow S - Q_{s3}\]</div>
+<p><strong>Overflow</strong> (when the store exceeds capacity):</p>
+<div class="arithmatex">\[Q_{s1} = \max(0,\ S - X_5)\]</div>
+<div class="arithmatex">\[S \leftarrow S - Q_{s1}\]</div>
+<h3 id="groundwater-store">Groundwater Store<a class="headerlink" href="#groundwater-store" title="Permanent link">&para;</a></h3>
+<p>The groundwater store receives infiltration from the surface store:</p>
+<div class="arithmatex">\[T \leftarrow T + I_s\]</div>
+<p><strong>Threshold-based hypodermic flow</strong> (activated when <span class="arithmatex">\(T &gt; X_7\)</span>):</p>
+<div class="arithmatex">\[Q_{t1} = \frac{\max(0,\ T - X_7)}{X_4 \cdot X_9}\]</div>
+<div class="arithmatex">\[T \leftarrow T - Q_{t1}\]</div>
+<p><strong>Continuous baseflow</strong>:</p>
+<div class="arithmatex">\[Q_{t2} = \frac{T}{X_4 \cdot X_8 \cdot X_9^2}\]</div>
+<div class="arithmatex">\[T \leftarrow T - Q_{t2}\]</div>
+<p><strong>Groundwater evapotranspiration</strong> from the remaining PET demand:</p>
+<div class="arithmatex">\[E_t = \min\!\left(T,\ E' \cdot \min\!\left(1,\ \frac{T}{X_7}\right)\right)\]</div>
+<div class="arithmatex">\[T \leftarrow T - E_t\]</div>
+<h3 id="total-streamflow">Total Streamflow<a class="headerlink" href="#total-streamflow" title="Permanent link">&para;</a></h3>
+<p>The total streamflow is the sum of all five drainage components:</p>
+<div class="arithmatex">\[Q_{total} = Q_{s1} + Q_{s2} + Q_{s3} + Q_{t1} + Q_{t2}\]</div>
+<h3 id="routing-delay">Routing Delay<a class="headerlink" href="#routing-delay" title="Permanent link">&para;</a></h3>
+<p>The total streamflow is delayed by <span class="arithmatex">\(X_6\)</span> time steps using a linear interpolation scheme. For a delay of <span class="arithmatex">\(X_6\)</span> days, a delay line of length <span class="arithmatex">\(\lceil X_6 \rceil + 1\)</span> distributes the flow between two adjacent positions to handle non-integer delays:</p>
+<div class="arithmatex">\[Q(t) = \text{delayed}(Q_{total},\ X_6)\]</div>
+<h2 id="differences-from-the-original-cequeau">Differences from the Original CEQUEAU<a class="headerlink" href="#differences-from-the-original-cequeau" title="Permanent link">&para;</a></h2>
+<p>The CEQU variant implemented in HOLMES differs from the original CEQUEAU model (Girard et al., 1972) in three ways:</p>
+<ol>
+<li>
+<p><strong>No impervious surface partitioning</strong>: The TRI coefficient and HRIMP threshold are removed. All precipitation enters the surface store directly, reducing the parameter count by two.</p>
+</li>
+<li>
+<p><strong>Fixed evapotranspiration threshold</strong>: The original model uses a separate parameter (HINT) as the threshold above which actual ET equals potential ET. The simplified version fixes this threshold at half the surface store capacity (<span class="arithmatex">\(X_5/2\)</span>), eliminating one parameter.</p>
+</li>
+<li>
+<p><strong>Added routing delay</strong>: A pure time delay parameter (<span class="arithmatex">\(X_6\)</span>) is added to translate the total streamflow in time, representing channel routing. The original model handles routing through its distributed grid structure.</p>
+</li>
+</ol>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Girard, G., Morin, G., &amp; Charbonneau, R. (1972). Modèle précipitations-débits à discrétisation spatiale. <em>Cahiers ORSTOM, Série Hydrologie</em>, IX(4), 35-52.</p>
+<p>Perrin, C. (2000). <em>Vers une amélioration d'un modèle global pluie-débit</em>. PhD Thesis, INPG Grenoble, Appendix 1, pp. 322-326. <a href="https://tel.archives-ouvertes.fr/tel-00006216">https://tel.archives-ouvertes.fr/tel-00006216</a></p>
 
 
 
@@ -2469,7 +2971,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 19:51:38 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 31, 2026 20:14:12 UTC">January 31, 2026</span>
   </span>
 
     
@@ -2479,7 +2981,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 14:42:03 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 31, 2026 20:14:12 UTC">January 31, 2026</span>
   </span>
 
     
@@ -2516,7 +3018,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../concepts/metrics/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Metrics">
+          <a href="../bucket/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Bucket">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2526,20 +3028,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Metrics
+                Bucket
               </div>
             </div>
           </a>
         
         
           
-          <a href="data/" class="md-footer__link md-footer__link--next" aria-label="Next: data">
+          <a href="../snow-models/" class="md-footer__link md-footer__link--next" aria-label="Next: Snow models">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                data
+                Snow models
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2592,12 +3094,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../assets/javascripts/mathjax.js"></script>
+        <script src="../../assets/javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
