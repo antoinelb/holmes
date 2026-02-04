@@ -335,9 +335,7 @@ class TestCequeauSimulate:
         wrong_params = np.array([100.0, 0.5, 50.0, 3.0])  # Only 4 params
 
         with pytest.raises(HolmesValidationError, match="param"):
-            cequeau.simulate(
-                wrong_params, sample_precipitation, sample_pet
-            )
+            cequeau.simulate(wrong_params, sample_precipitation, sample_pet)
 
     def test_length_mismatch_error(self, sample_precipitation):
         """Should raise error for mismatched input lengths."""
@@ -353,9 +351,7 @@ class TestCequeauSimulate:
             [100.0, 100.0, 10.0, 5.0, 500.0, 3.0, 100.0, 100.0, 100.0]
         )
 
-        streamflow = cequeau.simulate(
-            params, sample_precipitation, sample_pet
-        )
+        streamflow = cequeau.simulate(params, sample_precipitation, sample_pet)
 
         assert len(streamflow) == len(sample_precipitation)
         assert np.all(np.isfinite(streamflow))
@@ -407,9 +403,7 @@ class TestHydroModuleIntegration:
         assert hasattr(hydro, "bucket")
         assert hasattr(hydro, "cequeau")
 
-    def test_all_models_produce_output(
-        self, sample_precipitation, sample_pet
-    ):
+    def test_all_models_produce_output(self, sample_precipitation, sample_pet):
         """All models should produce valid streamflow."""
         gr4j_defaults, _ = gr4j.init()
         bucket_defaults, _ = bucket.init()

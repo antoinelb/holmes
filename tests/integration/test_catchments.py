@@ -185,9 +185,9 @@ class TestGR4JBeatsBaselines:
             catchment_data["observations"], simulation, "nse", "none"
         )
         mean_nse = calculate_mean_baseline_nse(catchment_data["observations"])
-        assert (
-            model_nse > mean_nse
-        ), f"GR4J on {catchment}: NSE {model_nse:.4f} <= mean baseline {mean_nse:.4f}"
+        assert model_nse > mean_nse, (
+            f"GR4J on {catchment}: NSE {model_nse:.4f} <= mean baseline {mean_nse:.4f}"
+        )
 
     @pytest.mark.parametrize("catchment", SNOW_CATCHMENTS)
     def test_gr4j_beats_median_baseline(self, catchment):
@@ -200,9 +200,9 @@ class TestGR4JBeatsBaselines:
         median_nse = calculate_median_baseline_nse(
             catchment_data["observations"]
         )
-        assert (
-            model_nse > median_nse
-        ), f"GR4J on {catchment}: NSE {model_nse:.4f} <= median baseline {median_nse:.4f}"
+        assert model_nse > median_nse, (
+            f"GR4J on {catchment}: NSE {model_nse:.4f} <= median baseline {median_nse:.4f}"
+        )
 
 
 class TestSnowModelImprovement:
@@ -222,9 +222,9 @@ class TestSnowModelImprovement:
         snow_nse = evaluate(
             catchment_data["observations"], snow_simulation, "nse", "none"
         )
-        assert (
-            snow_nse > no_snow_nse
-        ), f"GR4J on {catchment}: snow NSE {snow_nse:.4f} <= no-snow NSE {no_snow_nse:.4f}"
+        assert snow_nse > no_snow_nse, (
+            f"GR4J on {catchment}: snow NSE {snow_nse:.4f} <= no-snow NSE {no_snow_nse:.4f}"
+        )
 
     @pytest.mark.parametrize("catchment", SNOW_CATCHMENTS)
     def test_gr4j_snow_beats_doy_mean(self, catchment):
@@ -237,9 +237,9 @@ class TestSnowModelImprovement:
         doy_mean_nse = calculate_doy_mean_baseline_nse(
             catchment_data["observations"], catchment_data["day_of_year"]
         )
-        assert (
-            model_nse > doy_mean_nse
-        ), f"GR4J on {catchment}: snow NSE {model_nse:.4f} <= DOY mean baseline {doy_mean_nse:.4f}"
+        assert model_nse > doy_mean_nse, (
+            f"GR4J on {catchment}: snow NSE {model_nse:.4f} <= DOY mean baseline {doy_mean_nse:.4f}"
+        )
 
     @pytest.mark.parametrize("catchment", SNOW_CATCHMENTS)
     def test_gr4j_snow_beats_doy_median(self, catchment):
@@ -252,6 +252,6 @@ class TestSnowModelImprovement:
         doy_median_nse = calculate_doy_median_baseline_nse(
             catchment_data["observations"], catchment_data["day_of_year"]
         )
-        assert (
-            model_nse > doy_median_nse
-        ), f"GR4J on {catchment}: snow NSE {model_nse:.4f} <= DOY median baseline {doy_median_nse:.4f}"
+        assert model_nse > doy_median_nse, (
+            f"GR4J on {catchment}: snow NSE {model_nse:.4f} <= DOY median baseline {doy_median_nse:.4f}"
+        )

@@ -39,8 +39,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
-      - name: Check formatting (black)
-        run: uv run black --check src/holmes tests
+      - name: Check formatting (ruff)
+        run: uv run ruff format src/holmes tests
 
       - name: Lint (ruff)
         run: uv run ruff check src/holmes tests

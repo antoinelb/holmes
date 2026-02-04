@@ -206,12 +206,12 @@ async def _handle_simulation_message(
 
     simulation = _data.select("date").with_columns(
         *[
-            pl.Series(f"simulation_{i+1}", simulation)
+            pl.Series(f"simulation_{i + 1}", simulation)
             for i, (simulation, _) in enumerate(simulations)
         ]
     )
     results = [
-        {"name": f"simulation_{i+1}", **results}
+        {"name": f"simulation_{i + 1}", **results}
         for i, (_, results) in enumerate(simulations)
     ]
 
@@ -284,7 +284,6 @@ def _run_simulation(
     hydro_params: dict[str, float],
     warmup_steps: int,
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
-
     hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
     hydro_params_ = np.array(list(hydro_params.values()))
 

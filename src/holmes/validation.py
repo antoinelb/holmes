@@ -262,8 +262,7 @@ def validate_parameter_bounds(
     for value, (lower, upper), name in zip(params, bounds, names, strict=True):
         if not lower <= value <= upper:
             raise ValueError(
-                f"Parameter '{name}' value {value} is outside bounds "
-                f"[{lower}, {upper}]"
+                f"Parameter '{name}' value {value} is outside bounds [{lower}, {upper}]"
             )
 
 

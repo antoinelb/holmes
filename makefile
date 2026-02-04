@@ -1,5 +1,5 @@
 static-analysis:
-	black src/holmes tests
+	ruff format src/holmes tests
 	ruff check src/holmes tests
 	ty check src/holmes tests
 	cargo fmt --manifest-path src/holmes-rs/Cargo.toml
