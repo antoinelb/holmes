@@ -77,13 +77,11 @@ class TestSimulationWorkflow:
 
         # Change the date to a known value
         changed_value = "2000-06-01"
-        simulation_page.page.evaluate(
-            f"""
+        simulation_page.page.evaluate(f"""
             const input = document.querySelector('#simulation__start');
             input.value = '{changed_value}';
             input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-        """
-        )
+        """)
         simulation_page.page.wait_for_timeout(100)
 
         # Verify the change took effect
@@ -144,13 +142,11 @@ class TestSimulationWorkflow:
         original_end = simulation_page.get_end_date()
 
         # Change end date to a different value
-        simulation_page.page.evaluate(
-            """
+        simulation_page.page.evaluate("""
             const input = document.querySelector('#simulation__end');
             input.value = '2000-06-01';
             input.dispatchEvent(new Event('input', { bubbles: true }));
-        """
-        )
+        """)
         simulation_page.page.wait_for_timeout(100)
 
         simulation_page.reset_end_date()

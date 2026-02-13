@@ -53,14 +53,12 @@ class TestCalibrationWorkflow:
         number_input = first_slider.locator("input[type='number']")
 
         # Use evaluate to set range input value (fill() doesn't work on range inputs)
-        range_input.evaluate(
-            """
+        range_input.evaluate("""
             element => {
                 element.value = "400";
                 element.dispatchEvent(new Event('input', { bubbles: true }));
             }
-            """
-        )
+            """)
 
         expect(number_input).to_have_value("400")
 
@@ -153,13 +151,11 @@ class TestCalibrationWorkflow:
         )
 
         # Use evaluate to change value and trigger input event
-        calibration_page.page.evaluate(
-            """
+        calibration_page.page.evaluate("""
             const input = document.querySelector('#calibration__start');
             input.value = '2000-06-01';
             input.dispatchEvent(new Event('input', { bubbles: true }));
-        """
-        )
+        """)
         calibration_page.page.wait_for_timeout(100)
 
         calibration_page.reset_start_date()
