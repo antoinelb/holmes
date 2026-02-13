@@ -72,7 +72,7 @@ holmes
 ### Code Quality
 
 ```bash
-black src/ tests/
+ruff format src/ tests/
 ruff check src/ tests/
 ty check src/ tests/
 ```

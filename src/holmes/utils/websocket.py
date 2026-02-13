@@ -52,7 +52,6 @@ def create_monitored_task(
     ws: WebSocket,
     task_name: str = "background_task",
 ) -> asyncio.Task:
-
     async def monitored_wrapper() -> None:
         try:
             await coro
