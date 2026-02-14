@@ -26,10 +26,7 @@ export function initModel(canSave) {
         ? window.localStorage.getItem("holmes--calibration--catchment")
         : null,
       snowModel: canSave
-        ? window.localStorage.getItem("holmes--calibration--snowModel") ===
-          "none"
-          ? null
-          : window.localStorage.getItem("holmes--calibration--snowModel")
+        ? window.localStorage.getItem("holmes--calibration--snowModel")
         : null,
       objective: canSave
         ? window.localStorage.getItem("holmes--calibration--objective")
@@ -138,7 +135,7 @@ export async function update(model, msg, dispatch, createNotification) {
     case "UpdateConfigField":
       window.localStorage.setItem(
         `holmes--calibration--${msg.data.field}`,
-        msg.data.value === null ? "none" : msg.data.value,
+        msg.data.value,
       );
       if (msg.data.field === "catchment") {
         updateCatchment(model, msg.data.value, dispatch);
@@ -150,7 +147,7 @@ export async function update(model, msg, dispatch, createNotification) {
         ...model,
         config: {
           ...model.config,
-          [msg.data.field]: msg.data.value === "none" ? null : msg.data.value,
+          [msg.data.field]: msg.data.value,
         },
         simulation: null,
         results: null,
@@ -210,9 +207,7 @@ export async function update(model, msg, dispatch, createNotification) {
           "#calibration__manual-config input[type='number']",
         ),
       ].map((input) => parseFloat(input.value));
-      configValid = Object.entries(config).every(
-        ([field, value]) => field === "snowModel" || value !== null,
-      );
+      configValid = Object.values(config).every((value) => value !== null);
       if (model.ws?.readyState === WebSocket.OPEN && configValid) {
         model.ws.send(
           JSON.stringify({
@@ -234,9 +229,7 @@ export async function update(model, msg, dispatch, createNotification) {
           parseFloat(input.value),
         ]),
       );
-      configValid = Object.entries(config).every(
-        ([field, value]) => field === "snowModel" || value !== null,
-      );
+      configValid = Object.values(config).every((value) => value !== null);
       if (model.ws?.readyState === WebSocket.OPEN && configValid) {
         model.ws.send(
           JSON.stringify({
@@ -318,7 +311,7 @@ function updateCatchment(model, catchment, dispatch) {
   const _catchment = model.availableConfig.catchment.filter(
     (c) => c.name == catchment,
   )[0];
-  if (!_catchment.snow && model.config.snowModel !== null) {
+  if (!_catchment.snow && model.config.snowModel !== "none") {
     dispatch({
       type: "UpdateConfigField",
       data: { field: "snowModel", value: "none" },
@@ -809,21 +802,11 @@ function generalSettingsView(model) {
   const snowSelect = document.getElementById("calibration__snow-model");
   if (snowSelect.children.length === 0 && model.availableConfig !== null) {
     model.availableConfig.snowModel.forEach((o) => {
-      snowSelect.appendChild(
-        create(
-          "option",
-          {
-            value: o === null ? "none" : o,
-          },
-          [o === null ? "none" : o],
-        ),
-      );
+      snowSelect.appendChild(create("option", { value: o }, [o]));
     });
   }
   if (model.config.snowModel !== null) {
     snowSelect.value = model.config.snowModel;
-  } else {
-    snowSelect.value = "none";
   }
 
   const objectiveSelect = document.getElementById("calibration__objective");

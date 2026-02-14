@@ -9,6 +9,12 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Fixed
+- Fixed calibration bug where selecting transformation "none" (high flows) would break calibration by being incorrectly converted to `null` — the snow model's `null` sentinel was colliding with the transformation's legitimate `"none"` value
+- Backend now sends `"none"` as a string instead of `null` for the "no snow model" option, normalizing to `None` only at the API boundary
+
 ## [3.4.0] - 2026-01-31
 
 ### Added
