@@ -40,7 +40,7 @@ jobs:
         run: uv sync --group dev
 
       - name: Check formatting (ruff)
-        run: uv run ruff format src/holmes tests
+        run: uv run ruff format --check src/holmes tests
 
       - name: Lint (ruff)
         run: uv run ruff check src/holmes tests

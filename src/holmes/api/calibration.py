@@ -91,7 +91,7 @@ async def _handle_config_message(ws: WebSocket) -> None:
             for model in get_args(hydro.HydroModel)
         ],
         "catchment": catchments,
-        "snow_model": [None, *get_args(snow.SnowModel)],
+        "snow_model": ["none", *get_args(snow.SnowModel)],
         "objective": get_args(calibration.Objective),
         "transformation": get_args(calibration.Transformation),
         "algorithm": [
@@ -176,7 +176,10 @@ async def _handle_manual_calibration_message(
 
     observations = _data["streamflow"].to_numpy()
 
-    if msg_data["snowModel"] is not None:
+    snow_model = (
+        None if msg_data["snowModel"] == "none" else msg_data["snowModel"]
+    )
+    if snow_model is not None:
         try:
             metadata = data.read_cemaneige_info(msg_data["catchment"])
         except HolmesDataError as exc:
@@ -194,7 +197,7 @@ async def _handle_manual_calibration_message(
             return
         elevation_layers = np.array(metadata["altitude_layers"])
         median_elevation = metadata["median_altitude"]
-        snow_simulate = snow.get_model(msg_data["snowModel"])
+        snow_simulate = snow.get_model(snow_model)
         snow_params = np.array([0.25, 3.74, metadata["qnbv"]])
         precipitation = snow_simulate(
             snow_params,
@@ -276,7 +279,10 @@ async def _handle_calibration_start_message(
 
     observations = _data["streamflow"].to_numpy()
 
-    if msg_data["snowModel"] is not None:
+    snow_model = (
+        None if msg_data["snowModel"] == "none" else msg_data["snowModel"]
+    )
+    if snow_model is not None:
         try:
             metadata = data.read_cemaneige_info(msg_data["catchment"])
         except HolmesDataError as exc:
@@ -330,7 +336,7 @@ async def _handle_calibration_start_message(
         qnbv,
         warmup_steps,
         msg_data["hydroModel"],
-        msg_data["snowModel"],
+        snow_model,
         msg_data["objective"],
         msg_data["transformation"],
         msg_data["algorithm"],
