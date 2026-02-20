@@ -46,7 +46,12 @@ class TestGetConfig:
         """SCE config correctly marks integer parameters."""
         config = calibration.get_config("sce")
         for param in config:
-            if param["name"] in ["seed", "n_complexes", "k_stop", "max_evaluations"]:
+            if param["name"] in [
+                "seed",
+                "n_complexes",
+                "k_stop",
+                "max_evaluations",
+            ]:
                 assert param["integer"] is True
             else:
                 assert param["integer"] is False
