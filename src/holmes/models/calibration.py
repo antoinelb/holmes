@@ -44,6 +44,13 @@ def get_config(
         case "sce":
             return [
                 {
+                    "name": "seed",
+                    "min": 0,
+                    "max": None,
+                    "default": 0,
+                    "integer": True,
+                },
+                {
                     "name": "n_complexes",
                     "min": 1,
                     "max": None,
@@ -80,7 +87,7 @@ def get_config(
                 },
             ]
         case _:  # pragma: no cover
-            assert_never(model)
+            assert_never(model)  # type: ignore
 
 
 async def calibrate(
@@ -114,7 +121,6 @@ async def calibrate(
     ) = None,
     stop_event: asyncio.Event | None = None,
 ) -> npt.NDArray[np.float64]:
-    seed = 123
     max_iter = 100_000
 
     if snow_model is not None:
@@ -153,7 +159,7 @@ async def calibrate(
                     None,
                     objective,
                     transformation,
-                    seed=seed,
+                    seed=params["seed"],
                     n_complexes=params["n_complexes"],
                     k_stop=params["k_stop"],
                     p_convergence_threshold=params["p_convergence_threshold"],

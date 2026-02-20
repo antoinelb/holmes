@@ -9,6 +9,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [3.4.2] - 2026-02-20
+
+### Added
+- User-configurable `seed` parameter for SCE-UA calibration algorithm, enabling reproducible calibration runs (previously hardcoded to 123)
+
 ## [3.4.1] - 2026-02-14
 
 ### Fixed

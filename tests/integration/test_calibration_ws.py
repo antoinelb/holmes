@@ -119,6 +119,7 @@ class TestCalibrationWebSocket:
                         "transformation": "none",
                         "algorithm": "sce",
                         "algorithmParams": {
+                            "seed": 0,
                             "n_complexes": 2,
                             "k_stop": 2,
                             "p_convergence_threshold": 0.1,
@@ -189,6 +190,7 @@ class TestCalibrationWebSocket:
                         "transformation": "none",
                         "algorithm": "sce",
                         "algorithmParams": {
+                            "seed": 0,
                             "n_complexes": 2,
                             "k_stop": 2,
                             "p_convergence_threshold": 0.1,
@@ -276,6 +278,7 @@ class TestCalibrationWebSocketSnowModelMissingTemperature:
                         "transformation": "none",
                         "algorithm": "sce",
                         "algorithmParams": {
+                            "seed": 0,
                             "n_complexes": 2,
                             "k_stop": 2,
                             "p_convergence_threshold": 0.1,

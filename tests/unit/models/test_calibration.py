@@ -33,6 +33,7 @@ class TestGetConfig:
         config = calibration.get_config("sce")
         names = [p["name"] for p in config]
         expected = [
+            "seed",
             "n_complexes",
             "k_stop",
             "p_convergence_threshold",
@@ -45,7 +46,7 @@ class TestGetConfig:
         """SCE config correctly marks integer parameters."""
         config = calibration.get_config("sce")
         for param in config:
-            if param["name"] in ["n_complexes", "k_stop", "max_evaluations"]:
+            if param["name"] in ["seed", "n_complexes", "k_stop", "max_evaluations"]:
                 assert param["integer"] is True
             else:
                 assert param["integer"] is False
@@ -83,6 +84,7 @@ class TestCalibrate:
     def sce_params(self):
         """SCE parameters for fast testing."""
         return {
+            "seed": 0,
             "n_complexes": 2,
             "k_stop": 2,
             "p_convergence_threshold": 0.1,
@@ -142,6 +144,7 @@ class TestCalibrate:
 
         # Use high max_evaluations to ensure calibration doesn't finish early
         sce_params_long = {
+            "seed": 0,
             "n_complexes": 2,
             "k_stop": 10,
             "p_convergence_threshold": 0.0001,
@@ -262,6 +265,7 @@ class TestCalibrateErrorHandling:
     def sce_params(self):
         """SCE parameters for fast testing."""
         return {
+            "seed": 0,
             "n_complexes": 2,
             "k_stop": 2,
             "p_convergence_threshold": 0.1,
