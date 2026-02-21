@@ -9,7 +9,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [3.4.3] - 2026-02-21
 
 ### Added
 - `HolmesFileNotFoundError` exception for distinguishing missing files from malformed data
