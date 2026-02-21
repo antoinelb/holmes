@@ -1,10 +1,3 @@
-"""
-Data loading utilities for HOLMES.
-
-This module provides functions for loading catchment observation data,
-CemaNeige snow model configuration, and climate projection data.
-"""
-
 import csv
 import logging
 from datetime import timedelta
@@ -13,7 +6,7 @@ from typing import Any
 
 import numpy as np
 import polars as pl
-from holmes.exceptions import HolmesDataError
+from holmes.exceptions import HolmesDataError, HolmesFileNotFoundError
 from holmes.utils.paths import data_dir
 from holmes.validation import validate_catchment_exists, validate_date_range
 
@@ -163,16 +156,18 @@ def read_catchment_data(catchment: str) -> pl.LazyFrame:
 
     # Eagerly check file existence since scan_csv is lazy
     if not path.exists():
-        raise HolmesDataError(f"Data file not found: {path}")
+        raise HolmesDataError(f"Data file not found: {path.name}")
 
     try:
         df = pl.scan_csv(path)
     except pl.exceptions.ComputeError as exc:
         raise HolmesDataError(
-            f"Failed to parse CSV file '{path}': {exc}"
+            f"Failed to parse CSV file '{path.name}': {exc}"
         ) from exc
     except PermissionError as exc:
-        raise HolmesDataError(f"Permission denied reading '{path}'") from exc
+        raise HolmesDataError(
+            f"Permission denied reading '{path.name}'"
+        ) from exc
 
     # P4-DATA-02: Validate required columns exist
     try:
@@ -180,7 +175,7 @@ def read_catchment_data(catchment: str) -> pl.LazyFrame:
         actual_columns = set(schema.names())
     except pl.exceptions.ComputeError as exc:
         raise HolmesDataError(
-            f"Failed to read schema from '{path}': {exc}"
+            f"Failed to read schema from '{path.name}': {exc}"
         ) from exc
 
     missing_required = OBSERVATION_REQUIRED_COLUMNS - actual_columns
@@ -230,15 +225,15 @@ def read_cemaneige_info(catchment: str) -> dict[str, Any]:
             info = dict(reader)
     except FileNotFoundError as exc:
         raise HolmesDataError(
-            f"CemaNeige info file not found for catchment '{catchment}': {path}"
+            f"CemaNeige info file not found for catchment '{catchment}': {path.name}"
         ) from exc
     except PermissionError as exc:
         raise HolmesDataError(
-            f"Permission denied reading CemaNeige file: {path}"
+            f"Permission denied reading CemaNeige file: {path.name}"
         ) from exc
     except csv.Error as exc:
         raise HolmesDataError(
-            f"Failed to parse CemaNeige CSV file '{path}': {exc}"
+            f"Failed to parse CemaNeige CSV file '{path.name}': {exc}"
         ) from exc
 
     # P4-DATA-07: Validate required keys exist
@@ -254,7 +249,7 @@ def read_cemaneige_info(catchment: str) -> dict[str, Any]:
         altitude_str = info["AltiBand"]
         if not altitude_str or altitude_str.strip() == "":
             raise HolmesDataError(
-                f"Empty AltiBand value in CemaNeige file '{path}'"
+                f"Empty AltiBand value in CemaNeige file '{path.name}'"
             )
         altitude_layers = np.array(
             [float(x.strip()) for x in altitude_str.split(";") if x.strip()]
@@ -265,7 +260,7 @@ def read_cemaneige_info(catchment: str) -> dict[str, Any]:
             )
     except ValueError as exc:
         raise HolmesDataError(
-            f"Invalid altitude layer value in '{path}': {exc}"
+            f"Invalid altitude layer value in '{path.name}': {exc}"
         ) from exc
 
     # Safe parsing of numeric values
@@ -275,7 +270,7 @@ def read_cemaneige_info(catchment: str) -> dict[str, Any]:
         latitude = float(info["Lat"])
     except ValueError as exc:
         raise HolmesDataError(
-            f"Invalid numeric value in CemaNeige file '{path}': {exc}"
+            f"Invalid numeric value in CemaNeige file '{path.name}': {exc}"
         ) from exc
 
     return {
@@ -303,14 +298,18 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
 
     Raises
     ------
+    HolmesFileNotFoundError
+        If file not found
     HolmesDataError
-        If file not found or malformed
+        If file malformed
     """
     path = data_dir / f"{catchment}_Projections.csv"
 
     # Eagerly check file existence since scan_csv is lazy
     if not path.exists():
-        raise HolmesDataError(f"Projection data file not found: {path}")
+        raise HolmesFileNotFoundError(
+            f"Projection data file not found: {path.name}"
+        )
 
     try:
         return pl.scan_csv(path).with_columns(
@@ -318,11 +317,11 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
         )
     except PermissionError as exc:
         raise HolmesDataError(
-            f"Permission denied reading projection file: {path}"
+            f"Permission denied reading projection file: {path.name}"
         ) from exc
     except pl.exceptions.ComputeError as exc:
         raise HolmesDataError(
-            f"Failed to parse projection CSV file '{path}': {exc}"
+            f"Failed to parse projection CSV file '{path.name}': {exc}"
         ) from exc
 
 
@@ -354,7 +353,7 @@ def _get_available_period(catchment: str) -> tuple[str, str]:
 
     # Eagerly check file existence since scan_csv is lazy
     if not path.exists():
-        raise HolmesDataError(f"Data file not found: '{path}'")
+        raise HolmesDataError(f"Data file not found: '{path.name}'")
 
     try:
         min_max = (
@@ -367,7 +366,7 @@ def _get_available_period(catchment: str) -> tuple[str, str]:
         )
     except pl.exceptions.ComputeError as exc:
         raise HolmesDataError(
-            f"Failed to read date range from '{path}': {exc}"
+            f"Failed to read date range from '{path.name}': {exc}"
         ) from exc
 
     return min_max[0, 0], min_max[0, 1]

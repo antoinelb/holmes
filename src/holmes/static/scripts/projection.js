@@ -130,7 +130,7 @@ export async function update(model, msg, dispatch, createNotification) {
         };
         reader.readAsText(file);
       });
-      return model;
+      return { ...model, results: null, projection: null };
     case "ImportCalibration":
       try {
         calibration = JSON.parse(msg.data.target.result);
@@ -155,6 +155,8 @@ export async function update(model, msg, dispatch, createNotification) {
         createNotification(error, true);
         return model;
       }
+    case "RemoveCalibration":
+      return { ...model, calibration: null, availableConfig: null };
     case "UpdateConfigFields":
       if (model.availableConfig !== null) {
         if (
@@ -291,6 +293,13 @@ function handleMessage(event, dispatch, createNotification) {
   switch (msg.type) {
     case "error":
       createNotification(msg.data, true);
+      break;
+    case "not_found_error":
+      createNotification(
+        "There is no projection data for this catchment.",
+        true,
+      );
+      dispatch({ type: "RemoveCalibration" });
       break;
     case "config":
       dispatch({ type: "GotAvailableConfig", data: msg.data });

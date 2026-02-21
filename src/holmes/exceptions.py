@@ -20,6 +20,7 @@ __all__ = [
     "HolmesValidationError",
     # Python exceptions
     "HolmesDataError",
+    "HolmesFileNotFoundError",
     "HolmesWebSocketError",
     "HolmesConfigError",
 ]
@@ -31,7 +32,6 @@ class HolmesDataError(Exception):
 
     This exception is used when:
     - CSV files are malformed or have missing columns
-    - Required data files are not found
     - Date ranges are invalid or yield empty results
     - CemaNeige configuration parsing fails
     """
@@ -56,4 +56,10 @@ class HolmesConfigError(Exception):
     - Environment variables have invalid values
     - Port numbers are out of range
     - Host addresses are invalid
+    """
+
+
+class HolmesFileNotFoundError(Exception):
+    """
+    Raised for missing file.
     """

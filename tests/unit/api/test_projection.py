@@ -1,12 +1,14 @@
 """Unit tests for holmes.api.projection module."""
 
 from datetime import date
+from unittest.mock import patch
 
 import polars as pl
 from starlette.testclient import TestClient
 
 from holmes.api.projection import _aggregate_projections, _evaluate_projection
 from holmes.app import create_app
+from holmes.exceptions import HolmesDataError
 
 
 class TestProjectionWebSocket:
@@ -106,7 +108,7 @@ class TestProjectionWebSocket:
                             "calibration": {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "bucket",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 100.0,
                                     "x2": 0.5,
@@ -149,18 +151,18 @@ class TestProjectionDataErrors:
     """Tests for HolmesDataError handling in projection API."""
 
     def test_config_catchment_without_projection_data(self):
-        """Config for catchment without projection file returns error."""
+        """Config for catchment without projection file returns not_found_error."""
         client = TestClient(create_app())
         with client.websocket_connect("/projection/") as ws:
             # Leaf catchment has no projection data
             ws.send_json({"type": "config", "data": "Leaf"})
             response = ws.receive_json()
-            assert response["type"] == "error"
+            assert response["type"] == "not_found_error"
             # Error should mention projection file not found
             assert "projection" in response["data"].lower()
 
     def test_projection_invalid_catchment(self):
-        """Projection with invalid catchment returns error."""
+        """Projection with invalid catchment returns not_found_error."""
         client = TestClient(create_app())
         with client.websocket_connect("/projection/") as ws:
             ws.send_json(
@@ -175,7 +177,7 @@ class TestProjectionDataErrors:
                         "calibration": {
                             "catchment": "NonExistentCatchment",
                             "hydroModel": "gr4j",
-                            "snowModel": None,
+                            "snowModel": "none",
                             "hydroParams": {
                                 "x1": 100.0,
                                 "x2": 0.0,
@@ -187,12 +189,59 @@ class TestProjectionDataErrors:
                 }
             )
             response = ws.receive_json()
-            assert response["type"] == "error"
-            # Error should mention CemaNeige or catchment issue
-            assert (
-                "cemaneige" in response["data"].lower()
-                or "catchment" in response["data"].lower()
-            )
+            # read_projection_data fails first with HolmesFileNotFoundError
+            assert response["type"] == "not_found_error"
+            assert "not found" in response["data"].lower()
+
+    def test_config_malformed_projection_data(self):
+        """Config with malformed projection file returns error."""
+        with patch(
+            "holmes.api.projection.data.read_projection_data",
+            side_effect=HolmesDataError("Failed to parse projection CSV"),
+        ):
+            client = TestClient(create_app())
+            with client.websocket_connect("/projection/") as ws:
+                ws.send_json({"type": "config", "data": "Au Saumon"})
+                response = ws.receive_json()
+                assert response["type"] == "error"
+                assert "parse" in response["data"].lower()
+
+    def test_projection_malformed_data(self):
+        """Projection with malformed data file returns error."""
+        with patch(
+            "holmes.api.projection.data.read_projection_data",
+            side_effect=HolmesDataError(
+                "Permission denied reading projection file"
+            ),
+        ):
+            client = TestClient(create_app())
+            with client.websocket_connect("/projection/") as ws:
+                ws.send_json(
+                    {
+                        "type": "projection",
+                        "data": {
+                            "config": {
+                                "model": "some_model",
+                                "horizon": "2050",
+                                "scenario": "rcp45",
+                            },
+                            "calibration": {
+                                "catchment": "Au Saumon",
+                                "hydroModel": "gr4j",
+                                "snowModel": "none",
+                                "hydroParams": {
+                                    "x1": 100.0,
+                                    "x2": 0.0,
+                                    "x3": 50.0,
+                                    "x4": 2.0,
+                                },
+                            },
+                        },
+                    }
+                )
+                response = ws.receive_json()
+                assert response["type"] == "error"
+                assert "permission" in response["data"].lower()
 
 
 class TestProjectionHelpers:

@@ -6,6 +6,7 @@ from holmes.exceptions import (
     HolmesConfigError,
     HolmesDataError,
     HolmesError,
+    HolmesFileNotFoundError,
     HolmesNumericalError,
     HolmesValidationError,
     HolmesWebSocketError,
@@ -50,6 +51,15 @@ class TestPythonExceptions:
         """HolmesWebSocketError should be an Exception subclass."""
         assert issubclass(HolmesWebSocketError, Exception)
 
+    def test_file_not_found_error_message(self):
+        """HolmesFileNotFoundError should preserve error message."""
+        error = HolmesFileNotFoundError("File missing")
+        assert str(error) == "File missing"
+
+    def test_file_not_found_error_is_exception(self):
+        """HolmesFileNotFoundError should be an Exception subclass."""
+        assert issubclass(HolmesFileNotFoundError, Exception)
+
     def test_config_error_message(self):
         """HolmesConfigError should preserve error message."""
         error = HolmesConfigError("Invalid port")
@@ -80,6 +90,14 @@ class TestExceptionChaining:
 
         assert chained.__cause__ is original
 
+    def test_file_not_found_error_chain(self):
+        """HolmesFileNotFoundError should support exception chaining."""
+        original = FileNotFoundError("no such file")
+        chained = HolmesFileNotFoundError("file missing")
+        chained.__cause__ = original
+
+        assert chained.__cause__ is original
+
     def test_config_error_chain(self):
         """HolmesConfigError should support exception chaining."""
         original = ValueError("bad value")
@@ -104,6 +122,12 @@ class TestExceptionRaising:
             raise HolmesWebSocketError("test message")
         assert "test message" in str(exc_info.value)
 
+    def test_raise_file_not_found_error(self):
+        """HolmesFileNotFoundError should be raisable and catchable."""
+        with pytest.raises(HolmesFileNotFoundError) as exc_info:
+            raise HolmesFileNotFoundError("test message")
+        assert "test message" in str(exc_info.value)
+
     def test_raise_config_error(self):
         """HolmesConfigError should be raisable and catchable."""
         with pytest.raises(HolmesConfigError) as exc_info:
@@ -114,6 +138,7 @@ class TestExceptionRaising:
         """All custom exceptions should be catchable as Exception."""
         for exc_class in [
             HolmesDataError,
+            HolmesFileNotFoundError,
             HolmesWebSocketError,
             HolmesConfigError,
         ]:

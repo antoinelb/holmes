@@ -130,7 +130,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "bucket",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 100.0,
                                     "x2": 0.5,
@@ -246,7 +246,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 100,
                                     "x2": 0,
@@ -310,7 +310,7 @@ class TestSimulationDataErrors:
                             {
                                 "catchment": "NonExistentCatchment",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 100.0,
                                     "x2": 0.0,

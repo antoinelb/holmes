@@ -59,7 +59,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 350,
                                     "x2": 0.5,
@@ -93,7 +93,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 350,
                                     "x2": 0.5,
@@ -104,7 +104,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 400,
                                     "x2": 0.3,
@@ -136,7 +136,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Au Saumon",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {"x1": 350},
                             }
                         ]
@@ -173,7 +173,7 @@ class TestSimulationWebSocket:
                             {
                                 "catchment": "Leaf",
                                 "hydroModel": "gr4j",
-                                "snowModel": None,
+                                "snowModel": "none",
                                 "hydroParams": {
                                     "x1": 350,
                                     "x2": 0.5,

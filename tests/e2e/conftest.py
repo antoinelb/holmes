@@ -111,7 +111,7 @@ def valid_calibration_json() -> dict:
         "algorithmParams": None,
         "start": "2000-01-01",
         "end": "2001-12-31",
-        "snowModel": None,
+        "snowModel": "none",
         "hydroParams": {"x1": 350.0, "x2": 0.5, "x3": 90.0, "x4": 1.7},
     }
 

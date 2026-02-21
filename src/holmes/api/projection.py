@@ -5,7 +5,7 @@ import numpy as np
 import numpy.typing as npt
 import polars as pl
 from holmes import data
-from holmes.exceptions import HolmesDataError
+from holmes.exceptions import HolmesDataError, HolmesFileNotFoundError
 from holmes.logging import logger
 from holmes.models import hydro, snow
 from holmes.utils.print import format_list
@@ -72,6 +72,9 @@ async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
             .sort("model", "horizon", "scenario")
             .collect()
         )
+    except HolmesFileNotFoundError as exc:
+        await send(ws, "not_found_error", str(exc))
+        return
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
@@ -110,6 +113,9 @@ async def _handle_projection_message(
         )
         # CemaNeige info is always needed for latitude (PET calculation)
         metadata = data.read_cemaneige_info(catchment)
+    except HolmesFileNotFoundError as exc:
+        await send(ws, "not_found_error", str(exc))
+        return
     except HolmesDataError as exc:
         await send(ws, "error", str(exc))
         return
@@ -117,7 +123,7 @@ async def _handle_projection_message(
     latitude = metadata["latitude"]
 
     # Only set up snow parameters when snow model is used
-    if msg_data["calibration"]["snowModel"] is not None:
+    if msg_data["calibration"]["snowModel"] != "none":
         elevation_layers = np.array(metadata["altitude_layers"])
         median_elevation = metadata["median_altitude"]
         qnbv = metadata["qnbv"]

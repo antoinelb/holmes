@@ -146,7 +146,7 @@ async def _handle_simulation_message(
 
     # Check if any calibration uses a snow model
     uses_snow = any(
-        calibration["snowModel"] is not None
+        calibration["snowModel"] != "none"
         for calibration in msg_data["calibration"]
     )
 
@@ -280,14 +280,14 @@ def _run_simulation(
     qnbv: float | None,
     observations: npt.NDArray[np.float64],
     hydro_model: str,
-    snow_model: str | None,
+    snow_model: str,
     hydro_params: dict[str, float],
     warmup_steps: int,
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
     hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
     hydro_params_ = np.array(list(hydro_params.values()))
 
-    if snow_model is not None:
+    if snow_model != "none":
         # These values are guaranteed to be non-None when snow_model is set
         assert temperature is not None
         assert elevation_layers is not None

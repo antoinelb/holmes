@@ -8,7 +8,7 @@ import polars as pl
 import pytest
 
 from holmes import data
-from holmes.exceptions import HolmesDataError
+from holmes.exceptions import HolmesDataError, HolmesFileNotFoundError
 from holmes.utils.paths import data_dir
 
 
@@ -166,6 +166,12 @@ class TestReadProjectionData:
         if projection_path.exists():
             result = data.read_projection_data("Au Saumon")
             assert isinstance(result, pl.LazyFrame)
+
+    def test_read_projection_data_file_not_found(self):
+        """read_projection_data with missing file raises HolmesFileNotFoundError."""
+        with pytest.raises(HolmesFileNotFoundError) as exc_info:
+            data.read_projection_data("NonExistentCatchment")
+        assert "not found" in str(exc_info.value).lower()
 
 
 class TestGetAvailablePeriod:
