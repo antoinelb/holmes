@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from playwright.sync_api import Page
+from playwright.sync_api import Download, Page
 
 from .base_page import BasePage
 
@@ -107,3 +107,36 @@ class ProjectionPage(BasePage):
     def remove_calibration(self) -> None:
         """Remove the uploaded calibration."""
         self.page.locator(f"{self.CALIBRATIONS_TABLE} button").first.click()
+
+    def export_data(self) -> list[Download]:
+        """Click the export button and capture both downloads.
+
+        Projection export triggers two sequential downloads:
+        1. {catchment}_projection_data.csv
+        2. {catchment}_projection_results.csv
+        """
+        downloads: list[Download] = []
+        self.page.on("download", lambda d: downloads.append(d))
+        self.page.click(self.EXPORT_BTN)
+        # Wait for both downloads to be triggered
+        self.page.wait_for_timeout(1000)
+        return downloads
+
+    def get_results_indicator_count(self) -> int:
+        """Count the x-axis tick labels in the results scatter plot.
+
+        Expected indicators: Winter min, Spring max, Summer min,
+        Autumn max, Mean (5 total).
+        """
+        labels = self.page.query_selector_all(
+            f"{self.RESULTS_CHART} .x-axis text"
+        )
+        return len(labels)
+
+    def get_projection_path_count(self) -> int:
+        """Count the number of paths in the projection chart.
+
+        Each ensemble member + median produces a path.
+        """
+        paths = self.page.query_selector_all(f"{self.PROJECTION_CHART} path")
+        return len(paths)

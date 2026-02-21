@@ -285,7 +285,7 @@ def _run_simulation(
     warmup_steps: int,
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
     hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
-    hydro_params_ = np.array(list(hydro_params.values()))
+    hydro_params_ = np.array(list(hydro_params.values()), dtype=np.float64)
 
     if snow_model != "none":
         # These values are guaranteed to be non-None when snow_model is set

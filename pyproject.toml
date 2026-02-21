@@ -81,6 +81,9 @@ minversion = "8.0"
 testpaths = ["tests/unit", "tests/integration", "tests/e2e"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "timeout: set test timeout in seconds (via pytest-timeout)",
+]
 
 [tool.coverage.run]
 source = ["src/holmes"]

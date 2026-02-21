@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from playwright.sync_api import Page
+from playwright.sync_api import Download, Page
 
 from .base_page import BasePage
 
@@ -123,3 +123,9 @@ class SimulationPage(BasePage):
             f"document.querySelector('{self.START_DATE}').value !== ''",
             timeout=timeout,
         )
+
+    def export_data(self) -> Download:
+        """Click the export button and return the first Download object."""
+        with self.page.expect_download() as download_info:
+            self.page.click(self.EXPORT_BTN)
+        return download_info.value

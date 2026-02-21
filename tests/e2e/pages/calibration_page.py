@@ -1,6 +1,6 @@
 """Page Object for Calibration module."""
 
-from playwright.sync_api import Page
+from playwright.sync_api import Download, Page
 
 from .base_page import BasePage
 
@@ -25,6 +25,19 @@ class CalibrationPage(BasePage):
     RUN_MANUAL_BTN = "#calibration__manual-config input[type='submit']"
     START_CALIBRATION_BTN = "#calibration__automatic__start"
     STOP_CALIBRATION_BTN = "#calibration__automatic__stop"
+
+    MANUAL_EXPORT_PARAMS = (
+        "#calibration__manual-config .calibration__export-params"
+    )
+    AUTO_EXPORT_PARAMS = (
+        "#calibration__automatic-config .calibration__export-params"
+    )
+    MANUAL_EXPORT_DATA = (
+        "#calibration__manual-config .calibration__export-data"
+    )
+    AUTO_EXPORT_DATA = (
+        "#calibration__automatic-config .calibration__export-data"
+    )
 
     RESULTS = "#calibration__results"
     STREAMFLOW_CHART = "#calibration__results__streamflow"
@@ -156,3 +169,57 @@ class CalibrationPage(BasePage):
             f"{self.CATCHMENT_SELECT} option"
         )
         return [opt.text_content() or "" for opt in options]
+
+    def wait_for_automatic_complete(self, timeout: int = 120_000) -> None:
+        """Wait for automatic calibration to finish.
+
+        First confirms calibration has started (stop button appears),
+        then waits for completion (start button reappears + export enabled).
+        This two-phase approach avoids a race condition where the start
+        button is still briefly visible before the WebSocket processes
+        the start message.
+        """
+        # Phase 1: confirm calibration has started
+        self.page.wait_for_selector(
+            f"{self.STOP_CALIBRATION_BTN}:not([hidden])",
+            timeout=10000,
+        )
+        # Phase 2: wait for completion
+        self.page.wait_for_selector(
+            f"{self.START_CALIBRATION_BTN}:not([hidden])",
+            timeout=timeout,
+        )
+        self.page.wait_for_selector(
+            f"{self.AUTO_EXPORT_PARAMS}:not([disabled])",
+            timeout=5000,
+        )
+
+    def export_params(self, algorithm: str = "manual") -> Download:
+        """Click the export params button and return the Download object."""
+        selector = (
+            self.MANUAL_EXPORT_PARAMS
+            if algorithm == "manual"
+            else self.AUTO_EXPORT_PARAMS
+        )
+        with self.page.expect_download() as download_info:
+            self.page.click(selector)
+        return download_info.value
+
+    def export_data(self, algorithm: str = "manual") -> Download:
+        """Click the export data button and return the first Download object."""
+        selector = (
+            self.MANUAL_EXPORT_DATA
+            if algorithm == "manual"
+            else self.AUTO_EXPORT_DATA
+        )
+        with self.page.expect_download() as download_info:
+            self.page.click(selector)
+        return download_info.value
+
+    def set_automatic_param(self, name: str, value: float | int) -> None:
+        """Fill an automatic calibration parameter input.
+
+        Uses the convention: #calibration__automatic-config__{name}
+        """
+        selector = f"#calibration__automatic-config__{name}"
+        self.page.fill(selector, str(value))
