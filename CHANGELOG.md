@@ -9,6 +9,22 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Added
+- `HolmesFileNotFoundError` exception for distinguishing missing files from malformed data
+- Projection module now handles missing projection data gracefully with a user-friendly notification and automatic calibration cleanup
+
+### Changed
+- Error messages no longer expose absolute file paths, using filenames only
+- Projection data `read_projection_data` raises `HolmesFileNotFoundError` instead of `HolmesDataError` when file is missing
+
+### Fixed
+- Simulation and projection APIs now correctly compare snow model against `"none"` string instead of `None`, fixing snow model detection after the 3.4.1 sentinel change
+- Simulation API explicitly casts hydro parameters to `float64`, preventing dtype errors when JSON round-trip through JavaScript produces integer values
+- Projection file upload now resets previous results, preventing stale charts from persisting
+- Projection remove calibration now properly clears config state
+
 ## [3.4.2] - 2026-02-20
 
 ### Added
