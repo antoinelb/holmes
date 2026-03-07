@@ -12,6 +12,7 @@ wheels/
 .env
 /screenshots/
 v2
+/data/
 
 target/
 
