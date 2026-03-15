@@ -7,14 +7,20 @@ import zipfile
 from pathlib import Path
 from typing import Any, Iterable, Literal, NamedTuple, assert_never
 
+import cf_xarray
 import geopandas as gpd
 import httpx
 import numpy as np
 import numpy.typing as npt
 import polars as pl
+import pyproj
 import rasterio
 import rasterio.mask
+import shapely
+import shapely.wkb
 import tqdm
+import xarray as xr
+from shapely.geometry.polygon import Polygon
 
 #########
 # types #
@@ -26,12 +32,12 @@ data_dir = Path(__file__).parent / ".." / "data" / "hydro"
 class Metadata(NamedTuple):
     id: str
     name: str
-    station: str
     lat: float
     lon: float
     area: float
-    elevation_layers: npt.NDArray[np.float64]
+    elevation_bands: npt.NDArray[np.float64]
     median_elevation: float
+    watershed: gpd.GeoDataFrame
 
 
 ########
@@ -46,74 +52,91 @@ def main() -> None:
         sys.exit(2)
         return  # to make type checkers happy
 
-    # metadata = asyncio.run(read_metadata(station_id))
-    data = asyncio.run(read_data(station_id))
-    print(data)
+    path = data_dir / "stations" / f"{station_id}.nc"
+
+    if path.exists():
+        done_print(f"{station_id} dataset already exists.")
+        load_print(f"Testing {station_id} read...")
+        dataset = xr.open_dataset(path)
+        gpd.GeoDataFrame(
+            geometry=cf_xarray.geometry.cf_to_shapely(dataset).values,
+            crs=pyproj.CRS.from_cf(dataset["crs"].attrs),
+        )
+        done_print(f"{station_id} read worked.")
+    else:
+        metadata = asyncio.run(read_metadata(station_id))
+        data = asyncio.run(read_data(station_id))
+        dataset = combine_data_and_metadata(data, metadata)
+        load_print(f"Writing {station_id} dataset to netcdf...")
+        dataset.to_netcdf(path)
+        done_print(f"Wrote {station_id} dataset to netcdf.")
 
 
 async def read_metadata(station_id: str, *, echo: bool = True):
     path = data_dir / "stations" / f"{station_id}.json"
-    if path.exists():
+    watershed_path = data_dir / "stations" / f"{station_id}.gpkg"
+    if path.exists() and watershed_path.exists():
         load_print(
             f"Reading cached metadata for station id {station_id}...",
             echo=echo,
         )
+        watershed = gpd.read_file(watershed_path)
         with open(path, "r") as f:
-            metadata = json.load(f)
-            return Metadata(
-                id=metadata["id"],
-                name=metadata["name"],
-                station=metadata["station"],
-                lat=metadata["lat"],
-                lon=metadata["lon"],
-                area=metadata["area"],
-                elevation_layers=np.array(metadata["elevation_layers"]),
-                median_elevation=metadata["median_elevation"],
+            _metadata = json.load(f)
+            metadata = Metadata(
+                id=_metadata["id"],
+                name=_metadata["name"],
+                lat=_metadata["lat"],
+                lon=_metadata["lon"],
+                area=_metadata["area"],
+                elevation_bands=np.array(_metadata["elevation_bands"]),
+                median_elevation=_metadata["median_elevation"],
+                watershed=watershed,
             )
         done_print(
             f"Read cached metadata for station id {station_id}.",
             echo=echo,
         )
+        return metadata
     else:
         load_print(
             f"Reading metadata for station id {station_id}...",
             echo=echo,
-            end="\n",
         )
         stations = _read_stations(echo=echo, echo_indent=2)
         station = stations.filter(pl.col("id") == station_id)
         if station.shape[0] == 0:
             raise ValueError(f"Station with id {station_id} doesn't exist.")
-        elevation_bands, median_elevation = await _get_watershed_data(
-            station_id, open=stations[0, "open"], echo=echo, echo_indent=2
+        watershed, elevation_bands, median_elevation = (
+            await _get_watershed_data(
+                station_id, open=stations[0, "open"], echo=echo, echo_indent=2
+            )
         )
         metadata = Metadata(
             id=station_id,
             name=station[0, "name"],
-            station=station[0, "station"],
             lat=station[0, "lat"],
             lon=station[0, "lon"],
             area=station[0, "area"],
-            elevation_layers=np.array(elevation_bands),
+            elevation_bands=np.array(elevation_bands),
             median_elevation=median_elevation,
+            watershed=watershed,
         )
         load_print(
             f"Writing cached metadata for station id {station_id}...",
             echo=echo,
         )
         with open(path, "w") as f:
-            json.dump(
-                {
-                    **metadata._asdict(),
-                    "elevation_layers": metadata.elevation_layers.tolist(),
-                },
-                f,
-                indent=2,
+            metadata_dict = metadata._asdict()
+            del metadata_dict["watershed"]
+            metadata_dict["elevation_bands"] = (
+                metadata.elevation_bands.tolist()
             )
+            json.dump(metadata_dict, f, indent=2)
+        watershed.to_file(watershed_path, driver="GPKG")
         done_print(
             f"Read metadata for station id {station_id}.",
             echo=echo,
-            # overwrite_n_extra_lines=2,
         )
         return metadata
 
@@ -149,6 +172,42 @@ async def read_data(station_id: str, *, echo: bool = True) -> pl.DataFrame:
             echo=echo,
         )
         return data
+
+
+def combine_data_and_metadata(
+    data: pl.DataFrame, metadata: Metadata, *, echo: bool = True
+) -> xr.Dataset:
+    load_print(
+        f"Combining {metadata.id} data and metadata to xarray...", echo=echo
+    )
+    dataset = xr.Dataset(
+        data_vars={
+            "streamflow": ("date", data["streamflow"].to_numpy()),
+            "elevation_bands": ("band", metadata.elevation_bands),
+        },
+        coords={
+            "date": data["date"].to_numpy(),
+            "band": np.arange(len(metadata.elevation_bands)),
+        },
+        attrs={
+            "station_id": metadata.id,
+            "station_name": metadata.name,
+            "area_km2": metadata.area,
+            "median_elevation_m": metadata.median_elevation,
+        },
+    )
+    geometry_dataset = cf_xarray.geometry.shapely_to_cf(
+        metadata.watershed.geometry
+    )
+    dataset = xr.merge([dataset, geometry_dataset])
+    dataset["crs"] = xr.DataArray(0, attrs=metadata.watershed.crs.to_cf())
+    for var in ["x", "y", "crd_x", "crd_y"]:
+        dataset[var].attrs["grid_mapping"] = "crs"
+
+    done_print(
+        f"Combined {metadata.id} data and metadata to xarray.", echo=echo
+    )
+    return dataset
 
 
 def _parse_args() -> str | None:
@@ -213,14 +272,19 @@ def _read_stations(*, echo: bool = True, echo_indent: int = 0) -> pl.DataFrame:
 
 async def _get_watershed_data(
     station_id: str, *, open: bool, echo: bool = True, echo_indent: int = 0
-) -> tuple[list[float], float]:
+) -> tuple[gpd.GeoDataFrame, list[float], float]:
     watersheds = await _get_watersheds(
         open=open, echo=echo, echo_indent=echo_indent
     )
-    watershed = watersheds[
-        (watersheds["Station"] == station_id)
-        | (watersheds["tp"] == station_id)
-    ]
+    if "Station" in watersheds.columns:
+        watershed = watersheds[watersheds["Station"] == station_id]
+    elif "tp" in watersheds.columns:
+        watershed = watersheds[watersheds["tp"] == station_id]
+    else:
+        raise RuntimeError(
+            'Either the "Station" or "tp" columns must be present '
+            "in the dataframe."
+        )
     if watershed.shape[0] == 2:
         watershed = watershed[watershed["Type"] == "J"]
     if watershed.shape[0] == 0:
@@ -228,21 +292,33 @@ async def _get_watershed_data(
             f"Watershed for station with id {station_id} doesn't exist."
         )
 
+    watershed = watershed.reset_index()
+
     elevation_bands, median_elevation = await _get_watershed_elevation_bands(
         station_id, watershed, echo=echo, echo_indent=echo_indent
     )
 
-    return elevation_bands, median_elevation
+    return watershed, elevation_bands, median_elevation
 
 
 async def _get_watersheds(
     *, open: bool, echo: bool = True, echo_indent: int = 0
 ) -> gpd.GeoDataFrame:
     if open:
-        url = "https://www.donneesquebec.ca/recherche/dataset/c31e2bee-a899-46ca-ad84-5798f0f49676/resource/924cce0a-5fcc-47fa-a725-5ec84522090f/download/bassins_versants_stations_ouvertes.zip"
+        url = (
+            "https://www.donneesquebec.ca/recherche/dataset/"
+            "c31e2bee-a899-46ca-ad84-5798f0f49676/resource/"
+            "924cce0a-5fcc-47fa-a725-5ec84522090f/download/"
+            "bassins_versants_stations_ouvertes.zip"
+        )
         path = data_dir / "watersheds_open" / "watersheds.shp"
     else:
-        url = "https://www.donneesquebec.ca/recherche/dataset/c31e2bee-a899-46ca-ad84-5798f0f49676/resource/8020bb47-8124-4cc2-a5ad-e2c312e7c7cf/download/bv_stations_fermees.zip"
+        url = (
+            "https://www.donneesquebec.ca/recherche/dataset/"
+            "c31e2bee-a899-46ca-ad84-5798f0f49676/resource/"
+            "8020bb47-8124-4cc2-a5ad-e2c312e7c7cf/"
+            "download/bv_stations_fermees.zip"
+        )
         path = data_dir / "watersheds_closed" / "watersheds.shp"
     if path.exists():
         load_print(

@@ -19,8 +19,10 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "cf-xarray>=0.10.11",
     "geopandas>=1.1.2",
     "holmes-rs>=0.3.0",
+    "netcdf4>=1.7.4",
     "numpy>=2.4.0",
     "polars>=1.36.0",
     "rasterio>=1.4.4",
@@ -28,6 +30,7 @@ dependencies = [
     "tqdm>=4.67.3",
     "uvicorn>=0.36.0",
     "websockets>=15.0.1",
+    "xarray>=2026.2.0",
 ]
 
 [dependency-groups]
