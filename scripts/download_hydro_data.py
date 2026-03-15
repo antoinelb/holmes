@@ -16,11 +16,8 @@ import polars as pl
 import pyproj
 import rasterio
 import rasterio.mask
-import shapely
-import shapely.wkb
 import tqdm
 import xarray as xr
-from shapely.geometry.polygon import Polygon
 
 #########
 # types #
@@ -53,6 +50,7 @@ def main() -> None:
         return  # to make type checkers happy
 
     path = data_dir / "stations" / f"{station_id}.nc"
+    path.parent.mkdir(exist_ok=True, parents=True)
 
     if path.exists():
         done_print(f"{station_id} dataset already exists.")
@@ -197,7 +195,7 @@ def combine_data_and_metadata(
         },
     )
     geometry_dataset = cf_xarray.geometry.shapely_to_cf(
-        metadata.watershed.geometry
+        list(metadata.watershed.geometry)
     )
     dataset = xr.merge([dataset, geometry_dataset])
     dataset["crs"] = xr.DataArray(0, attrs=metadata.watershed.crs.to_cf())
