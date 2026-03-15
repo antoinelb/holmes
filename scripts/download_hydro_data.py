@@ -107,7 +107,7 @@ async def read_metadata(station_id: str, *, echo: bool = True):
             raise ValueError(f"Station with id {station_id} doesn't exist.")
         watershed, elevation_bands, median_elevation = (
             await _get_watershed_data(
-                station_id, open=stations[0, "open"], echo=echo, echo_indent=2
+                station_id, open=station[0, "open"], echo=echo, echo_indent=2
             )
         )
         metadata = Metadata(
@@ -274,10 +274,10 @@ async def _get_watershed_data(
     watersheds = await _get_watersheds(
         open=open, echo=echo, echo_indent=echo_indent
     )
-    if "Station" in watersheds.columns:
-        watershed = watersheds[watersheds["Station"] == station_id]
-    elif "tp" in watersheds.columns:
+    if "tp" in watersheds.columns:
         watershed = watersheds[watersheds["tp"] == station_id]
+    elif "Station" in watersheds.columns:
+        watershed = watersheds[watersheds["Station"] == station_id]
     else:
         raise RuntimeError(
             'Either the "Station" or "tp" columns must be present '
@@ -443,7 +443,7 @@ async def _get_dem_path(
             f"&GRIDBASECRS=urn:ogc:def:crs:EPSG::4326"
             f"&GRIDOFFSETS={-res_deg},{res_deg}"
         )
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.get(url)
             try:
                 resp.raise_for_status()
