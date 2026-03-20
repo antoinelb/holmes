@@ -1,3 +1,16 @@
+"""
+Ce script permet de télécharger les données hydrologiques pour toute station
+hydroclimatique du Québec. Ceci inclue le débit journalier, la délémitation du
+bassin versant, son aire et le modèle numérique de terrain de celui-ci (séparé
+en 5 bandes pour des modèles comme CemaNeige).
+
+- Les données de débit proviennent de l'Atlas hydroclimatique du climat
+  (Département de l'Expertise Hydrique du Québec)
+- Les shapefile des bassins versants proviennent eux aussi de l'Atlas
+  hydroclimatique du climat (Département de l'Expertise Hydrique du Québec)
+- Les modèles numériques de terrain proviennent de Ressources Naturelles Canada
+"""
+
 import asyncio
 import json
 import re
@@ -70,7 +83,7 @@ def main() -> None:
         done_print(f"Wrote {station_id} dataset to netcdf.")
 
 
-async def read_metadata(station_id: str, *, echo: bool = True):
+async def read_metadata(station_id: str, *, echo: bool = True) -> Metadata:
     path = data_dir / "stations" / f"{station_id}.json"
     watershed_path = data_dir / "stations" / f"{station_id}.gpkg"
     if path.exists() and watershed_path.exists():
