@@ -187,9 +187,7 @@ class TestProjectionWorkflow:
 
         # Identify each file by name
         data_download = next(
-            d
-            for d in downloads
-            if d.suggested_filename.endswith("_data.csv")
+            d for d in downloads if d.suggested_filename.endswith("_data.csv")
         )
         results_download = next(
             d

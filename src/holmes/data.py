@@ -99,9 +99,9 @@ def read_data(
 
 
 @lru_cache(maxsize=1)
-def get_available_catchments() -> (
-    tuple[tuple[str, bool, tuple[str, str]], ...]
-):
+def get_available_catchments() -> tuple[
+    tuple[str, bool, tuple[str, str]], ...
+]:
     """
     Determines which catchments are available in the data and if snow info is
     available for each.

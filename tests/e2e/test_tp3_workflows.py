@@ -271,9 +271,14 @@ class TestTP3ProjectionBaskatong:
         data_rows = list(csv.DictReader(Path(data_download.path()).open()))
         assert len(data_rows) > 0
         data_columns = set(data_rows[0].keys())
-        assert {"date", "streamflow", "member", "model", "horizon", "scenario"}.issubset(
-            data_columns
-        )
+        assert {
+            "date",
+            "streamflow",
+            "member",
+            "model",
+            "horizon",
+            "scenario",
+        }.issubset(data_columns)
         # All rows should reference the selected config
         assert all(row["model"] == "CSI" for row in data_rows)
         assert all(row["horizon"] == "REF" for row in data_rows)
