@@ -1,5 +1,5 @@
-from datetime import date
-from typing import Any, Callable
+from datetime import date, datetime
+from typing import Any, Callable, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -101,15 +101,18 @@ async def _handle_projection_message(
     catchment = msg_data["calibration"]["catchment"]
 
     try:
-        _data = (
-            data.read_projection_data(catchment)
-            .filter(
-                pl.col("model") == msg_data["config"]["model"],
-                pl.col("horizon") == msg_data["config"]["horizon"],
-                pl.col("scenario") == msg_data["config"]["scenario"],
-            )
-            .sort("member")
-            .collect()
+        _data = cast(
+            pl.DataFrame,
+            (
+                data.read_projection_data(catchment)
+                .filter(
+                    pl.col("model") == msg_data["config"]["model"],
+                    pl.col("horizon") == msg_data["config"]["horizon"],
+                    pl.col("scenario") == msg_data["config"]["scenario"],
+                )
+                .sort("member")
+                .collect()
+            ),
         )
         # CemaNeige info is always needed for latitude (PET calculation)
         metadata = data.read_cemaneige_info(catchment)
@@ -156,12 +159,16 @@ async def _handle_projection_message(
         ]
     )
     results = _evaluate_projection(projection)
-    projection = _aggregate_projections(projection)
+    aggregated_projection = _aggregate_projections(projection)
 
     await send(
         ws,
         "projection",
-        {"projection": projection, "results": results},
+        {
+            "projection": projection,
+            "aggregated_projection": aggregated_projection,
+            "results": results,
+        },
     )
 
 
@@ -226,7 +233,7 @@ def _run_projection(
             median_elevation,
         )
 
-    return _data.select("date").with_columns(
+    return _data.select("date", "is_warmup").with_columns(
         pl.Series(
             "streamflow", hydro_simulate(hydro_params, precipitation, pet)
         )
@@ -235,7 +242,8 @@ def _run_projection(
 
 def _aggregate_projections(_data: pl.DataFrame) -> pl.DataFrame:
     _data = (
-        _data.with_columns(
+        _data.filter(~pl.col("is_warmup"))
+        .with_columns(
             ((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1).alias(
                 "day_of_year"
             )
@@ -262,6 +270,7 @@ def _aggregate_projections(_data: pl.DataFrame) -> pl.DataFrame:
 
 
 def _evaluate_projection(_data: pl.DataFrame) -> pl.DataFrame:
+    _data = _data.filter(~pl.col("is_warmup"))
     winter_min = (
         _data.filter(pl.col("date").dt.month().is_between(1, 3))
         .group_by("member", pl.col("date").dt.year())

@@ -31,6 +31,7 @@ export function initModel(canSave) {
         : null,
     },
     projection: null,
+    aggregatedProjection: null,
     results: null,
   };
 }
@@ -130,7 +131,12 @@ export async function update(model, msg, dispatch, createNotification) {
         };
         reader.readAsText(file);
       });
-      return { ...model, results: null, projection: null };
+      return {
+        ...model,
+        results: null,
+        projection: null,
+        aggregatedProjection: null,
+      };
     case "ImportCalibration":
       try {
         calibration = JSON.parse(msg.data.target.result);
@@ -183,6 +189,7 @@ export async function update(model, msg, dispatch, createNotification) {
           [msg.data.field]: msg.data.value,
         },
         projection: null,
+        aggregatedProjection: null,
         results: null,
       };
       window.localStorage.setItem(
@@ -265,6 +272,7 @@ export async function update(model, msg, dispatch, createNotification) {
       return {
         ...model,
         projection: msg.data.projection,
+        aggregatedProjection: msg.data.aggregated_projection,
         results: msg.data.results,
         loading: false,
         running: false,
@@ -317,6 +325,7 @@ function downloadData(model, createNotification) {
   if (
     model.calibration !== null &&
     model.projection !== null &&
+    model.aggregatedProjection !== null &&
     model.results !== null
   ) {
     const _data = model.projection.map((p) => ({
@@ -633,7 +642,7 @@ function configView(model, dispatch) {
 function projectionView(model) {
   const _svg = document.getElementById("projection__results__projection");
   clear(_svg);
-  if (model.projection !== null) {
+  if (model.aggregatedProjection !== null) {
     const width = _svg.clientWidth;
     const height = _svg.clientHeight;
     _svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -658,8 +667,8 @@ function projectionView(model) {
       .attr("width", boundaries.r - boundaries.l)
       .attr("height", boundaries.b - boundaries.t);
 
-    const projection = model.projection;
-    const fields = Object.keys(model.projection[0]).filter(
+    const projection = model.aggregatedProjection;
+    const fields = Object.keys(model.aggregatedProjection[0]).filter(
       (f) => f !== "median" && f !== "date",
     );
     const yMin = d3.min(projection, (d) =>

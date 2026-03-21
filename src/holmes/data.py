@@ -99,9 +99,9 @@ def read_data(
 
 
 @lru_cache(maxsize=1)
-def get_available_catchments() -> tuple[
-    tuple[str, bool, tuple[str, str]], ...
-]:
+def get_available_catchments() -> (
+    tuple[tuple[str, bool, tuple[str, str]], ...]
+):
     """
     Determines which catchments are available in the data and if snow info is
     available for each.
@@ -312,8 +312,16 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
         )
 
     try:
-        return pl.scan_csv(path).with_columns(
-            pl.col("date").str.strptime(pl.Date, "%Y-%m-%d")
+        return (
+            pl.scan_csv(path)
+            .with_columns(pl.col("date").str.strptime(pl.Date, "%Y-%m-%d"))
+            .with_columns(
+                is_warmup=pl.col("date")
+                < pl.col("date")
+                .min()
+                .over("model", "horizon", "scenario", "member")
+                .dt.offset_by("3y")
+            )
         )
     except PermissionError as exc:
         raise HolmesDataError(
