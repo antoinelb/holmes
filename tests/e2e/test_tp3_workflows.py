@@ -8,6 +8,7 @@ Covers the step-by-step lab assignment workflow:
 - Exporting projection data
 """
 
+import csv
 import json
 from pathlib import Path
 
@@ -245,7 +246,7 @@ class TestTP3ProjectionBaskatong:
         projection_page: ProjectionPage,
         baskatong_calibration_file: Path,
     ) -> None:
-        """TP3 step 6 save: Export triggers 2 downloads (data + results CSVs)."""
+        """TP3 step 6 save: Export triggers 2 downloads with correct content."""
         _run_projection_workflow(
             projection_page,
             baskatong_calibration_file,
@@ -260,6 +261,51 @@ class TestTP3ProjectionBaskatong:
         filenames = {d.suggested_filename for d in downloads}
         assert "baskatong_projection_data.csv" in filenames
         assert "baskatong_projection_results.csv" in filenames
+
+        # Verify projection data CSV content
+        data_download = next(
+            d
+            for d in downloads
+            if d.suggested_filename == "baskatong_projection_data.csv"
+        )
+        data_rows = list(csv.DictReader(Path(data_download.path()).open()))
+        assert len(data_rows) > 0
+        data_columns = set(data_rows[0].keys())
+        assert {"date", "streamflow", "member", "model", "horizon", "scenario"}.issubset(
+            data_columns
+        )
+        # All rows should reference the selected config
+        assert all(row["model"] == "CSI" for row in data_rows)
+        assert all(row["horizon"] == "REF" for row in data_rows)
+        assert all(row["scenario"] == "REF" for row in data_rows)
+
+        # Verify results CSV content: 5 indicators, 10 members
+        results_download = next(
+            d
+            for d in downloads
+            if d.suggested_filename == "baskatong_projection_results.csv"
+        )
+        results_rows = list(
+            csv.DictReader(Path(results_download.path()).open())
+        )
+        results_columns = set(results_rows[0].keys())
+        assert {
+            "member",
+            "winter_min",
+            "spring_max",
+            "summer_min",
+            "autumn_max",
+            "mean",
+        }.issubset(results_columns)
+        # CSI model has 10 ensemble members
+        assert len(results_rows) == 10
+        # All 5 indicators should have numeric values
+        for row in results_rows:
+            assert float(row["winter_min"]) > 0
+            assert float(row["spring_max"]) > 0
+            assert float(row["summer_min"]) > 0
+            assert float(row["autumn_max"]) > 0
+            assert float(row["mean"]) > 0
 
 
 class TestTP3ProjectionAuSaumon:
@@ -321,3 +367,54 @@ class TestTP3ProjectionAuSaumon:
 
         assert projection_page.has_projection_chart()
         assert projection_page.has_results_chart()
+
+    def test_au_saumon_projection_export(
+        self,
+        projection_page: ProjectionPage,
+        au_saumon_snow_calibration_file: Path,
+    ) -> None:
+        """TP3 step 7+6 save: Au Saumon export has correct content."""
+        _run_projection_workflow(
+            projection_page,
+            au_saumon_snow_calibration_file,
+            model="CSI",
+            horizon="REF",
+            scenario="REF",
+        )
+
+        downloads = projection_page.export_data()
+
+        assert len(downloads) == 2
+        filenames = {d.suggested_filename for d in downloads}
+        assert "au_saumon_projection_data.csv" in filenames
+        assert "au_saumon_projection_results.csv" in filenames
+
+        # Verify projection data CSV
+        data_download = next(
+            d
+            for d in downloads
+            if d.suggested_filename == "au_saumon_projection_data.csv"
+        )
+        data_rows = list(csv.DictReader(Path(data_download.path()).open()))
+        assert len(data_rows) > 0
+        assert all(row["model"] == "CSI" for row in data_rows)
+        assert all(row["scenario"] == "REF" for row in data_rows)
+
+        # Verify results CSV: 5 indicators, 10 members
+        results_download = next(
+            d
+            for d in downloads
+            if d.suggested_filename == "au_saumon_projection_results.csv"
+        )
+        results_rows = list(
+            csv.DictReader(Path(results_download.path()).open())
+        )
+        assert {
+            "member",
+            "winter_min",
+            "spring_max",
+            "summer_min",
+            "autumn_max",
+            "mean",
+        }.issubset(set(results_rows[0].keys()))
+        assert len(results_rows) == 10

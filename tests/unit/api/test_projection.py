@@ -262,6 +262,7 @@ class TestProjectionHelpers:
                     date(2021, 1, 1),
                     date(2021, 1, 2),
                 ],
+                "is_warmup": [False] * 8,
                 "streamflow": [10.0, 20.0, 12.0, 22.0, 14.0, 24.0, 16.0, 26.0],
                 "member": ["m1", "m1", "m1", "m1", "m2", "m2", "m2", "m2"],
             }
@@ -302,6 +303,7 @@ class TestProjectionHelpers:
                     date(2020, 12, 31),  # Day 366 → maps to day 1
                     date(2020, 1, 1),  # Day 1 → maps to day 1
                 ],
+                "is_warmup": [False, False],
                 "streamflow": [100.0, 80.0],
                 "member": ["m1", "m1"],
             }
@@ -355,7 +357,12 @@ class TestProjectionHelpers:
                     streamflows.append(base)
 
         data = pl.DataFrame(
-            {"date": dates, "streamflow": streamflows, "member": members}
+            {
+                "date": dates,
+                "is_warmup": [False] * len(dates),
+                "streamflow": streamflows,
+                "member": members,
+            }
         )
 
         result = _evaluate_projection(data)
@@ -400,7 +407,12 @@ class TestProjectionHelpers:
             members.append("test")
 
         data = pl.DataFrame(
-            {"date": dates, "streamflow": streamflows, "member": members}
+            {
+                "date": dates,
+                "is_warmup": [False] * len(dates),
+                "streamflow": streamflows,
+                "member": members,
+            }
         )
 
         result = _evaluate_projection(data)
