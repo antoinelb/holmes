@@ -556,6 +556,12 @@ function calibrationView(model, dispatch) {
 }
 
 function configView(model, dispatch) {
+  const horizonToLabel = {
+    REF: "REF",
+    H20: "H20 (2021-01-01 to 2050-12-31)",
+    H50: "H50 (2041-01-01 to 2070-12-31)",
+    H80: "H80 (2071-01-01 to 2100-12-31)",
+  };
   const config = document.getElementById("projection__config");
   if (
     model.calibration === null ||
@@ -594,7 +600,7 @@ function configView(model, dispatch) {
       ),
     ];
     horizons.forEach((h) => {
-      horizon.appendChild(create("option", { value: h }, [h]));
+      horizon.appendChild(create("option", { value: h }, [horizonToLabel[h]]));
     });
     if (model.config.horizon !== null) {
       horizon.value = model.config.horizon;

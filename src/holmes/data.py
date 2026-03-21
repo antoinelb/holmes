@@ -305,7 +305,6 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
     """
     path = data_dir / f"{catchment}_Projections.csv"
 
-    # Eagerly check file existence since scan_csv is lazy
     if not path.exists():
         raise HolmesFileNotFoundError(
             f"Projection data file not found: {path.name}"
