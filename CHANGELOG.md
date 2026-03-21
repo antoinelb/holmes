@@ -9,6 +9,21 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [3.4.4] - 2026-03-21
+
+### Added
+- Warmup period filtering for projections: `read_projection_data` now computes an `is_warmup` column marking the first 3 years of each member's time series, and both `_aggregate_projections` and `_evaluate_projection` exclude warmup data from their calculations
+- Projection API now sends raw per-member timeseries (`projection`) alongside the aggregated data (`aggregated_projection`), enabling CSV export of the full ensemble
+- Horizon dropdown labels now display the date range (e.g., "H50 (2041-01-01 to 2070-12-31)")
+- E2E tests verifying exported CSV content for projection data and results (column structure, ensemble member count, indicator values) for both Baskatong and Au Saumon
+
+### Changed
+- Projection CSV export now contains the raw per-member timeseries instead of the day-of-year aggregated data, matching student analysis needs
+
+### Fixed
+- Projection indicators and interannual hydrographs no longer include warmup period data, which was biasing seasonal statistics
+- Unit tests for `_aggregate_projections` and `_evaluate_projection` now include required `is_warmup` column in test DataFrames
+
 ## [3.4.3] - 2026-02-21
 
 ### Added

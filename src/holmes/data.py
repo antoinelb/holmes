@@ -305,15 +305,22 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
     """
     path = data_dir / f"{catchment}_Projections.csv"
 
-    # Eagerly check file existence since scan_csv is lazy
     if not path.exists():
         raise HolmesFileNotFoundError(
             f"Projection data file not found: {path.name}"
         )
 
     try:
-        return pl.scan_csv(path).with_columns(
-            pl.col("date").str.strptime(pl.Date, "%Y-%m-%d")
+        return (
+            pl.scan_csv(path)
+            .with_columns(pl.col("date").str.strptime(pl.Date, "%Y-%m-%d"))
+            .with_columns(
+                is_warmup=pl.col("date")
+                < pl.col("date")
+                .min()
+                .over("model", "horizon", "scenario", "member")
+                .dt.offset_by("3y")
+            )
         )
     except PermissionError as exc:
         raise HolmesDataError(

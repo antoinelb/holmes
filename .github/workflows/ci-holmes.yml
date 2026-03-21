@@ -102,6 +102,10 @@ jobs:
 
   e2e-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
     steps:
       - uses: actions/checkout@v4
 
@@ -124,16 +128,16 @@ jobs:
           working-directory: src/holmes-rs
 
       - name: Install Playwright browsers
-        run: uv run playwright install chromium --with-deps
+        run: uv run playwright install ${{ matrix.browser }} --with-deps
 
       - name: Run E2E tests
-        run: uv run pytest tests/e2e -v --browser chromium
+        run: uv run pytest tests/e2e -v --browser ${{ matrix.browser }}
 
       - name: Upload Playwright traces on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.browser }}
           path: test-results/
           retention-days: 7
 
