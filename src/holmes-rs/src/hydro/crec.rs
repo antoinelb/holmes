@@ -9,25 +9,24 @@ use pyo3::prelude::*;
 pub const param_names: &[&str] = &["x1", "x2", "x3", "x4", "x5", "x6"];
 
 pub const param_descriptions: &[&str] = &[
-    "Soil reservoir capacity (mm)",
-    "Evapotranspiration fraction (-)",
-    "Runoff delay constant (d)",
-    "Non-linearity exponent (-)",
-    "Percolation fraction (-)",
-    "Transfer delay constant (d)",
+    "Ground reservoir emptying constant (d)",
+    "Linear percolation parameter (-)",
+    "Splitting parameter for raw rainfall (-)",
+    "Splitting parameter for PET production (-)",
+    "Linear emptying parameter of soil reservoir (-)",
+    "Delay parameter (d)",
 ];
 
 const BOUNDS: [(&str, f64, f64); 6] = [
-    ("x1", 10.0, 1000.0),
-    ("x2", 0.0, 1.0),
-    ("x3", 1.0, 200.0),
-    ("x4", 2.0, 10.0),
-    ("x5", 0.0, 1.0),
-    ("x6", 1.0, 400.0),
+    ("x1", 1.0, 1000.0),
+    ("x2", 1.0, 1000.0),
+    ("x3", 0.0, 1000.0),
+    ("x4", 1.0, 500.0),
+    ("x5", 1.0, 1000.0),
+    ("x6", 0.5, 5.0),
 ];
 
 pub fn init() -> (Array1<f64>, Array2<f64>) {
-    // corresponds to x1, x2, x3, x4, x5, x6
     let bounds = array![
         [BOUNDS[0].1, BOUNDS[0].2],
         [BOUNDS[1].1, BOUNDS[1].2],
@@ -63,41 +62,39 @@ pub fn simulate(
 
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
-    let (mut s, mut r, mut t, mut dl, mut hy) = init_state(x1, x4);
+    let (mut s, mut r, mut t, xf, dl, mut hy) = init_state(x6);
 
     Zip::indexed(&precipitation)
         .and(&pet)
         .for_each(|i, &precip_t, &pet_t| {
             streamflow[i] = run_step(
-                precip_t, pet_t, x1, x2, x3, x5, x6, &mut s, &mut r, &mut t,
-                &mut dl, &mut hy,
+                precip_t, pet_t, x1, x2, x3, x4, x5, &mut s, &mut r, &mut t,
+                xf, &dl, &mut hy,
             );
         });
 
     let result = Array1::from_vec(streamflow);
 
-    validate_output(result.view(), "Bucket simulation")?;
+    validate_output(result.view(), "CREC simulation")?;
 
     Ok(result)
 }
 
-fn init_state(x1: f64, x4: f64) -> (f64, f64, f64, Array1<f64>, Array1<f64>) {
+fn init_state(x6: f64) -> (f64, f64, f64, f64, Array1<f64>, Array1<f64>) {
     // initialization of the reservoir state
-    let s = x1 * 0.5;
+    let s = 250.0;
     let r = 10.0;
-    let t = 5.0;
+    let t = 100.0;
+    let xf = 245.0;
 
-    // array of ints from 0 to the routing delay
-    let n = x4.ceil() as usize;
-    let k = Array1::from_iter(0..n);
+    let size = x6.ceil() as usize + 1;
+    let mut dl = Array1::zeros(size);
+    dl[size - 2] = 1.0 / (x6 - size as f64 + 3.0);
+    dl[size - 1] = 1.0 - dl[size - 2];
 
-    let mut dl = Array1::zeros(x4.ceil() as usize);
-    dl[n - 2] = 1.0 / (x4 - k[n - 1] as f64 + 1.0);
-    dl[n - 1] = 1.0 - dl[n - 2];
+    let hy = Array1::zeros(size);
 
-    let hy = Array1::zeros(x4.ceil() as usize);
-
-    (s, r, t, dl, hy)
+    (s, r, t, xf, dl, hy)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -107,38 +104,34 @@ fn run_step(
     x1: f64,
     x2: f64,
     x3: f64,
+    x4: f64,
     x5: f64,
-    x6: f64,
     s: &mut f64,
     r: &mut f64,
     t: &mut f64,
-    dl: &mut Array1<f64>,
+    xf: f64,
+    dl: &Array1<f64>,
     hy: &mut Array1<f64>,
 ) -> f64 {
-    // slow flow precipitation
-    let p_s = (1.0 - x5) * p;
-    // fast flow precipitation
-    let p_r = x5 * p;
+    // net inputs
+    let p_r = p / (1.0 + ((x3 - *s) / x4).exp());
+    let p_s = p - p_r;
 
-    // soil moisture accounting
-    let mut i_s = 0.0;
-    if p_s >= e {
-        *s += p_s - e;
-        i_s = (*s - x1).max(0.0);
-        *s -= i_s;
-    } else {
-        // dry conditions
-        *s *= ((p_s - e) / x1).exp();
-    }
+    // soil storage (S)
+    *s += p_s;
+    let e_s = e * (1.0 - (-*s / xf).exp());
+    *s = (*s - e_s).max(0.0);
 
-    // slow routing component
-    *r += i_s * (1.0 - x2);
-    let q_r = *r / (x3 * x6);
+    // surface storage (R)
+    *r += p_r;
+    let q_r = *r * *r / (*r + x1);
     *r -= q_r;
+    let i_r = *r / x5;
+    *r -= i_r;
 
-    // fast routing component
-    *t += p_r + i_s * x2;
-    let q_t = *t / x6;
+    // groundwter storage (T)
+    *t += i_r;
+    let q_t = *t / x2;
     *t -= q_t;
 
     // total flow calculation
@@ -177,7 +170,7 @@ pub fn py_simulate<'py>(
 
 #[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
-    let m = PyModule::new(py, "bucket")?;
+    let m = PyModule::new(py, "crec")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;

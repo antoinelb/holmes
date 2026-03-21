@@ -37,10 +37,11 @@ In catchments with significant snowfall, precipitation does not immediately cont
 
 ### 3. Hydrological Transformation
 
-The core of the modeling chain is the rainfall-runoff model that transforms effective precipitation (rainfall plus snowmelt) into streamflow. HOLMES implements two models:
+The core of the modeling chain is the rainfall-runoff model that transforms effective precipitation (rainfall plus snowmelt) into streamflow. HOLMES implements several models:
 
 - **[GR4J](gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
 - **[Bucket model](bucket.md)**: A six-parameter model based on linear reservoir theory with explicit fast and slow flow paths. Offers more flexibility in flow partitioning and often captures recession behavior well.
+- **[CREC](crec.md)**: A six-parameter model featuring a sigmoid rainfall-splitting function that smoothly partitions precipitation between runoff and infiltration based on soil moisture. Uses nonlinear (quadratic) surface routing.
 
 ### 4. Model Calibration
 
@@ -58,14 +59,14 @@ After calibration, we need to assess how well the model performs. HOLMES provide
 
 The choice of model depends on your catchment characteristics and objectives:
 
-| Consideration | GR4J | Bucket Model |
-|--------------|------|--------------|
-| Parameters | 4 | 6 |
-| Flow partitioning | Fixed (90%/10%) | Calibratable ($\alpha$, $\beta$) |
-| Routing | Unit hydrographs + nonlinear store | Linear reservoirs |
-| Groundwater exchange | Yes ($X_2$ parameter) | No |
-| Equifinality risk | Lower | Higher |
-| Best for | Humid temperate catchments, benchmarking | Catchments with distinct recession components |
+| Consideration | GR4J | Bucket Model | CREC |
+|--------------|------|--------------|------|
+| Parameters | 4 | 6 | 6 |
+| Flow partitioning | Fixed (90%/10%) | Calibratable ($\alpha$, $\beta$) | Sigmoid (moisture-dependent) |
+| Routing | Unit hydrographs + nonlinear store | Linear reservoirs | Quadratic + linear stores |
+| Groundwater exchange | Yes ($X_2$ parameter) | No | No |
+| Equifinality risk | Lower | Higher | Moderate |
+| Best for | Humid temperate catchments, benchmarking | Catchments with distinct recession components | Catchments with moisture-dependent runoff generation |
 
 For catchments with significant snow, enable CemaNeige regardless of which hydrological model you choose.
 
@@ -75,6 +76,7 @@ Each concept page provides detailed explanations, mathematical formulations, and
 
 - [GR4J Model](gr4j.md) - Parsimonious four-parameter model
 - [Bucket Model](bucket.md) - Linear reservoir model with flexible flow partitioning
+- [CREC Model](crec.md) - Sigmoid splitting with nonlinear surface routing
 - [Snow Models (CemaNeige)](snow-models.md) - Snow accumulation and melt
 - [PET Models (Oudin)](pet-models.md) - Potential evapotranspiration calculation
 - [Calibration Algorithms (SCE-UA)](calibration-algorithms.md) - Automatic parameter optimization

@@ -5,6 +5,15 @@ All notable changes to the holmes-rs Rust extension will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- CREC hydrological model (`hydro::crec`) with 6 parameters, sigmoid rainfall-splitting function, and nonlinear surface routing
+- Python bindings and type stubs for the CREC module (`init`, `simulate`, `param_names`, `param_descriptions`)
+
+### Changed
+- Renamed `initialize_state` to `init_state` in bucket model for consistency
+
 ## [0.3.0] - 2026-01-31
 
 ### Added

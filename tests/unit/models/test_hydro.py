@@ -48,6 +48,18 @@ class TestGetConfig:
             assert "max" in param
             assert "description" in param
 
+    def test_get_config_crec(self):
+        """CREC parameter config has expected structure."""
+        config = hydro.get_config("crec")
+        assert isinstance(config, list)
+        assert len(config) == 6
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
     def test_gr4j_param_names(self):
         """GR4J has expected parameter names."""
         config = hydro.get_config("gr4j")
@@ -66,9 +78,15 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
 
+    def test_crec_param_names(self):
+        """CREC has expected parameter names."""
+        config = hydro.get_config("crec")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6"]
+
     def test_descriptions_are_non_empty_strings(self):
         """All parameters have a non-empty string description."""
-        for model in ("gr4j", "bucket", "cequeau"):
+        for model in ("gr4j", "bucket", "cequeau", "crec"):
             config = hydro.get_config(model)
             for param in config:
                 assert isinstance(param["description"], str), (
@@ -80,7 +98,7 @@ class TestGetConfig:
 
     def test_defaults_within_bounds(self):
         """Default values are within min/max bounds."""
-        for model in ("gr4j", "bucket", "cequeau"):
+        for model in ("gr4j", "bucket", "cequeau", "crec"):
             config = hydro.get_config(model)
             for param in config:
                 min_val = float(param["min"])
@@ -132,6 +150,24 @@ class TestGetModel:
         """Returns CEQUEAU simulate function."""
         simulate = hydro.get_model("cequeau")
         assert callable(simulate)
+
+    def test_get_model_crec(self):
+        """Returns CREC simulate function."""
+        simulate = hydro.get_model("crec")
+        assert callable(simulate)
+
+    def test_crec_simulate(self):
+        """CREC simulate produces output."""
+        simulate = hydro.get_model("crec")
+        config = hydro.get_config("crec")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
 
     def test_cequeau_simulate(self):
         """CEQUEAU simulate produces output."""
@@ -216,6 +252,42 @@ class TestHypothesis:
         """Bucket output is non-negative."""
         simulate = hydro.get_model("bucket")
         config = hydro.get_config("bucket")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_crec_output_length_matches_input(self, precipitation):
+        """CREC output length matches input length."""
+        simulate = hydro.get_model("crec")
+        config = hydro.get_config("crec")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_crec_output_non_negative(self, precipitation):
+        """CREC output is non-negative."""
+        simulate = hydro.get_model("crec")
+        config = hydro.get_config("crec")
         params = np.array([p["default"] for p in config])
         precip = np.array(precipitation)
         pet = np.random.uniform(0, 5, len(precipitation))
@@ -343,6 +415,41 @@ class TestErrorHandling:
                 params = np.array(
                     [65.0, 65.0, 6.0, 2.0, 30.0, 5.0, 50.0, 50.0, 50.0]
                 )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_crec_numerical_error(self):
+        """get_config handles HolmesNumericalError for CREC."""
+        with patch(
+            "holmes_rs.hydro.crec.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("crec")
+
+    def test_simulate_crec_numerical_error(self):
+        """CREC simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.crec.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("crec")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([500.0, 500.0, 500.0, 250.0, 500.0, 2.5])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_crec_validation_error(self):
+        """CREC simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.crec.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("crec")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([500.0, 500.0, 500.0, 250.0, 500.0, 2.5])
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)

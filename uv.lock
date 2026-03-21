@@ -348,7 +348,7 @@ wheels = [
 
 [[package]]
 name = "holmes-hydro"
-version = "3.4.3"
+version = "3.4.4"
 source = { editable = "." }
 dependencies = [
     { name = "holmes-rs" },

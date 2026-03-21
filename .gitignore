@@ -21,3 +21,5 @@ site/
 .playwright-mcp/
 perrin
 /data/
+HOOPLA_MODELS.md
+i18n.md

@@ -1,10 +1,3 @@
-"""
-Hydrological model registry.
-
-This module provides access to hydrological models
-implemented in the holmes_rs Rust extension.
-"""
-
 import logging
 from typing import Callable, Literal, assert_never
 
@@ -15,7 +8,7 @@ from holmes.exceptions import (
     HolmesNumericalError,
     HolmesValidationError,
 )
-from holmes_rs.hydro import bucket, cequeau, gr4j
+from holmes_rs.hydro import bucket, cequeau, crec, gr4j
 
 logger = logging.getLogger("holmes")
 
@@ -23,7 +16,7 @@ logger = logging.getLogger("holmes")
 # types #
 #########
 
-HydroModel = Literal["gr4j", "bucket", "cequeau"]
+HydroModel = Literal["gr4j", "bucket", "cequeau", "crec"]
 
 ##########
 # public #
@@ -59,6 +52,10 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = cequeau.param_names
                 descriptions = cequeau.param_descriptions
                 defaults, bounds = cequeau.init()
+            case "crec":
+                param_names = crec.param_names
+                descriptions = crec.param_descriptions
+                defaults, bounds = crec.init()
             case _:  # pragma: no cover
                 assert_never(model)  # type: ignore
     except (HolmesNumericalError, HolmesValidationError) as exc:
@@ -116,6 +113,8 @@ def get_model(
             simulate_fn = bucket.simulate
         case "cequeau":
             simulate_fn = cequeau.simulate
+        case "crec":
+            simulate_fn = crec.simulate
         case _:  # pragma: no cover
             assert_never(model)  # type: ignore
 
