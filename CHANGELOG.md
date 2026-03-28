@@ -16,6 +16,9 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - CREC model documentation page with mathematical formulation, 6-parameter description, and model comparison table update
 - GARDENIA hydrological model support in model registry, config, and simulation dispatching
 
+### Changed
+- `day_of_year` is now optional in the calibration API, only required when a snow model is active
+
 ## [3.4.4] - 2026-03-21
 
 ### Added

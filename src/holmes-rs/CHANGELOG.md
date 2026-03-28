@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the GARDENIA module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
+- Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters
 - Renamed `initialize_state` to `init_state` in bucket model for consistency
+
+### Fixed
+- SCE calibration no longer crashes with "Zero variance in simulations - KGE undefined" when degenerate parameter sets produce constant model output; worst-case penalty values are assigned instead, and the optimizer continues normally
 
 ## [0.3.0] - 2026-01-31
 

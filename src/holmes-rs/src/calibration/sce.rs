@@ -16,7 +16,9 @@ use crate::calibration::utils::{
     Simulate, Transformation,
 };
 use crate::hydro;
-use crate::metrics::{calculate_kge, calculate_nse, calculate_rmse};
+use crate::metrics::{
+    calculate_kge, calculate_nse, calculate_rmse, MetricsError,
+};
 use crate::snow;
 
 struct SceParams {
@@ -154,7 +156,7 @@ impl Sce {
         precipitation: ArrayView1<f64>,
         temperature: Option<ArrayView1<f64>>,
         pet: ArrayView1<f64>,
-        day_of_year: ArrayView1<usize>,
+        day_of_year: Option<ArrayView1<usize>>,
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
@@ -202,7 +204,7 @@ impl Sce {
         precipitation: ArrayView1<f64>,
         temperature: Option<ArrayView1<f64>>,
         pet: ArrayView1<f64>,
-        day_of_year: ArrayView1<usize>,
+        day_of_year: Option<ArrayView1<usize>>,
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
@@ -390,7 +392,7 @@ impl Sce {
         precipitation: PyReadonlyArray1<f64>,
         temperature: Option<PyReadonlyArray1<f64>>,
         pet: PyReadonlyArray1<f64>,
-        day_of_year: PyReadonlyArray1<usize>,
+        day_of_year: Option<PyReadonlyArray1<usize>>,
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
@@ -400,7 +402,7 @@ impl Sce {
             precipitation.as_array(),
             temperature.as_ref().map(|t| t.as_array()),
             pet.as_array(),
-            day_of_year.as_array(),
+            day_of_year.as_ref().map(|d| d.as_array()),
             elevation_bands.as_ref().map(|e| e.as_array()),
             median_elevation,
             observations.as_array(),
@@ -416,7 +418,7 @@ impl Sce {
         precipitation: PyReadonlyArray1<f64>,
         temperature: Option<PyReadonlyArray1<f64>>,
         pet: PyReadonlyArray1<f64>,
-        day_of_year: PyReadonlyArray1<usize>,
+        day_of_year: Option<PyReadonlyArray1<usize>>,
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
@@ -432,7 +434,7 @@ impl Sce {
                 precipitation.as_array(),
                 temperature.as_ref().map(|t| t.as_array()),
                 pet.as_array(),
-                day_of_year.as_array(),
+                day_of_year.as_ref().map(|d| d.as_array()),
                 elevation_bands.as_ref().map(|e| e.as_array()),
                 median_elevation,
                 observations.as_array(),
@@ -484,7 +486,7 @@ fn evaluate_initial_population(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
@@ -559,11 +561,56 @@ fn evaluate_simulation(
             (observations.to_owned(), simulations.to_owned())
         }
     };
+
+    // Degenerate parameter sets can produce NaN/Infinity in simulations
+    // (or after transformation, e.g. sqrt of negative values).
+    // Assign worst-case objectives rather than crashing the optimizer.
+    if simulations.iter().any(|x| !x.is_finite()) {
+        return Ok(worst_case_objectives());
+    }
+
     Ok(Array1::from_vec(vec![
-        calculate_rmse(observations.view(), simulations.view())?,
-        calculate_nse(observations.view(), simulations.view())?,
-        calculate_kge(observations.view(), simulations.view())?,
+        penalize_degenerate(
+            calculate_rmse(observations.view(), simulations.view()),
+            f64::INFINITY,
+        )?,
+        penalize_degenerate(
+            calculate_nse(observations.view(), simulations.view()),
+            f64::NEG_INFINITY,
+        )?,
+        penalize_degenerate(
+            calculate_kge(observations.view(), simulations.view()),
+            f64::NEG_INFINITY,
+        )?,
     ]))
+}
+
+/// Returns worst-case objective values for each metric during optimization.
+/// RMSE is minimized (worst = INFINITY), NSE and KGE are maximized
+/// (worst = NEG_INFINITY).
+fn worst_case_objectives() -> Array1<f64> {
+    Array1::from_vec(vec![f64::INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY])
+}
+
+/// During optimization, degenerate parameter sets can produce simulations with
+/// zero variance or other numerical issues that make metrics undefined.
+/// Returns a penalty value instead of propagating the error. Data validation
+/// errors (length mismatch, empty arrays) still propagate since they indicate
+/// bugs rather than bad parameter sets.
+fn penalize_degenerate(
+    result: Result<f64, MetricsError>,
+    penalty: f64,
+) -> Result<f64, CalibrationError> {
+    match result {
+        Ok(v) => Ok(v),
+        Err(
+            MetricsError::ZeroVarianceNSE
+            | MetricsError::ZeroVarianceKGE { .. }
+            | MetricsError::ZeroMeanKGE
+            | MetricsError::NumericalError { .. },
+        ) => Ok(penalty),
+        Err(e) => Err(CalibrationError::Metrics(e)),
+    }
 }
 
 pub fn sort_population(
@@ -649,7 +696,7 @@ fn evolve_complexes(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
@@ -722,7 +769,7 @@ fn evolve_complex_step(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,

@@ -122,7 +122,6 @@ fn test_sce_init_basic() {
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // Generate synthetic observations (model output + noise)
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -139,7 +138,7 @@ fn test_sce_init_basic() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -172,7 +171,6 @@ fn test_sce_step_returns_valid_output() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // Generate synthetic observations
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -188,7 +186,7 @@ fn test_sce_step_returns_valid_output() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -200,7 +198,7 @@ fn test_sce_step_returns_valid_output() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -253,7 +251,6 @@ fn test_sce_converges() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // Generate synthetic observations from known parameters
     let known_params = array![300.0, 0.5, 100.0, 2.5];
@@ -268,7 +265,7 @@ fn test_sce_converges() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -286,7 +283,7 @@ fn test_sce_converges() {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -325,14 +322,13 @@ fn test_sce_respects_max_evaluations() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -349,7 +345,7 @@ fn test_sce_respects_max_evaluations() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -445,14 +441,13 @@ proptest! {
         let n = 30;
         let precip = helpers::generate_precipitation(n, 5.0, 0.3, seed);
         let pet = helpers::generate_pet(n, 3.0, 1.0, seed + 1);
-        let doy = helpers::generate_doy(1, n);
         let obs = helpers::generate_precipitation(n, 3.0, 0.5, seed + 3);
 
         sce.init(
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -463,7 +458,7 @@ proptest! {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -509,14 +504,13 @@ fn test_sce_step_when_already_done() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -532,7 +526,7 @@ fn test_sce_step_when_already_done() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -548,7 +542,7 @@ fn test_sce_step_when_already_done() {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -585,14 +579,13 @@ fn test_sce_geometric_range_convergence() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -609,7 +602,7 @@ fn test_sce_geometric_range_convergence() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -647,14 +640,13 @@ fn test_sce_criteria_change_convergence() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     sce.init(
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -671,7 +663,7 @@ fn test_sce_criteria_change_convergence() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -737,7 +729,7 @@ fn test_sce_with_snow_model_calibration() {
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
         Some(elevation_layers.view()),
         Some(median_elevation),
         obs.view(),
@@ -750,7 +742,7 @@ fn test_sce_with_snow_model_calibration() {
             precip.view(),
             Some(temp.view()),
             pet.view(),
-            doy.view(),
+            Some(doy.view()),
             Some(elevation_layers.view()),
             Some(median_elevation),
             obs.view(),
@@ -792,7 +784,6 @@ fn test_sce_sqrt_transform_negative() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     // Negative observations to test sqrt transformation issue
     let obs = Array1::from_elem(n, -1.0);
 
@@ -800,7 +791,7 @@ fn test_sce_sqrt_transform_negative() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -813,7 +804,7 @@ fn test_sce_sqrt_transform_negative() {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -829,8 +820,9 @@ fn test_sce_sqrt_transform_negative() {
 }
 
 #[test]
-#[ignore = "R5-NUM-06: NaN in convergence criteria when observations are constant"]
 fn test_sce_constant_observations() {
+    // Constant observations cause zero variance, making NSE/KGE undefined.
+    // The optimizer should assign worst-case penalties rather than crashing.
     let mut sce = Sce::new(
         "gr4j",
         None,
@@ -848,39 +840,159 @@ fn test_sce_constant_observations() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
-    // Constant observations cause NSE denominator = 0
     let obs = Array1::from_elem(n, 5.0);
 
     let init_result = sce.init(
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
         0,
     );
+    assert!(
+        init_result.is_ok(),
+        "Init should handle constant observations: {:?}",
+        init_result.err()
+    );
 
-    if init_result.is_ok() {
-        let (_, _, _, objectives) = sce
-            .step(
-                precip.view(),
-                None,
-                pet.view(),
-                doy.view(),
-                None,
-                None,
-                obs.view(),
-                0,
-            )
-            .unwrap();
+    let result = sce.step(
+        precip.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        obs.view(),
+        0,
+    );
+    assert!(
+        result.is_ok(),
+        "Step should handle constant observations: {:?}",
+        result.err()
+    );
+}
 
-        // NSE should be handled (not NaN)
+// =============================================================================
+// Degenerate Metric Handling Tests
+// =============================================================================
+
+#[test]
+fn test_sce_handles_zero_variance_simulations() {
+    // Zero precipitation forces all simulations to constant (zero) flow,
+    // triggering "Zero variance in simulations - KGE undefined".
+    // The optimizer should assign worst-case objectives rather than crashing.
+    let mut sce = Sce::new(
+        "gr4j",
+        None,
+        Objective::Kge,
+        holmes_rs::calibration::utils::Transformation::None,
+        2,
+        5,
+        0.1,
+        0.001,
+        50,
+        42,
+    )
+    .unwrap();
+
+    let n = 50;
+    let precip = Array1::from_elem(n, 0.0);
+    let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
+    let obs = helpers::generate_precipitation(n, 3.0, 0.5, 42);
+
+    let init_result = sce.init(
+        precip.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        obs.view(),
+        0,
+    );
+    assert!(
+        init_result.is_ok(),
+        "Init should handle zero-variance simulations: {:?}",
+        init_result.err()
+    );
+
+    let mut done = false;
+    let mut iterations = 0;
+    while !done && iterations < 10 {
+        let result = sce.step(
+            precip.view(),
+            None,
+            pet.view(),
+            None,
+            None,
+            None,
+            obs.view(),
+            0,
+        );
         assert!(
-            objectives[1].is_finite(),
-            "NSE should be finite even with constant observations"
+            result.is_ok(),
+            "Step should handle zero-variance simulations: {:?}",
+            result.err()
+        );
+        let (d, _, _, _) = result.unwrap();
+        done = d;
+        iterations += 1;
+    }
+}
+
+#[test]
+fn test_sce_handles_zero_variance_with_all_objectives() {
+    // Verify all objective functions handle zero-variance gracefully
+    for obj in [Objective::Rmse, Objective::Nse, Objective::Kge] {
+        let mut sce = Sce::new(
+            "gr4j",
+            None,
+            obj,
+            holmes_rs::calibration::utils::Transformation::None,
+            2,
+            5,
+            0.1,
+            0.001,
+            30,
+            42,
+        )
+        .unwrap();
+
+        let n = 30;
+        let precip = Array1::from_elem(n, 0.0);
+        let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
+        let obs = helpers::generate_precipitation(n, 3.0, 0.5, 42);
+
+        sce.init(
+            precip.view(),
+            None,
+            pet.view(),
+            None,
+            None,
+            None,
+            obs.view(),
+            0,
+        )
+        .expect("Init should handle degenerate metrics");
+
+        let result = sce.step(
+            precip.view(),
+            None,
+            pet.view(),
+            None,
+            None,
+            None,
+            obs.view(),
+            0,
+        );
+        assert!(
+            result.is_ok(),
+            "Step with {:?} should handle zero-variance: {:?}",
+            obj,
+            result.err()
         );
     }
 }
@@ -909,7 +1021,6 @@ fn test_init_with_mismatched_observations_length() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // Observations with DIFFERENT length than precipitation (which determines simulation length)
     let obs = Array1::from_elem(n + 10, 5.0); // 10 more elements
@@ -918,7 +1029,7 @@ fn test_init_with_mismatched_observations_length() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -952,7 +1063,6 @@ fn test_step_with_mismatched_observations_length() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 45);
 
     // Init with correct length
@@ -960,7 +1070,7 @@ fn test_step_with_mismatched_observations_length() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -975,7 +1085,7 @@ fn test_step_with_mismatched_observations_length() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         wrong_obs.view(),
@@ -1010,7 +1120,6 @@ fn test_convergence_with_perfect_match() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // Use default GR4J params to generate observations
     let (defaults, _) = holmes_rs::hydro::gr4j::init();
@@ -1025,7 +1134,7 @@ fn test_convergence_with_perfect_match() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -1041,7 +1150,7 @@ fn test_convergence_with_perfect_match() {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
