@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CREC hydrological model (`hydro::crec`) with 6 parameters, sigmoid rainfall-splitting function, and nonlinear surface routing
 - Python bindings and type stubs for the CREC module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- GARDENIA hydrological model (`hydro::gardenia`) with 6 parameters matching Perrin's thesis GARD structure: overflow-based surface reservoir, quadratic soil emptying, linear groundwater recession, and fractional delay routing
+- Python bindings and type stubs for the GARDENIA module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Renamed `initialize_state` to `init_state` in bucket model for consistency

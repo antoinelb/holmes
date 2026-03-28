@@ -8,7 +8,7 @@ from holmes.exceptions import (
     HolmesNumericalError,
     HolmesValidationError,
 )
-from holmes_rs.hydro import bucket, cequeau, crec, gr4j
+from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j
 
 logger = logging.getLogger("holmes")
 
@@ -16,7 +16,7 @@ logger = logging.getLogger("holmes")
 # types #
 #########
 
-HydroModel = Literal["gr4j", "bucket", "cequeau", "crec"]
+HydroModel = Literal["gr4j", "bucket", "cequeau", "crec", "gardenia"]
 
 ##########
 # public #
@@ -56,6 +56,10 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = crec.param_names
                 descriptions = crec.param_descriptions
                 defaults, bounds = crec.init()
+            case "gardenia":
+                param_names = gardenia.param_names
+                descriptions = gardenia.param_descriptions
+                defaults, bounds = gardenia.init()
             case _:  # pragma: no cover
                 assert_never(model)  # type: ignore
     except (HolmesNumericalError, HolmesValidationError) as exc:
@@ -115,6 +119,8 @@ def get_model(
             simulate_fn = cequeau.simulate
         case "crec":
             simulate_fn = crec.simulate
+        case "gardenia":
+            simulate_fn = gardenia.simulate
         case _:  # pragma: no cover
             assert_never(model)  # type: ignore
 

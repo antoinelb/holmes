@@ -14,6 +14,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ### Added
 - CREC hydrological model support in model registry, config, and simulation dispatching
 - CREC model documentation page with mathematical formulation, 6-parameter description, and model comparison table update
+- GARDENIA hydrological model support in model registry, config, and simulation dispatching
 
 ## [3.4.4] - 2026-03-21
 
