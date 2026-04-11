@@ -8,7 +8,16 @@ from holmes.exceptions import (
     HolmesNumericalError,
     HolmesValidationError,
 )
-from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j, hbv, hymod
+from holmes_rs.hydro import (
+    bucket,
+    cequeau,
+    crec,
+    gardenia,
+    gr4j,
+    hbv,
+    hymod,
+    xinanjiang,
+)
 
 logger = logging.getLogger("holmes")
 
@@ -17,7 +26,14 @@ logger = logging.getLogger("holmes")
 #########
 
 HydroModel = Literal[
-    "gr4j", "bucket", "cequeau", "crec", "gardenia", "hbv", "hymod"
+    "gr4j",
+    "bucket",
+    "cequeau",
+    "crec",
+    "gardenia",
+    "hbv",
+    "hymod",
+    "xinanjiang",
 ]
 
 ##########
@@ -70,6 +86,10 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = hymod.param_names
                 descriptions = hymod.param_descriptions
                 defaults, bounds = hymod.init()
+            case "xinanjiang":
+                param_names = xinanjiang.param_names
+                descriptions = xinanjiang.param_descriptions
+                defaults, bounds = xinanjiang.init()
             case _:  # pragma: no cover
                 assert_never(model)  # type: ignore
     except (HolmesNumericalError, HolmesValidationError) as exc:
@@ -135,6 +155,8 @@ def get_model(
             simulate_fn = hbv.simulate
         case "hymod":
             simulate_fn = hymod.simulate
+        case "xinanjiang":
+            simulate_fn = xinanjiang.simulate
         case _:  # pragma: no cover
             assert_never(model)  # type: ignore
 

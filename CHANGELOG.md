@@ -17,6 +17,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - GARDENIA hydrological model support in model registry, config, and simulation dispatching
 - HYMOD hydrological model support in model registry, config, and simulation dispatching
 - HBV hydrological model (9-parameter Bergström/Forsman HBV0 variant) support in model registry, config, and simulation dispatching
+- XINANJIANG hydrological model (8-parameter Perrin variant of the Zhao et al. 1980 saturation-excess model) support in model registry, config, and simulation dispatching
 
 ### Changed
 - `day_of_year` is now optional in the calibration API, only required when a snow model is active

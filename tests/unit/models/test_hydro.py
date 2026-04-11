@@ -138,6 +138,24 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
 
+    def test_get_config_xinanjiang(self):
+        """XINANJIANG parameter config has expected structure."""
+        config = hydro.get_config("xinanjiang")
+        assert isinstance(config, list)
+        assert len(config) == 8
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_xinanjiang_param_names(self):
+        """XINANJIANG has expected parameter names."""
+        config = hydro.get_config("xinanjiang")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+
     def test_descriptions_are_non_empty_strings(self):
         """All parameters have a non-empty string description."""
         for model in (
@@ -148,6 +166,7 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "xinanjiang",
         ):
             config = hydro.get_config(model)
             for param in config:
@@ -168,6 +187,7 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "xinanjiang",
         ):
             config = hydro.get_config(model)
             for param in config:
@@ -297,6 +317,24 @@ class TestGetModel:
         """CEQUEAU simulate produces output."""
         simulate = hydro.get_model("cequeau")
         config = hydro.get_config("cequeau")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_xinanjiang(self):
+        """Returns XINANJIANG simulate function."""
+        simulate = hydro.get_model("xinanjiang")
+        assert callable(simulate)
+
+    def test_xinanjiang_simulate(self):
+        """XINANJIANG simulate produces output."""
+        simulate = hydro.get_model("xinanjiang")
+        config = hydro.get_config("xinanjiang")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -562,6 +600,42 @@ class TestHypothesis:
         result = simulate(params, precip, pet)
         assert np.all(result >= 0)
 
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_xinanjiang_output_length_matches_input(self, precipitation):
+        """XINANJIANG output length matches input length."""
+        simulate = hydro.get_model("xinanjiang")
+        config = hydro.get_config("xinanjiang")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_xinanjiang_output_non_negative(self, precipitation):
+        """XINANJIANG output is non-negative."""
+        simulate = hydro.get_model("xinanjiang")
+        config = hydro.get_config("xinanjiang")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
 
 class TestErrorHandling:
     """Tests for error handling in hydro models."""
@@ -790,6 +864,45 @@ class TestErrorHandling:
             with pytest.raises(HolmesValidationError):
                 params = np.array(
                     [500.0, 500.0, 10.0, 50.0, 10.0, 20.0, 1.0, 50.0, 10.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_xinanjiang_numerical_error(self):
+        """get_config handles HolmesNumericalError for XINANJIANG."""
+        with patch(
+            "holmes_rs.hydro.xinanjiang.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("xinanjiang")
+
+    def test_simulate_xinanjiang_numerical_error(self):
+        """XINANJIANG simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.xinanjiang.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("xinanjiang")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [0.5, 10.0, 25.0, 250.0, 1000.0, 5.0, 25.0, 2.5]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_xinanjiang_validation_error(self):
+        """XINANJIANG simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.xinanjiang.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("xinanjiang")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [0.5, 10.0, 25.0, 250.0, 1000.0, 5.0, 25.0, 2.5]
                 )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])

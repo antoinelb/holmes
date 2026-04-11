@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the HYMOD module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - HBV hydrological model (`hydro::hbv`) with 9 parameters following the Bergström/Forsman formulation as described in Perrin's thesis (HBV0 / HOOPLA HM6): five-substep soil moisture accounting with nonlinear production, three-reservoir routing with threshold upper outflow, linear lower outflow, and capped percolation, and a triangular unit hydrograph
 - Python bindings and type stubs for the HBV module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- XINANJIANG hydrological model (`hydro::xinanjiang`) with 8 parameters following Perrin's variant of the Zhao et al. 1980 formulation (HOOPLA HM20): piecewise evapotranspiration, power-distributed saturation-excess production, free-water reservoir with fast/slow routing split, and a two-tap fractional delay unit hydrograph
+- Python bindings and type stubs for the XINANJIANG module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters
