@@ -66,13 +66,13 @@ Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
     [:octicons-arrow-right-24: Concepts](concepts/index.md)
 
--   :material-code-tags:{ .lg .middle } **Developer Guide**
+-   :material-code-tags:{ .lg .middle } **API Reference**
 
     ---
 
-    Architecture overview and API documentation.
+    Backend modules, REST/WebSocket routes, and the Rust extension.
 
-    [:octicons-arrow-right-24: Developer Guide](developer-guide/index.md)
+    [:octicons-arrow-right-24: API Reference](api-reference/index.md)
 
 </div>
 
