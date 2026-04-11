@@ -102,9 +102,53 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6"]
 
+    def test_get_config_hymod(self):
+        """HYMOD parameter config has expected structure."""
+        config = hydro.get_config("hymod")
+        assert isinstance(config, list)
+        assert len(config) == 6
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_hymod_param_names(self):
+        """HYMOD has expected parameter names."""
+        config = hydro.get_config("hymod")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6"]
+
+    def test_get_config_hbv(self):
+        """HBV parameter config has expected structure."""
+        config = hydro.get_config("hbv")
+        assert isinstance(config, list)
+        assert len(config) == 9
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_hbv_param_names(self):
+        """HBV has expected parameter names."""
+        config = hydro.get_config("hbv")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
+
     def test_descriptions_are_non_empty_strings(self):
         """All parameters have a non-empty string description."""
-        for model in ("gr4j", "bucket", "cequeau", "crec", "gardenia"):
+        for model in (
+            "gr4j",
+            "bucket",
+            "cequeau",
+            "crec",
+            "gardenia",
+            "hbv",
+            "hymod",
+        ):
             config = hydro.get_config(model)
             for param in config:
                 assert isinstance(param["description"], str), (
@@ -116,7 +160,15 @@ class TestGetConfig:
 
     def test_defaults_within_bounds(self):
         """Default values are within min/max bounds."""
-        for model in ("gr4j", "bucket", "cequeau", "crec", "gardenia"):
+        for model in (
+            "gr4j",
+            "bucket",
+            "cequeau",
+            "crec",
+            "gardenia",
+            "hbv",
+            "hymod",
+        ):
             config = hydro.get_config(model)
             for param in config:
                 min_val = float(param["min"])
@@ -183,6 +235,24 @@ class TestGetModel:
         """GARDENIA simulate produces output."""
         simulate = hydro.get_model("gardenia")
         config = hydro.get_config("gardenia")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_hymod(self):
+        """Returns HYMOD simulate function."""
+        simulate = hydro.get_model("hymod")
+        assert callable(simulate)
+
+    def test_hymod_simulate(self):
+        """HYMOD simulate produces output."""
+        simulate = hydro.get_model("hymod")
+        config = hydro.get_config("hymod")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -402,6 +472,42 @@ class TestHypothesis:
         result = simulate(params, precip, pet)
         assert np.all(result >= 0)
 
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_hymod_output_length_matches_input(self, precipitation):
+        """HYMOD output length matches input length."""
+        simulate = hydro.get_model("hymod")
+        config = hydro.get_config("hymod")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_hymod_output_non_negative(self, precipitation):
+        """HYMOD output is non-negative."""
+        simulate = hydro.get_model("hymod")
+        config = hydro.get_config("hymod")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
 
 class TestErrorHandling:
     """Tests for error handling in hydro models."""
@@ -557,6 +663,41 @@ class TestErrorHandling:
             simulate = hydro.get_model("gardenia")
             with pytest.raises(HolmesValidationError):
                 params = np.array([500.0, 500.0, 500.0, 250.0, 1.0, 2.5])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_hymod_numerical_error(self):
+        """get_config handles HolmesNumericalError for HYMOD."""
+        with patch(
+            "holmes_rs.hydro.hymod.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("hymod")
+
+    def test_simulate_hymod_numerical_error(self):
+        """HYMOD simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.hymod.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("hymod")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([500.0, 1.0, 0.5, 2.5, 500.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_hymod_validation_error(self):
+        """HYMOD simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.hymod.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("hymod")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([500.0, 1.0, 0.5, 2.5, 500.0, 5.0])
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)

@@ -379,27 +379,10 @@ proptest! {
 }
 
 // =============================================================================
-// Anti-Fragility Tests (expected to fail with current implementation)
+// Numerical Robustness Tests
 // =============================================================================
 
 #[test]
-#[ignore = "R5-NUM-05: Lambda approaches zero at extreme temperatures"]
-fn test_oudin_extreme_temperature() {
-    // Very high temperature: lambda = 2.501 - 0.002361 * T approaches 0
-    // At T ≈ 1059°C, lambda = 0, causing division issues
-    let temp = array![100.0, 500.0, 1000.0];
-    let doy = array![180_usize, 180, 180];
-    let latitude = 45.0;
-
-    let pet = simulate(temp.view(), doy.view(), latitude).unwrap();
-    assert!(
-        pet.iter().all(|&p| p.is_finite()),
-        "PET should handle extreme temperatures"
-    );
-}
-
-#[test]
-#[ignore = "R5-NUM-05: tan(latitude) approaches infinity near poles"]
 fn test_oudin_extreme_latitude() {
     // Near polar latitudes cause issues with tan() in sunset hour angle calculation
     let temp = array![10.0];

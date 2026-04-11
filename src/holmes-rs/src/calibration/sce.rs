@@ -287,39 +287,10 @@ impl Sce {
             .append(Axis(0), Array1::from_elem(1, best_objective).view())
             .unwrap();
 
-        let criteria_change = if self.sce_params.criteria.len()
-            >= self.sce_params.k_stop
-        {
-            let recent = self
-                .sce_params
-                .criteria
-                .slice(s![-(self.sce_params.k_stop as isize)..]);
-
-            let has_non_finite = recent.iter().any(|x| !x.is_finite());
-            if has_non_finite {
-                // if NaN/inf in criteria, don't consider converged
-                f64::INFINITY
-            } else {
-                let mean_recent = recent.iter().map(|x| x.abs()).sum::<f64>()
-                    / self.sce_params.k_stop as f64;
-                if mean_recent > 1e-10 {
-                    let diff = (self.sce_params.criteria
-                        [self.sce_params.criteria.len() - 1]
-                        - self.sce_params.criteria[self
-                            .sce_params
-                            .criteria
-                            .len()
-                            - self.sce_params.k_stop])
-                        .abs();
-                    diff * 100.0 / mean_recent
-                } else {
-                    // if mean is effectively zero, criteria are constant -> converged
-                    0.0
-                }
-            }
-        } else {
-            f64::INFINITY
-        };
+        let criteria_change = compute_criteria_change(
+            self.sce_params.criteria.view(),
+            self.sce_params.k_stop,
+        );
 
         self.calibration_params.done = n_calls
             > self.sce_params.max_evaluations
@@ -540,7 +511,9 @@ fn evaluate_initial_population(
     Ok((population, objectives))
 }
 
-fn evaluate_simulation(
+/// Compute all three objectives (rmse, nse, kge) from a simulation.
+/// Exposed for integration tests; use `Sce::step` from calling code.
+pub fn evaluate_simulation(
     observations: ArrayView1<f64>,
     simulations: ArrayView1<f64>,
     transformation: Transformation,
@@ -569,20 +542,28 @@ fn evaluate_simulation(
         return Ok(worst_case_objectives());
     }
 
-    Ok(Array1::from_vec(vec![
-        penalize_degenerate(
-            calculate_rmse(observations.view(), simulations.view()),
-            f64::INFINITY,
-        )?,
-        penalize_degenerate(
-            calculate_nse(observations.view(), simulations.view()),
-            f64::NEG_INFINITY,
-        )?,
-        penalize_degenerate(
-            calculate_kge(observations.view(), simulations.view()),
-            f64::NEG_INFINITY,
-        )?,
-    ]))
+    // RMSE acts as the validation gate: if its inputs are malformed
+    // (length mismatch, NaN, infinity), penalize_degenerate propagates a
+    // non-degenerate metrics error here. NSE and KGE share the same
+    // validate_inputs gate, so once RMSE succeeds their own validation
+    // cannot fail non-degenerately — any remaining error variant is in
+    // penalize_degenerate's allow-list and becomes Ok(penalty).
+    let rmse = penalize_degenerate(
+        calculate_rmse(observations.view(), simulations.view()),
+        f64::INFINITY,
+    )?;
+    let nse = penalize_degenerate(
+        calculate_nse(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("NSE cannot return a non-degenerate error once RMSE has validated inputs");
+    let kge = penalize_degenerate(
+        calculate_kge(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("KGE cannot return a non-degenerate error once RMSE has validated inputs");
+
+    Ok(Array1::from_vec(vec![rmse, nse, kge]))
 }
 
 /// Returns worst-case objective values for each metric during optimization.
@@ -611,6 +592,39 @@ fn penalize_degenerate(
         ) => Ok(penalty),
         Err(e) => Err(CalibrationError::Metrics(e)),
     }
+}
+
+/// Compute the SCE-UA convergence criterion: the relative change in the
+/// best objective over the last `k_stop` iterations, as a percentage of its
+/// recent mean magnitude.
+///
+/// Returns `f64::INFINITY` when there is not yet enough history, or when any
+/// value in the recent window is non-finite — both conditions prevent early
+/// convergence. Returns `0.0` when the recent mean is effectively zero, which
+/// means the criteria have been flat and the optimizer has converged.
+pub fn compute_criteria_change(
+    criteria: ArrayView1<f64>,
+    k_stop: usize,
+) -> f64 {
+    if criteria.len() < k_stop {
+        return f64::INFINITY;
+    }
+
+    let recent = criteria.slice(s![-(k_stop as isize)..]);
+    if recent.iter().any(|x| !x.is_finite()) {
+        return f64::INFINITY;
+    }
+
+    let mean_recent =
+        recent.iter().map(|x| x.abs()).sum::<f64>() / k_stop as f64;
+    if mean_recent <= 1e-10 {
+        return 0.0;
+    }
+
+    let diff = (criteria[criteria.len() - 1]
+        - criteria[criteria.len() - k_stop])
+        .abs();
+    diff * 100.0 / mean_recent
 }
 
 pub fn sort_population(
@@ -760,7 +774,9 @@ fn evolve_complexes(
     Ok(n_calls)
 }
 
-fn evolve_complex_step(
+/// Perform one reflect / contract / random-fallback step on a simplex.
+/// Exposed for integration tests; use `Sce::step` from calling code.
+pub fn evolve_complex_step(
     simplex: ArrayView2<f64>,
     simplex_objectives: ArrayView2<f64>,
     lower_bounds: ArrayView1<f64>,

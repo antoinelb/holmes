@@ -38,7 +38,3 @@ manual_range_contains = "allow"
   lto = true              # Link-Time Optimization
   codegen-units = 1       # Better optimization (slower compile)
   opt-level = 3           # Maximum optimization
-
-[package.metadata.cargo-llvm-cov]
-# Exclude PyO3 binding code (tested via Python integration tests)
-ignore-filename-regex = ["lib\\.rs$", "/mod\\.rs$", "utils\\.rs$"]

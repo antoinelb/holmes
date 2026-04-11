@@ -8,7 +8,7 @@ from holmes.exceptions import (
     HolmesNumericalError,
     HolmesValidationError,
 )
-from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j
+from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j, hbv, hymod
 
 logger = logging.getLogger("holmes")
 
@@ -16,7 +16,9 @@ logger = logging.getLogger("holmes")
 # types #
 #########
 
-HydroModel = Literal["gr4j", "bucket", "cequeau", "crec", "gardenia"]
+HydroModel = Literal[
+    "gr4j", "bucket", "cequeau", "crec", "gardenia", "hbv", "hymod"
+]
 
 ##########
 # public #
@@ -60,6 +62,14 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = gardenia.param_names
                 descriptions = gardenia.param_descriptions
                 defaults, bounds = gardenia.init()
+            case "hbv":
+                param_names = hbv.param_names
+                descriptions = hbv.param_descriptions
+                defaults, bounds = hbv.init()
+            case "hymod":
+                param_names = hymod.param_names
+                descriptions = hymod.param_descriptions
+                defaults, bounds = hymod.init()
             case _:  # pragma: no cover
                 assert_never(model)  # type: ignore
     except (HolmesNumericalError, HolmesValidationError) as exc:
@@ -121,6 +131,10 @@ def get_model(
             simulate_fn = crec.simulate
         case "gardenia":
             simulate_fn = gardenia.simulate
+        case "hbv":
+            simulate_fn = hbv.simulate
+        case "hymod":
+            simulate_fn = hymod.simulate
         case _:  # pragma: no cover
             assert_never(model)  # type: ignore
 

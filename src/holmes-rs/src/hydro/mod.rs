@@ -4,6 +4,8 @@ pub mod cequeau;
 pub mod crec;
 pub mod gardenia;
 pub mod gr4j;
+pub mod hbv;
+pub mod hymod;
 pub mod utils;
 use crate::utils::register_submodule;
 
@@ -22,6 +24,8 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
         &gardenia::make_module(py)?,
         "holmes_rs.hydro",
     )?;
+    register_submodule(py, &m, &hymod::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &hbv::make_module(py)?, "holmes_rs.hydro")?;
     Ok(m)
 }
 
@@ -34,6 +38,8 @@ pub fn get_model(
         "cequeau" => Ok((cequeau::init, cequeau::simulate)),
         "crec" => Ok((crec::init, crec::simulate)),
         "gardenia" => Ok((gardenia::init, gardenia::simulate)),
+        "hymod" => Ok((hymod::init, hymod::simulate)),
+        "hbv" => Ok((hbv::init, hbv::simulate)),
         _ => Err(HydroError::WrongModel(model.to_string())),
     }
 }

@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from holmes_rs import HolmesValidationError
-from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j
+from holmes_rs.hydro import bucket, cequeau, crec, gardenia, gr4j, hbv, hymod
 
 
 class TestGr4jInit:
@@ -668,6 +668,276 @@ class TestGardeniaParamDescriptions:
             assert len(desc) > 0
 
 
+class TestHymodInit:
+    """Tests for hymod.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = hymod.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 6 elements."""
+        defaults, _ = hymod.init()
+
+        assert len(defaults) == 6
+
+    def test_bounds_shape(self):
+        """Bounds should be 6x2 array."""
+        _, bounds = hymod.init()
+
+        assert bounds.shape == (6, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = hymod.init()
+
+        for i in range(6):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = hymod.init()
+
+        for i in range(6):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestHymodSimulate:
+    """Tests for hymod.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = hymod.init()
+
+        streamflow = hymod.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = hymod.init()
+
+        streamflow = hymod.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = hymod.init()
+
+        streamflow = hymod.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = hymod.init()
+        precip = np.zeros(100)
+
+        streamflow = hymod.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([100.0, 0.5, 50.0, 3.0])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            hymod.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = hymod.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            hymod.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([500.0, 1.0, 0.5, 2.5, 500.0, 5.0])
+
+        streamflow = hymod.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestHymodParamNames:
+    """Tests for hymod.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(hymod, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 6 parameter names."""
+        assert len(hymod.param_names) == 6
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6"]
+        assert hymod.param_names == expected
+
+
+class TestHymodParamDescriptions:
+    """Tests for hymod.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(hymod, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(hymod.param_descriptions) == len(hymod.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in hymod.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestHbvInit:
+    """Tests for hbv.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = hbv.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 9 elements."""
+        defaults, _ = hbv.init()
+
+        assert len(defaults) == 9
+
+    def test_bounds_shape(self):
+        """Bounds should be 9x2 array."""
+        _, bounds = hbv.init()
+
+        assert bounds.shape == (9, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = hbv.init()
+
+        for i in range(9):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = hbv.init()
+
+        for i in range(9):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestHbvSimulate:
+    """Tests for hbv.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = hbv.init()
+
+        streamflow = hbv.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = hbv.init()
+
+        streamflow = hbv.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = hbv.init()
+
+        streamflow = hbv.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = hbv.init()
+        precip = np.zeros(100)
+
+        streamflow = hbv.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([500.0, 500.0, 10.0, 50.0])  # only 4 of 9
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            hbv.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = hbv.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            hbv.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array(
+            [500.0, 500.0, 10.0, 50.0, 10.0, 20.0, 1.0, 50.0, 10.0]
+        )
+
+        streamflow = hbv.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestHbvParamNames:
+    """Tests for hbv.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(hbv, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 9 parameter names."""
+        assert len(hbv.param_names) == 9
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
+        assert hbv.param_names == expected
+
+
+class TestHbvParamDescriptions:
+    """Tests for hbv.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(hbv, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(hbv.param_descriptions) == len(hbv.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in hbv.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
 class TestHydroModuleIntegration:
     """Integration tests for hydro module."""
 
@@ -680,6 +950,8 @@ class TestHydroModuleIntegration:
         assert hasattr(hydro, "cequeau")
         assert hasattr(hydro, "crec")
         assert hasattr(hydro, "gardenia")
+        assert hasattr(hydro, "hbv")
+        assert hasattr(hydro, "hymod")
 
     def test_all_models_produce_output(self, sample_precipitation, sample_pet):
         """All models should produce valid streamflow."""
@@ -688,6 +960,8 @@ class TestHydroModuleIntegration:
         cequeau_defaults, _ = cequeau.init()
         crec_defaults, _ = crec.init()
         gardenia_defaults, _ = gardenia.init()
+        hbv_defaults, _ = hbv.init()
+        hymod_defaults, _ = hymod.init()
 
         gr4j_flow = gr4j.simulate(
             gr4j_defaults, sample_precipitation, sample_pet
@@ -704,14 +978,22 @@ class TestHydroModuleIntegration:
         gardenia_flow = gardenia.simulate(
             gardenia_defaults, sample_precipitation, sample_pet
         )
+        hbv_flow = hbv.simulate(hbv_defaults, sample_precipitation, sample_pet)
+        hymod_flow = hymod.simulate(
+            hymod_defaults, sample_precipitation, sample_pet
+        )
 
         assert len(gr4j_flow) == len(sample_precipitation)
         assert len(bucket_flow) == len(sample_precipitation)
         assert len(cequeau_flow) == len(sample_precipitation)
         assert len(crec_flow) == len(sample_precipitation)
         assert len(gardenia_flow) == len(sample_precipitation)
+        assert len(hbv_flow) == len(sample_precipitation)
+        assert len(hymod_flow) == len(sample_precipitation)
         assert np.all(np.isfinite(gr4j_flow))
         assert np.all(np.isfinite(bucket_flow))
         assert np.all(np.isfinite(cequeau_flow))
         assert np.all(np.isfinite(crec_flow))
         assert np.all(np.isfinite(gardenia_flow))
+        assert np.all(np.isfinite(hbv_flow))
+        assert np.all(np.isfinite(hymod_flow))

@@ -35,6 +35,7 @@ dev = [
     "isort>=6.0.1",
     "maturin>=1.10.2",
     "mkdocs>=1.6.1",
+    "mkdocs-awesome-nav>=3.1",
     "mkdocs-git-revision-date-localized-plugin>=1.2",
     "mkdocs-include-markdown-plugin>=6.0",
     "mkdocs-material>=9.7.1",

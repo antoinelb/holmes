@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the CREC module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - GARDENIA hydrological model (`hydro::gardenia`) with 6 parameters matching Perrin's thesis GARD structure: overflow-based surface reservoir, quadratic soil emptying, linear groundwater recession, and fractional delay routing
 - Python bindings and type stubs for the GARDENIA module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- HYMOD hydrological model (`hydro::hymod`) with 6 parameters following the Boyle/Wagener formulation: Pareto-distributed soil moisture store, three linear fast reservoirs in cascade, one linear slow groundwater reservoir, and fractional delay routing
+- Python bindings and type stubs for the HYMOD module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters

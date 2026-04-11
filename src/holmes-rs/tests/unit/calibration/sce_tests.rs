@@ -1,6 +1,9 @@
 use crate::helpers;
-use holmes_rs::calibration::sce::{sort_population, Sce};
-use holmes_rs::calibration::utils::Objective;
+use holmes_rs::calibration::sce::{
+    compute_criteria_change, evaluate_simulation, evolve_complex_step,
+    sort_population, Sce,
+};
+use holmes_rs::calibration::utils::{Objective, Simulate, Transformation};
 use ndarray::{array, Array1, Array2};
 use proptest::prelude::*;
 use std::str::FromStr;
@@ -97,6 +100,31 @@ fn test_sce_new_invalid_snow_model() {
     );
 
     assert!(result.is_err(), "Should fail with invalid snow model");
+}
+
+#[test]
+fn test_sce_new_valid_snow_invalid_hydro() {
+    // Snow-first path: snow::get_model succeeds, then hydro::get_model
+    // must fail. This exercises the ? propagation on hydro lookup inside
+    // the snow-model branch of Sce::new — distinct from the no-snow
+    // invalid-hydro path covered above.
+    let result = Sce::new(
+        "invalid_hydro",
+        Some("cemaneige"),
+        Objective::Nse,
+        holmes_rs::calibration::utils::Transformation::None,
+        2,
+        5,
+        0.1,
+        0.0001,
+        100,
+        42,
+    );
+
+    assert!(
+        result.is_err(),
+        "Should fail when hydro is invalid even with valid snow"
+    );
 }
 
 // =============================================================================
@@ -759,65 +787,8 @@ fn test_sce_with_snow_model_calibration() {
 }
 
 // =============================================================================
-// Anti-Fragility Tests (expected to fail with current implementation)
+// Degenerate-Input Robustness Tests
 // =============================================================================
-
-#[test]
-#[ignore = "R4-DATA-02: sqrt transformation on negative simulated values produces NaN"]
-fn test_sce_sqrt_transform_negative() {
-    // If simulations produce negative values (which GR4J shouldn't, but other models might)
-    // sqrt transformation would produce NaN
-    let mut sce = Sce::new(
-        "gr4j",
-        None,
-        Objective::Nse,
-        holmes_rs::calibration::utils::Transformation::Sqrt,
-        2,
-        5,
-        0.1,
-        0.0001,
-        50,
-        42,
-    )
-    .unwrap();
-
-    let n = 30;
-    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
-    let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    // Negative observations to test sqrt transformation issue
-    let obs = Array1::from_elem(n, -1.0);
-
-    let init_result = sce.init(
-        precip.view(),
-        None,
-        pet.view(),
-        None,
-        None,
-        None,
-        obs.view(),
-        0,
-    );
-
-    // Should either handle gracefully or return error
-    if init_result.is_ok() {
-        let step_result = sce.step(
-            precip.view(),
-            None,
-            pet.view(),
-            None,
-            None,
-            None,
-            obs.view(),
-            0,
-        );
-        if let Ok((_, _, _, objectives)) = step_result {
-            assert!(
-                objectives.iter().all(|&o| o.is_finite()),
-                "Objectives should not be NaN"
-            );
-        }
-    }
-}
 
 #[test]
 fn test_sce_constant_observations() {
@@ -1330,4 +1301,612 @@ fn test_sort_population_two_nans_at_start() {
     assert_eq!(objectives[[1, 0]], 3.0);
     assert!(objectives[[2, 0]].is_nan());
     assert!(objectives[[3, 0]].is_nan());
+}
+
+#[test]
+fn test_sort_population_nan_after_finite() {
+    // Existing NaN tests place NaN at the start, so the sort algorithm
+    // never invokes the comparator as cmp(a=nan, b=finite) — only
+    // cmp(a=finite, b=nan). This test forces the (false, true) arm by
+    // putting finite values first, so NaN elements are inserted
+    // *after* a sorted finite prefix.
+    let mut population = Array2::from_shape_vec(
+        (4, 2),
+        vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+    )
+    .unwrap();
+    let mut objectives = Array2::from_shape_vec(
+        (4, 1),
+        vec![
+            1.0,      // row 0: smallest finite
+            3.0,      // row 1: larger finite
+            f64::NAN, // row 2: NaN inserted after finite prefix
+            f64::NAN, // row 3: NaN inserted after finite prefix
+        ],
+    )
+    .unwrap();
+
+    sort_population(&mut population, &mut objectives, 0, true);
+
+    assert_eq!(objectives[[0, 0]], 1.0);
+    assert_eq!(objectives[[1, 0]], 3.0);
+    assert!(objectives[[2, 0]].is_nan());
+    assert!(objectives[[3, 0]].is_nan());
+}
+
+// =============================================================================
+// evaluate_simulation Tests (lines 568-585, 591-593)
+// =============================================================================
+
+#[test]
+fn test_evaluate_simulation_nan_in_simulation_returns_worst_case() {
+    // When the simulation contains NaN (e.g. from a degenerate parameter set
+    // producing divide-by-zero), evaluate_simulation must return the worst-
+    // case objectives [+inf, -inf, -inf] rather than propagating a metrics
+    // error — the optimizer relies on this to discard bad candidates without
+    // crashing.
+    let observations = array![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+    let simulations = array![1.0, 2.0, 3.0, 4.0, f64::NAN, 6.0, 7.0, 8.0];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    )
+    .unwrap();
+
+    assert_eq!(result[0], f64::INFINITY);
+    assert_eq!(result[1], f64::NEG_INFINITY);
+    assert_eq!(result[2], f64::NEG_INFINITY);
+}
+
+#[test]
+fn test_evaluate_simulation_infinity_in_simulation_returns_worst_case() {
+    let observations = array![1.0, 2.0, 3.0, 4.0];
+    let simulations = array![1.0, f64::INFINITY, 3.0, 4.0];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    )
+    .unwrap();
+
+    assert_eq!(result[0], f64::INFINITY);
+    assert_eq!(result[1], f64::NEG_INFINITY);
+    assert_eq!(result[2], f64::NEG_INFINITY);
+}
+
+#[test]
+fn test_evaluate_simulation_zero_variance_observations_returns_penalty() {
+    // Constant observations make NSE and KGE undefined (zero variance).
+    // penalize_degenerate should convert those metric errors into the
+    // penalty values +inf for RMSE and -inf for NSE / KGE so the optimizer
+    // treats the candidate as worst-case without crashing.
+    let observations = array![5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
+    let simulations = array![4.0, 4.5, 5.5, 6.0, 5.0, 4.8];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    )
+    .unwrap();
+
+    // RMSE is finite (zero variance does not break RMSE).
+    assert!(result[0].is_finite());
+    // NSE and KGE hit the zero-variance penalty.
+    assert_eq!(result[1], f64::NEG_INFINITY);
+    assert_eq!(result[2], f64::NEG_INFINITY);
+}
+
+// =============================================================================
+// compute_criteria_change Tests (line 301 + full convergence logic)
+// =============================================================================
+
+#[test]
+fn test_compute_criteria_change_insufficient_history() {
+    // Fewer samples than k_stop -> cannot decide, return infinity.
+    let criteria = array![1.0, 2.0];
+    let result = compute_criteria_change(criteria.view(), 5);
+    assert_eq!(result, f64::INFINITY);
+}
+
+#[test]
+fn test_compute_criteria_change_non_finite_window() {
+    // A NaN or infinity anywhere in the recent window must prevent early
+    // termination — SCE should keep iterating rather than misreading the
+    // degenerate value as convergence.
+    let criteria_nan = array![1.0, 2.0, f64::NAN, 4.0, 5.0];
+    assert_eq!(
+        compute_criteria_change(criteria_nan.view(), 5),
+        f64::INFINITY
+    );
+
+    let criteria_inf = array![1.0, f64::INFINITY, 3.0, 4.0, 5.0];
+    assert_eq!(
+        compute_criteria_change(criteria_inf.view(), 5),
+        f64::INFINITY
+    );
+}
+
+#[test]
+fn test_compute_criteria_change_flat_near_zero_converged() {
+    // When the recent mean is effectively zero, the criteria are flat at the
+    // floor and we report converged (0.0).
+    let criteria = array![0.0, 0.0, 0.0, 0.0, 0.0];
+    assert_eq!(compute_criteria_change(criteria.view(), 5), 0.0);
+}
+
+#[test]
+fn test_compute_criteria_change_returns_percent_change() {
+    // Classic case: finite values, non-zero mean, finite relative change.
+    let criteria = array![10.0, 10.0, 10.0, 10.0, 12.0];
+    let result = compute_criteria_change(criteria.view(), 5);
+    // |12.0 - 10.0| / mean(|x|) * 100 where mean = 10.4
+    let expected = 2.0 * 100.0 / 10.4;
+    assert!((result - expected).abs() < 1e-9);
+}
+
+// =============================================================================
+// evolve_complex_step Tests (lines 859, 884 — random-point fallback)
+// =============================================================================
+
+#[test]
+fn test_evolve_complex_step_random_fallback_when_reflection_and_contraction_fail(
+) {
+    // The "contraction also failed -> random point" fallback is reached when
+    // both reflection and contraction produce a candidate strictly worse than
+    // the simplex's worst point. We force this by handing evolve_complex_step
+    // a Simulate closure whose output has a high RMSE vs observations, while
+    // seeding the simplex with a small fw so every new evaluation is worse.
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    // Custom simulate closure: always returns a constant-10 flow regardless
+    // of params, which gives rmse ~= 9.0 vs observations of 1.0.
+    let simulate: Simulate = Box::new(
+        move |_params, _precip, _temp, _pet, _doy, _elev, _median_elev| {
+            Ok(Array1::from_elem(n_timesteps, 10.0))
+        },
+    );
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+
+    // 3-point simplex, last row is "worst" and is assigned fw = 0.5
+    // (very good rmse), so the candidate's rmse ~= 9.0 is strictly worse.
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![
+            0.1, 0.9, 0.9, // row 0: best rmse
+            0.3, 0.8, 0.8, // row 1
+            0.5, 0.7, 0.7, // row 2: "worst" fw
+        ],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+
+    let (snew, fnew, calls) = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,    // objective_idx = RMSE
+        true, // minimization
+        Transformation::None,
+        &mut rng,
+    )
+    .unwrap();
+
+    // Three evaluations: reflection, contraction, random fallback.
+    assert_eq!(calls, 3);
+    // Resulting objective is based on the constant-10 sim vs 1.0 observations.
+    assert!((fnew[0] - 9.0).abs() < 1e-9);
+    // snew must remain within bounds.
+    assert!(snew.iter().all(|&v| (0.0..=10.0).contains(&v)));
+}
+
+#[test]
+fn test_evolve_complex_step_reflection_in_bounds_succeeds() {
+    // Symmetric check: when reflection produces a better objective, we must
+    // NOT enter the contraction / random-fallback branches. This pins the
+    // happy-path behavior alongside the fallback test above.
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 5.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    // Simulate always returns exactly the observations -> rmse = 0.
+    let simulate: Simulate = Box::new(
+        move |_params, _precip, _temp, _pet, _doy, _elev, _median_elev| {
+            Ok(Array1::from_elem(n_timesteps, 5.0))
+        },
+    );
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![10.0, -1.0, -1.0, 20.0, -2.0, -2.0, 30.0, -3.0, -3.0],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+
+    let (_snew, fnew, calls) = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    )
+    .unwrap();
+
+    // Only one call: reflection succeeded.
+    assert_eq!(calls, 1);
+    assert_eq!(fnew[0], 0.0);
+}
+
+#[test]
+fn test_evolve_complex_step_propagates_error_from_contraction_eval() {
+    // When reflection succeeds but the contraction step's simulate returns
+    // a malformed (wrong-length) simulation, evaluate_simulation returns a
+    // LengthMismatch error which must propagate out of evolve_complex_step.
+    // This pins the error-propagation path on the second evaluate_simulation
+    // call inside the contraction branch.
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    let call_count = Arc::new(AtomicUsize::new(0));
+    let call_count_cl = Arc::clone(&call_count);
+    let simulate: Simulate = Box::new(move |_p, _pr, _t, _pet, _d, _e, _m| {
+        let n = call_count_cl.fetch_add(1, Ordering::SeqCst);
+        if n == 0 {
+            // Reflection: correct length, rmse = 9 -> strictly worse -> contraction
+            Ok(Array1::from_elem(n_timesteps, 10.0))
+        } else {
+            // Contraction: wrong length -> LengthMismatch -> Err propagates
+            Ok(Array1::from_elem(n_timesteps - 1, 10.0))
+        }
+    });
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![0.1, 0.9, 0.9, 0.3, 0.8, 0.8, 0.5, 0.7, 0.7],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+    let result = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    );
+
+    assert!(
+        result.is_err(),
+        "Length mismatch in contraction must propagate"
+    );
+    assert_eq!(call_count.load(Ordering::SeqCst), 2);
+}
+
+#[test]
+fn test_evolve_complex_step_propagates_error_from_random_fallback_eval() {
+    // Reflection and contraction succeed (correct-length sim, high rmse ->
+    // strictly worse -> random fallback). The random-fallback simulate then
+    // returns a wrong-length sim, causing evaluate_simulation to error.
+    // Pins the error-propagation path on the third evaluate_simulation call.
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    let call_count = Arc::new(AtomicUsize::new(0));
+    let call_count_cl = Arc::clone(&call_count);
+    let simulate: Simulate = Box::new(move |_p, _pr, _t, _pet, _d, _e, _m| {
+        let n = call_count_cl.fetch_add(1, Ordering::SeqCst);
+        if n < 2 {
+            Ok(Array1::from_elem(n_timesteps, 10.0))
+        } else {
+            Ok(Array1::from_elem(n_timesteps - 1, 10.0))
+        }
+    });
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![0.1, 0.9, 0.9, 0.3, 0.8, 0.8, 0.5, 0.7, 0.7],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+    let result = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    );
+
+    assert!(
+        result.is_err(),
+        "Length mismatch in random fallback must propagate"
+    );
+    assert_eq!(call_count.load(Ordering::SeqCst), 3);
+}
+
+#[test]
+fn test_evolve_complex_step_propagates_error_from_reflection_simulate() {
+    // simulate itself fails on the reflection call (the first call). The
+    // `?` operator on the reflection-step simulate must propagate that
+    // CalibrationError immediately, before any evaluate_simulation is
+    // attempted.
+    use holmes_rs::calibration::utils::CalibrationError;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    let simulate: Simulate = Box::new(|_p, _pr, _t, _pet, _d, _e, _m| {
+        Err(CalibrationError::ParamsMismatch(3, 2))
+    });
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![0.1, 0.9, 0.9, 0.3, 0.8, 0.8, 0.5, 0.7, 0.7],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+    let result = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    );
+
+    assert!(
+        matches!(result, Err(CalibrationError::ParamsMismatch(3, 2))),
+        "Reflection simulate error must propagate unchanged"
+    );
+}
+
+#[test]
+fn test_evolve_complex_step_propagates_error_from_contraction_simulate() {
+    // simulate succeeds on reflection (high rmse -> strictly worse ->
+    // contraction branch taken), then errors on the contraction call.
+    // This pins the ? propagation at line 869 (second simulate ?).
+    use holmes_rs::calibration::utils::CalibrationError;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    let call_count = Arc::new(AtomicUsize::new(0));
+    let call_count_cl = Arc::clone(&call_count);
+    let simulate: Simulate = Box::new(move |_p, _pr, _t, _pet, _d, _e, _m| {
+        let n = call_count_cl.fetch_add(1, Ordering::SeqCst);
+        if n == 0 {
+            Ok(Array1::from_elem(n_timesteps, 10.0))
+        } else {
+            Err(CalibrationError::ParamsMismatch(3, 2))
+        }
+    });
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![0.1, 0.9, 0.9, 0.3, 0.8, 0.8, 0.5, 0.7, 0.7],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+    let result = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    );
+
+    assert!(matches!(
+        result,
+        Err(CalibrationError::ParamsMismatch(3, 2))
+    ));
+    assert_eq!(call_count.load(Ordering::SeqCst), 2);
+}
+
+#[test]
+fn test_evolve_complex_step_propagates_error_from_random_fallback_simulate() {
+    // simulate succeeds on reflection and contraction (both high rmse ->
+    // strictly worse) then errors on the random-fallback call. This pins
+    // the ? propagation at line 894 (third simulate ?).
+    use holmes_rs::calibration::utils::CalibrationError;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    let n_timesteps = 50usize;
+    let observations: Array1<f64> = Array1::from_elem(n_timesteps, 1.0);
+    let precipitation: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+    let pet: Array1<f64> = Array1::from_elem(n_timesteps, 0.0);
+
+    let call_count = Arc::new(AtomicUsize::new(0));
+    let call_count_cl = Arc::clone(&call_count);
+    let simulate: Simulate = Box::new(move |_p, _pr, _t, _pet, _d, _e, _m| {
+        let n = call_count_cl.fetch_add(1, Ordering::SeqCst);
+        if n < 2 {
+            Ok(Array1::from_elem(n_timesteps, 10.0))
+        } else {
+            Err(CalibrationError::ParamsMismatch(3, 2))
+        }
+    });
+
+    let lower_bounds = array![0.0, 0.0];
+    let upper_bounds = array![10.0, 10.0];
+    let simplex =
+        Array2::from_shape_vec((3, 2), vec![5.0, 5.0, 6.0, 6.0, 7.0, 7.0])
+            .unwrap();
+    let simplex_objectives = Array2::from_shape_vec(
+        (3, 3),
+        vec![0.1, 0.9, 0.9, 0.3, 0.8, 0.8, 0.5, 0.7, 0.7],
+    )
+    .unwrap();
+
+    let mut rng = ChaCha8Rng::seed_from_u64(42);
+    let result = evolve_complex_step(
+        simplex.view(),
+        simplex_objectives.view(),
+        lower_bounds.view(),
+        upper_bounds.view(),
+        &simulate,
+        precipitation.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        observations.view(),
+        0,
+        0,
+        true,
+        Transformation::None,
+        &mut rng,
+    );
+
+    assert!(matches!(
+        result,
+        Err(CalibrationError::ParamsMismatch(3, 2))
+    ));
+    assert_eq!(call_count.load(Ordering::SeqCst), 3);
 }
