@@ -262,6 +262,24 @@ class TestGetModel:
         assert len(result) == n
         assert np.all(result >= 0)
 
+    def test_get_model_hbv(self):
+        """Returns HBV simulate function."""
+        simulate = hydro.get_model("hbv")
+        assert callable(simulate)
+
+    def test_hbv_simulate(self):
+        """HBV simulate produces output."""
+        simulate = hydro.get_model("hbv")
+        config = hydro.get_config("hbv")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
     def test_crec_simulate(self):
         """CREC simulate produces output."""
         simulate = hydro.get_model("crec")
@@ -508,6 +526,42 @@ class TestHypothesis:
         result = simulate(params, precip, pet)
         assert np.all(result >= 0)
 
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_hbv_output_length_matches_input(self, precipitation):
+        """HBV output length matches input length."""
+        simulate = hydro.get_model("hbv")
+        config = hydro.get_config("hbv")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_hbv_output_non_negative(self, precipitation):
+        """HBV output is non-negative."""
+        simulate = hydro.get_model("hbv")
+        config = hydro.get_config("hbv")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
 
 class TestErrorHandling:
     """Tests for error handling in hydro models."""
@@ -698,6 +752,45 @@ class TestErrorHandling:
             simulate = hydro.get_model("hymod")
             with pytest.raises(HolmesValidationError):
                 params = np.array([500.0, 1.0, 0.5, 2.5, 500.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_hbv_numerical_error(self):
+        """get_config handles HolmesNumericalError for HBV."""
+        with patch(
+            "holmes_rs.hydro.hbv.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("hbv")
+
+    def test_simulate_hbv_numerical_error(self):
+        """HBV simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.hbv.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("hbv")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [500.0, 500.0, 10.0, 50.0, 10.0, 20.0, 1.0, 50.0, 10.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_hbv_validation_error(self):
+        """HBV simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.hbv.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("hbv")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [500.0, 500.0, 10.0, 50.0, 10.0, 20.0, 1.0, 50.0, 10.0]
+                )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)

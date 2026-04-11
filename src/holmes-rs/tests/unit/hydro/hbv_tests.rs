@@ -481,8 +481,7 @@ fn test_x8_threshold_zero() {
 #[test]
 fn test_x8_threshold_maximum() {
     // x8 = 100: Qr1 only fires when R exceeds 100, otherwise Qr1 = 0
-    let params =
-        array![500.0, 500.0, 5.0, 50.0, 10.0, 20.0, 1.0, 100.0, 10.0];
+    let params = array![500.0, 500.0, 5.0, 50.0, 10.0, 20.0, 1.0, 100.0, 10.0];
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
@@ -496,8 +495,7 @@ fn test_x8_threshold_maximum() {
 fn test_qr1_never_fires_when_r_below_threshold() {
     // With huge x8 and dry conditions, R never exceeds the threshold
     // so the Qr1 branch is taken with pr - x8 < 0 (max(0, ...) clamps it).
-    let params =
-        array![500.0, 500.0, 1.0, 50.0, 10.0, 20.0, 1.0, 100.0, 20.0];
+    let params = array![500.0, 500.0, 1.0, 50.0, 10.0, 20.0, 1.0, 100.0, 20.0];
     let n = 100;
     let precip = Array1::zeros(n);
     let pet = Array1::from_elem(n, 1.0);

@@ -39,10 +39,12 @@ In catchments with significant snowfall, precipitation does not immediately cont
 
 The core of the modeling chain is the rainfall-runoff model that transforms effective precipitation (rainfall plus snowmelt) into streamflow. HOLMES implements several models:
 
-- **[GR4J](hydro/gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
 - **[Bucket model](hydro/bucket.md)**: A six-parameter model based on linear reservoir theory with explicit fast and slow flow paths. Offers more flexibility in flow partitioning and often captures recession behavior well.
 - **[CEQUEAU](hydro/cequeau.md)**: A nine-parameter two-reservoir model (the "CEQU" simplification of the original CEQUEAU) that produces multiple threshold-based and continuous flow pathways, giving it considerable flexibility in hydrograph shape.
 - **[CREC](hydro/crec.md)**: A six-parameter model featuring a sigmoid rainfall-splitting function that smoothly partitions precipitation between runoff and infiltration based on soil moisture. Uses nonlinear (quadratic) surface routing.
+- **[GARDENIA](hydro/gardenia.md)**: A six-parameter BRGM model originally developed for rainfall → piezometric-level forecasting. Uses three reservoirs in series with a quadratic soil outflow law and a calibratable PET correction coefficient.
+- **[GR4J](hydro/gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
+- **[HBV](hydro/hbv.md)**: A nine-parameter model following Bergström's HBV0 formulation from Perrin's thesis. Uses a non-linear soil production with five-sub-step integration, a two-outflow intermediate reservoir, capped percolation, and a triangular unit hydrograph.
 - **[HYMOD](hydro/hymod.md)**: A six-parameter model using a Pareto-distributed soil moisture store (variable-source-area runoff generation) combined with three linear reservoirs in cascade for fast flow and one linear groundwater reservoir for baseflow.
 
 ### 4. Model Calibration
@@ -63,10 +65,12 @@ The choice of model depends on your catchment characteristics and objectives. Ea
 
 | Model | Params | Soil store | Flow partitioning | Routing | GW exchange | Equifinality | Best for |
 |-------|:------:|------------|-------------------|---------|:-----------:|:------------:|----------|
-| [GR4J](hydro/gr4j.md) | 4 | Single reservoir | Fixed 90% / 10% | Unit hydrographs + nonlinear store | Yes ($X_2$) | Lower | Humid temperate catchments, benchmarking |
 | [Bucket](hydro/bucket.md) | 6 | Single bucket | Calibratable ($\alpha$, $\beta$) | Linear reservoirs | No | Higher | Catchments with distinct recession components |
 | [CEQUEAU](hydro/cequeau.md) | 9 | Two-reservoir (surface + groundwater) | Threshold + continuous pathways | Pure time delay | No | Higher | Flexible hydrograph shapes, threshold-driven response |
 | [CREC](hydro/crec.md) | 6 | Single bucket + sigmoid split | Sigmoid (moisture-dependent) | Quadratic + linear stores | No | Moderate | Catchments with moisture-dependent runoff generation |
+| [GARDENIA](hydro/gardenia.md) | 6 | Surface + soil + groundwater in series | Overflow at surface + quadratic soil outflow | Fractional delay | No | Moderate | Catchments with a strong aquifer component; rainfall → piezometric-level use cases |
+| [GR4J](hydro/gr4j.md) | 4 | Single reservoir | Fixed 90% / 10% | Unit hydrographs + nonlinear store | Yes ($X_2$) | Lower | Humid temperate catchments, benchmarking |
+| [HBV](hydro/hbv.md) | 9 | Non-linear soil (five sub-steps) | Threshold upper + linear lower intermediate reservoir | Triangular unit hydrograph | No | Higher | Nordic / temperate catchments, operational forecasting |
 | [HYMOD](hydro/hymod.md) | 6 | Pareto-distributed (variable source area) | Saturation excess + calibratable $\alpha$ | Three linear reservoirs cascade + one slow reservoir | No | Moderate | Catchments where saturated-area runoff dominates |
 
 <!--
@@ -83,10 +87,12 @@ For catchments with significant snow, enable CemaNeige regardless of which hydro
 
 Each concept page provides detailed explanations, mathematical formulations, and practical guidance:
 
-- [GR4J Model](hydro/gr4j.md) - Parsimonious four-parameter model
 - [Bucket Model](hydro/bucket.md) - Linear reservoir model with flexible flow partitioning
 - [CEQUEAU Model](hydro/cequeau.md) - Two-reservoir model with threshold-based and continuous flow pathways
 - [CREC Model](hydro/crec.md) - Sigmoid splitting with nonlinear surface routing
+- [GARDENIA Model](hydro/gardenia.md) - BRGM three-reservoir model with quadratic soil outflow and PET correction
+- [GR4J Model](hydro/gr4j.md) - Parsimonious four-parameter model
+- [HBV Model](hydro/hbv.md) - Nine-parameter Bergström formulation with five-sub-step soil production and triangular routing
 - [HYMOD Model](hydro/hymod.md) - Pareto-distributed soil store with three-reservoir fast cascade
 - [Snow Models (CemaNeige)](snow-models.md) - Snow accumulation and melt
 - [PET Models (Oudin)](pet-models.md) - Potential evapotranspiration calculation

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the GARDENIA module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - HYMOD hydrological model (`hydro::hymod`) with 6 parameters following the Boyle/Wagener formulation: Pareto-distributed soil moisture store, three linear fast reservoirs in cascade, one linear slow groundwater reservoir, and fractional delay routing
 - Python bindings and type stubs for the HYMOD module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- HBV hydrological model (`hydro::hbv`) with 9 parameters following the Bergström/Forsman formulation as described in Perrin's thesis (HBV0 / HOOPLA HM6): five-substep soil moisture accounting with nonlinear production, three-reservoir routing with threshold upper outflow, linear lower outflow, and capped percolation, and a triangular unit hydrograph
+- Python bindings and type stubs for the HBV module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters
