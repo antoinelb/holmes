@@ -22,6 +22,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - IHACRES hydrological model (7-parameter Perrin variant of the Jakeman et al. 1990 model with PET-modulated drying constant and parallel fast/slow linear routing) support in model registry, config, and simulation dispatching
 - TOPMODEL hydrological model (7-parameter Perrin variant of the Beven & Kirkby 1979 model with sigmoid recharge/ET partitioning, exponential groundwater store, and quadratic surface routing) support in model registry, config, and simulation dispatching
 - NAM hydrological model (10-parameter HOOPLA HM12 port of the Nielsen & Hansen 1973 Nedbør-Afstrømnings-Model with seven reservoirs and a fractional-delay unit hydrograph) support in model registry, config, and simulation dispatching
+- PDM hydrological model (8-parameter HOOPLA HM13 port of the Moore & Clarke 1981 Probability-Distributed Model with Pareto soil store, cubic ground reservoir, two-stage linear cascade, and fractional-delay routing) support in model registry, config, and simulation dispatching
 
 ### Changed
 - `day_of_year` is now optional in the calibration API, only required when a snow model is active

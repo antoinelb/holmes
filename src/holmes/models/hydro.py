@@ -18,6 +18,7 @@ from holmes_rs.hydro import (
     hymod,
     ihacres,
     nam,
+    pdm,
     sacramento,
     topmodel,
     xinanjiang,
@@ -39,6 +40,7 @@ HydroModel = Literal[
     "hymod",
     "ihacres",
     "nam",
+    "pdm",
     "sacramento",
     "topmodel",
     "xinanjiang",
@@ -102,6 +104,10 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = nam.param_names
                 descriptions = nam.param_descriptions
                 defaults, bounds = nam.init()
+            case "pdm":
+                param_names = pdm.param_names
+                descriptions = pdm.param_descriptions
+                defaults, bounds = pdm.init()
             case "sacramento":
                 param_names = sacramento.param_names
                 descriptions = sacramento.param_descriptions
@@ -183,6 +189,8 @@ def get_model(
             simulate_fn = ihacres.simulate
         case "nam":
             simulate_fn = nam.simulate
+        case "pdm":
+            simulate_fn = pdm.simulate
         case "sacramento":
             simulate_fn = sacramento.simulate
         case "topmodel":

@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the TOPMODEL module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - NAM hydrological model (`hydro::nam`) with 10 parameters porting HOOPLA HM12 verbatim from the Nielsen & Hansen 1973 Nedbør-Afstrømnings-Model: surface storage with three-branch evapotranspiration, soil moisture store with capillary rise, two parallel two-reservoir cascades for interflow and overland flow, groundwater deficit reservoir with baseflow threshold, and fractional-delay unit hydrograph
 - Python bindings and type stubs for the NAM module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- PDM hydrological model (`hydro::pdm`) with 8 parameters porting HOOPLA HM13 of the Moore & Clarke 1981 Probability-Distributed Model: Pareto-distributed soil moisture capacity with saturation and infiltration excess, threshold-gated drainage to a cubic ground reservoir, two linear fast-routing reservoirs in series, and fractional-delay unit hydrograph
+- Python bindings and type stubs for the PDM module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters

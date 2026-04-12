@@ -215,6 +215,24 @@ class TestGetConfig:
             assert "max" in param
             assert "description" in param
 
+    def test_get_config_pdm(self):
+        """PDM parameter config has expected structure."""
+        config = hydro.get_config("pdm")
+        assert isinstance(config, list)
+        assert len(config) == 8
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_pdm_param_names(self):
+        """PDM has expected parameter names."""
+        config = hydro.get_config("pdm")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+
     def test_get_config_topmodel(self):
         """TOPMODEL parameter config has expected structure."""
         config = hydro.get_config("topmodel")
@@ -261,6 +279,7 @@ class TestGetConfig:
             "hymod",
             "ihacres",
             "nam",
+            "pdm",
             "sacramento",
             "topmodel",
             "xinanjiang",
@@ -286,6 +305,7 @@ class TestGetConfig:
             "hymod",
             "ihacres",
             "nam",
+            "pdm",
             "sacramento",
             "topmodel",
             "xinanjiang",
@@ -490,6 +510,24 @@ class TestGetModel:
         """SACRAMENTO simulate produces output."""
         simulate = hydro.get_model("sacramento")
         config = hydro.get_config("sacramento")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_pdm(self):
+        """Returns PDM simulate function."""
+        simulate = hydro.get_model("pdm")
+        assert callable(simulate)
+
+    def test_pdm_simulate(self):
+        """PDM simulate produces output."""
+        simulate = hydro.get_model("pdm")
+        config = hydro.get_config("pdm")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -803,6 +841,42 @@ class TestHypothesis:
         """IHACRES output is non-negative."""
         simulate = hydro.get_model("ihacres")
         config = hydro.get_config("ihacres")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_pdm_output_length_matches_input(self, precipitation):
+        """PDM output length matches input length."""
+        simulate = hydro.get_model("pdm")
+        config = hydro.get_config("pdm")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_pdm_output_non_negative(self, precipitation):
+        """PDM output is non-negative."""
+        simulate = hydro.get_model("pdm")
+        config = hydro.get_config("pdm")
         params = np.array([p["default"] for p in config])
         precip = np.array(precipitation)
         pet = np.random.uniform(0, 5, len(precipitation))
@@ -1294,6 +1368,45 @@ class TestErrorHandling:
             with pytest.raises(HolmesValidationError):
                 params = np.array(
                     [100.0, 10.0, 10.0, 2.0, 0.4, 50.0, 200.0, 5.0, 100.0, 1.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_pdm_numerical_error(self):
+        """get_config handles HolmesNumericalError for PDM."""
+        with patch(
+            "holmes_rs.hydro.pdm.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("pdm")
+
+    def test_simulate_pdm_numerical_error(self):
+        """PDM simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.pdm.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("pdm")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [1000.0, 1.0, 0.5, 2.5, 1000.0, 15.0, 1.0, 50.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_pdm_validation_error(self):
+        """PDM simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.pdm.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("pdm")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [1000.0, 1.0, 0.5, 2.5, 1000.0, 15.0, 1.0, 50.0]
                 )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
