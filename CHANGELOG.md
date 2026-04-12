@@ -12,6 +12,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ## [Unreleased]
 
 ### Added
+- MARTINE hydrological model (7-parameter Perrin variant of the Mazenc et al. 1984 BRGM model with overflow production, quadratic direct routing, dual-pathway intermediate reservoir, and linear groundwater recession) support in model registry, config, and simulation dispatching
 - CREC hydrological model support in model registry, config, and simulation dispatching
 - CREC model documentation page with mathematical formulation, 6-parameter description, and model comparison table update
 - GARDENIA hydrological model support in model registry, config, and simulation dispatching

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- MARTINE hydrological model (`hydro::martine`) with 7 parameters following Perrin's "version retenue" of the Mazenc et al. 1984 BRGM model (HOOPLA HM9): surface reservoir with overflow production, quadratic direct routing reservoir, intermediate reservoir with linear drainage and overflow, linear groundwater recession, distribution coefficient for flow partitioning, and fractional-delay routing
+- Python bindings and type stubs for the MARTINE module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - CREC hydrological model (`hydro::crec`) with 6 parameters, sigmoid rainfall-splitting function, and nonlinear surface routing
 - Python bindings and type stubs for the CREC module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - GARDENIA hydrological model (`hydro::gardenia`) with 6 parameters matching Perrin's thesis GARD structure: overflow-based surface reservoir, quadratic soil emptying, linear groundwater recession, and fractional delay routing

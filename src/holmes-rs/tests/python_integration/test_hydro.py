@@ -17,6 +17,7 @@ from holmes_rs.hydro import (
     hbv,
     hymod,
     ihacres,
+    martine,
     nam,
     pdm,
     sacramento,
@@ -1600,6 +1601,111 @@ class TestIhacresParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in ihacres.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestMartineInit:
+    """Tests for martine.init function."""
+
+    def test_returns_tuple(self):
+        result = martine.init()
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        defaults, _ = martine.init()
+        assert len(defaults) == 7
+
+    def test_bounds_shape(self):
+        _, bounds = martine.init()
+        assert bounds.shape == (7, 2)
+
+    def test_defaults_within_bounds(self):
+        defaults, bounds = martine.init()
+        for i in range(7):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        _, bounds = martine.init()
+        for i in range(7):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestMartineSimulate:
+    """Tests for martine.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        defaults, _ = martine.init()
+        streamflow = martine.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        defaults, _ = martine.init()
+        streamflow = martine.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        defaults, _ = martine.init()
+        streamflow = martine.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        defaults, _ = martine.init()
+        precip = np.zeros(100)
+        streamflow = martine.simulate(defaults, precip, sample_pet)
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        wrong_params = np.array([100.0, 25.0, 50.0, 5.0])  # 4 instead of 7
+        with pytest.raises(HolmesValidationError, match="param"):
+            martine.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        defaults, _ = martine.init()
+        short_pet = np.array([2.0, 2.0])
+        with pytest.raises(HolmesValidationError, match="length"):
+            martine.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        params = np.array([500.0, 500.0, 200.0, 100.0, 0.5, 2.5, 100.0])
+        streamflow = martine.simulate(params, sample_precipitation, sample_pet)
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestMartineParamNames:
+    """Tests for martine.param_names constant."""
+
+    def test_param_names_exists(self):
+        assert hasattr(martine, "param_names")
+
+    def test_param_names_count(self):
+        assert len(martine.param_names) == 7
+
+    def test_param_names_values(self):
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+        assert martine.param_names == expected
+
+
+class TestMartineParamDescriptions:
+    """Tests for martine.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        assert hasattr(martine, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        assert len(martine.param_descriptions) == len(martine.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        for desc in martine.param_descriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 

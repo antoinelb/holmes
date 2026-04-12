@@ -7,6 +7,7 @@ pub mod gr4j;
 pub mod hbv;
 pub mod hymod;
 pub mod ihacres;
+pub mod martine;
 pub mod nam;
 pub mod pdm;
 pub mod sacramento;
@@ -33,6 +34,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     register_submodule(py, &m, &hymod::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &hbv::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &ihacres::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &martine::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &nam::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &pdm::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(
@@ -68,6 +70,7 @@ pub fn get_model(
         "hymod" => Ok((hymod::init, hymod::simulate)),
         "hbv" => Ok((hbv::init, hbv::simulate)),
         "ihacres" => Ok((ihacres::init, ihacres::simulate)),
+        "martine" => Ok((martine::init, martine::simulate)),
         "nam" => Ok((nam::init, nam::simulate)),
         "pdm" => Ok((pdm::init, pdm::simulate)),
         "sacramento" => Ok((sacramento::init, sacramento::simulate)),
