@@ -16,6 +16,7 @@ from holmes_rs.hydro import (
     gr4j,
     hbv,
     hymod,
+    sacramento,
     xinanjiang,
 )
 
@@ -1091,6 +1092,152 @@ class TestXinanjiangParamDescriptions:
             assert len(desc) > 0
 
 
+class TestSacramentoInit:
+    """Tests for sacramento.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = sacramento.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 9 elements."""
+        defaults, _ = sacramento.init()
+
+        assert len(defaults) == 9
+
+    def test_bounds_shape(self):
+        """Bounds should be 9x2 array."""
+        _, bounds = sacramento.init()
+
+        assert bounds.shape == (9, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = sacramento.init()
+
+        for i in range(9):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = sacramento.init()
+
+        for i in range(9):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestSacramentoSimulate:
+    """Tests for sacramento.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = sacramento.init()
+
+        streamflow = sacramento.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = sacramento.init()
+
+        streamflow = sacramento.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = sacramento.init()
+
+        streamflow = sacramento.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = sacramento.init()
+        precip = np.zeros(100)
+
+        streamflow = sacramento.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([10.0, 500.0, 250.0, 250.0, 10.0])  # 5 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            sacramento.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = sacramento.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            sacramento.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array(
+            [5.0, 300.0, 100.0, 150.0, 8.0, 20.0, 0.4, 15.0, 3.0]
+        )
+
+        streamflow = sacramento.simulate(
+            params, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestSacramentoParamNames:
+    """Tests for sacramento.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(sacramento, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 9 parameter names."""
+        assert len(sacramento.param_names) == 9
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
+        assert sacramento.param_names == expected
+
+
+class TestSacramentoParamDescriptions:
+    """Tests for sacramento.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(sacramento, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(sacramento.param_descriptions) == len(
+            sacramento.param_names
+        )
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in sacramento.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
 class TestHydroModuleIntegration:
     """Integration tests for hydro module."""
 
@@ -1105,6 +1252,7 @@ class TestHydroModuleIntegration:
         assert hasattr(hydro, "gardenia")
         assert hasattr(hydro, "hbv")
         assert hasattr(hydro, "hymod")
+        assert hasattr(hydro, "sacramento")
         assert hasattr(hydro, "xinanjiang")
 
     def test_all_models_produce_output(self, sample_precipitation, sample_pet):
@@ -1116,6 +1264,7 @@ class TestHydroModuleIntegration:
         gardenia_defaults, _ = gardenia.init()
         hbv_defaults, _ = hbv.init()
         hymod_defaults, _ = hymod.init()
+        sacramento_defaults, _ = sacramento.init()
         xinanjiang_defaults, _ = xinanjiang.init()
 
         gr4j_flow = gr4j.simulate(
@@ -1137,6 +1286,9 @@ class TestHydroModuleIntegration:
         hymod_flow = hymod.simulate(
             hymod_defaults, sample_precipitation, sample_pet
         )
+        sacramento_flow = sacramento.simulate(
+            sacramento_defaults, sample_precipitation, sample_pet
+        )
         xinanjiang_flow = xinanjiang.simulate(
             xinanjiang_defaults, sample_precipitation, sample_pet
         )
@@ -1148,6 +1300,7 @@ class TestHydroModuleIntegration:
         assert len(gardenia_flow) == len(sample_precipitation)
         assert len(hbv_flow) == len(sample_precipitation)
         assert len(hymod_flow) == len(sample_precipitation)
+        assert len(sacramento_flow) == len(sample_precipitation)
         assert len(xinanjiang_flow) == len(sample_precipitation)
         assert np.all(np.isfinite(gr4j_flow))
         assert np.all(np.isfinite(bucket_flow))
@@ -1156,4 +1309,5 @@ class TestHydroModuleIntegration:
         assert np.all(np.isfinite(gardenia_flow))
         assert np.all(np.isfinite(hbv_flow))
         assert np.all(np.isfinite(hymod_flow))
+        assert np.all(np.isfinite(sacramento_flow))
         assert np.all(np.isfinite(xinanjiang_flow))

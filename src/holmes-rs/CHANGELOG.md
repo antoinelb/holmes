@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the HBV module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - XINANJIANG hydrological model (`hydro::xinanjiang`) with 8 parameters following Perrin's variant of the Zhao et al. 1980 formulation (HOOPLA HM20): piecewise evapotranspiration, power-distributed saturation-excess production, free-water reservoir with fast/slow routing split, and a two-tap fractional delay unit hydrograph
 - Python bindings and type stubs for the XINANJIANG module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- SACRAMENTO hydrological model (`hydro::sacramento`) with 9 parameters following Perrin's thesis "version retenue" of the Burnash et al. 1973 NWSRFS model (HOOPLA HM14): interception store, upper-zone tension-water reservoir with percolation/hypodermic/evaporation/overflow outflows, lower-zone routing reservoir with upward mass-balance correction, free-water baseflow store damped by deep percolation, and fractional-delay direct routing
+- Python bindings and type stubs for the SACRAMENTO module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters

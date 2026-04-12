@@ -156,6 +156,34 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
 
+    def test_get_config_sacramento(self):
+        """SACRAMENTO parameter config has expected structure."""
+        config = hydro.get_config("sacramento")
+        assert isinstance(config, list)
+        assert len(config) == 9
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_sacramento_param_names(self):
+        """SACRAMENTO has expected parameter names."""
+        config = hydro.get_config("sacramento")
+        names = [p["name"] for p in config]
+        assert names == [
+            "x1",
+            "x2",
+            "x3",
+            "x4",
+            "x5",
+            "x6",
+            "x7",
+            "x8",
+            "x9",
+        ]
+
     def test_descriptions_are_non_empty_strings(self):
         """All parameters have a non-empty string description."""
         for model in (
@@ -166,6 +194,7 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "sacramento",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -187,6 +216,7 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "sacramento",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -335,6 +365,24 @@ class TestGetModel:
         """XINANJIANG simulate produces output."""
         simulate = hydro.get_model("xinanjiang")
         config = hydro.get_config("xinanjiang")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_sacramento(self):
+        """Returns SACRAMENTO simulate function."""
+        simulate = hydro.get_model("sacramento")
+        assert callable(simulate)
+
+    def test_sacramento_simulate(self):
+        """SACRAMENTO simulate produces output."""
+        simulate = hydro.get_model("sacramento")
+        config = hydro.get_config("sacramento")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -636,6 +684,42 @@ class TestHypothesis:
         result = simulate(params, precip, pet)
         assert np.all(result >= 0)
 
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_sacramento_output_length_matches_input(self, precipitation):
+        """SACRAMENTO output length matches input length."""
+        simulate = hydro.get_model("sacramento")
+        config = hydro.get_config("sacramento")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_sacramento_output_non_negative(self, precipitation):
+        """SACRAMENTO output is non-negative."""
+        simulate = hydro.get_model("sacramento")
+        config = hydro.get_config("sacramento")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
 
 class TestErrorHandling:
     """Tests for error handling in hydro models."""
@@ -903,6 +987,45 @@ class TestErrorHandling:
             with pytest.raises(HolmesValidationError):
                 params = np.array(
                     [0.5, 10.0, 25.0, 250.0, 1000.0, 5.0, 25.0, 2.5]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_sacramento_numerical_error(self):
+        """get_config handles HolmesNumericalError for SACRAMENTO."""
+        with patch(
+            "holmes_rs.hydro.sacramento.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("sacramento")
+
+    def test_simulate_sacramento_numerical_error(self):
+        """SACRAMENTO simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.sacramento.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("sacramento")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [10.0, 500.0, 250.0, 250.0, 10.0, 50.0, 0.5, 25.0, 5.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_sacramento_validation_error(self):
+        """SACRAMENTO simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.sacramento.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("sacramento")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [10.0, 500.0, 250.0, 250.0, 10.0, 50.0, 0.5, 25.0, 5.0]
                 )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])

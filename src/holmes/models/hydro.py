@@ -16,6 +16,7 @@ from holmes_rs.hydro import (
     gr4j,
     hbv,
     hymod,
+    sacramento,
     xinanjiang,
 )
 
@@ -33,6 +34,7 @@ HydroModel = Literal[
     "gardenia",
     "hbv",
     "hymod",
+    "sacramento",
     "xinanjiang",
 ]
 
@@ -86,6 +88,10 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = hymod.param_names
                 descriptions = hymod.param_descriptions
                 defaults, bounds = hymod.init()
+            case "sacramento":
+                param_names = sacramento.param_names
+                descriptions = sacramento.param_descriptions
+                defaults, bounds = sacramento.init()
             case "xinanjiang":
                 param_names = xinanjiang.param_names
                 descriptions = xinanjiang.param_descriptions
@@ -155,6 +161,8 @@ def get_model(
             simulate_fn = hbv.simulate
         case "hymod":
             simulate_fn = hymod.simulate
+        case "sacramento":
+            simulate_fn = sacramento.simulate
         case "xinanjiang":
             simulate_fn = xinanjiang.simulate
         case _:  # pragma: no cover

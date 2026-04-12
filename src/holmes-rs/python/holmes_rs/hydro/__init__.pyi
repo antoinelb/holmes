@@ -1,4 +1,14 @@
-from . import bucket, cequeau, crec, gardenia, gr4j, hbv, hymod, xinanjiang
+from . import (
+    bucket,
+    cequeau,
+    crec,
+    gardenia,
+    gr4j,
+    hbv,
+    hymod,
+    sacramento,
+    xinanjiang,
+)
 
 __all__ = [
     "bucket",
@@ -8,5 +18,6 @@ __all__ = [
     "gr4j",
     "hbv",
     "hymod",
+    "sacramento",
     "xinanjiang",
 ]

@@ -46,6 +46,7 @@ The core of the modeling chain is the rainfall-runoff model that transforms effe
 - **[GR4J](hydro/gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
 - **[HBV](hydro/hbv.md)**: A nine-parameter model following Bergström's HBV0 formulation from Perrin's thesis. Uses a non-linear soil production with five-sub-step integration, a two-outflow intermediate reservoir, capped percolation, and a triangular unit hydrograph.
 - **[HYMOD](hydro/hymod.md)**: A six-parameter model using a Pareto-distributed soil moisture store (variable-source-area runoff generation) combined with three linear reservoirs in cascade for fast flow and one linear groundwater reservoir for baseflow.
+- **[SACRAMENTO](hydro/sacramento.md)**: A nine-parameter variant of the Burnash et al. (1973) NWSRFS operational model following Perrin's simplification. Uses five reservoirs (interception, tension water, free water, lower-zone routing, direct routing) with a filling-feedback percolation scheme, interflow and hypodermic pathways, and an upward mass-balance correction between the lower-zone store and the free-water store.
 - **[XINANJIANG](hydro/xinanjiang.md)**: An eight-parameter variant of the Zhao et al. (1980) Chinese operational model. Uses two power-distributed saturation-excess reservoirs in series (soil + free-water) feeding a calibratable fast/slow routing split and a two-tap fractional-delay unit hydrograph.
 
 ### 4. Model Calibration
@@ -73,6 +74,7 @@ The choice of model depends on your catchment characteristics and objectives. Ea
 | [GR4J](hydro/gr4j.md) | 4 | Single reservoir | Fixed 90% / 10% | Unit hydrographs + nonlinear store | Yes ($X_2$) | Lower | Humid temperate catchments, benchmarking |
 | [HBV](hydro/hbv.md) | 9 | Non-linear soil (five sub-steps) | Threshold upper + linear lower intermediate reservoir | Triangular unit hydrograph | No | Higher | Nordic / temperate catchments, operational forecasting |
 | [HYMOD](hydro/hymod.md) | 6 | Pareto-distributed (variable source area) | Saturation excess + calibratable $\alpha$ | Three linear reservoirs cascade + one slow reservoir | No | Moderate | Catchments where saturated-area runoff dominates |
+| [SACRAMENTO](hydro/sacramento.md) | 9 | Interception + tension + free water (three-store cascade) | Percolation with filling-feedback + threshold overflow | Direct routing store + fractional-delay register | Yes (via $X_8$ deep percolation) | Higher | Catchments with clear baseflow separation; operational NWS-style use cases |
 | [XINANJIANG](hydro/xinanjiang.md) | 8 | Two power-distributed reservoirs (soil + free-water) | Saturation excess (fixed $B = 0.25$, calibratable $X_8$) | Fast/slow linear reservoirs + two-tap unit hydrograph | No | Moderate | Catchments with strong spatial variability of storage capacity; Chinese / monsoon operational use cases |
 
 <!--
@@ -96,6 +98,7 @@ Each concept page provides detailed explanations, mathematical formulations, and
 - [GR4J Model](hydro/gr4j.md) - Parsimonious four-parameter model
 - [HBV Model](hydro/hbv.md) - Nine-parameter Bergström formulation with five-sub-step soil production and triangular routing
 - [HYMOD Model](hydro/hymod.md) - Pareto-distributed soil store with three-reservoir fast cascade
+- [SACRAMENTO Model](hydro/sacramento.md) - Five-reservoir Burnash/NWSRFS cascade with filling-feedback percolation and deep-percolation damping
 - [XINANJIANG Model](hydro/xinanjiang.md) - Two power-distributed saturation-excess reservoirs with fast/slow routing split
 - [Snow Models (CemaNeige)](snow-models.md) - Snow accumulation and melt
 - [PET Models (Oudin)](pet-models.md) - Potential evapotranspiration calculation
