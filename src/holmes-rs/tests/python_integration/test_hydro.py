@@ -16,7 +16,10 @@ from holmes_rs.hydro import (
     gr4j,
     hbv,
     hymod,
+    ihacres,
+    nam,
     sacramento,
+    topmodel,
     xinanjiang,
 )
 
@@ -1252,6 +1255,8 @@ class TestHydroModuleIntegration:
         assert hasattr(hydro, "gardenia")
         assert hasattr(hydro, "hbv")
         assert hasattr(hydro, "hymod")
+        assert hasattr(hydro, "ihacres")
+        assert hasattr(hydro, "nam")
         assert hasattr(hydro, "sacramento")
         assert hasattr(hydro, "xinanjiang")
 
@@ -1264,6 +1269,7 @@ class TestHydroModuleIntegration:
         gardenia_defaults, _ = gardenia.init()
         hbv_defaults, _ = hbv.init()
         hymod_defaults, _ = hymod.init()
+        ihacres_defaults, _ = ihacres.init()
         sacramento_defaults, _ = sacramento.init()
         xinanjiang_defaults, _ = xinanjiang.init()
 
@@ -1286,6 +1292,9 @@ class TestHydroModuleIntegration:
         hymod_flow = hymod.simulate(
             hymod_defaults, sample_precipitation, sample_pet
         )
+        ihacres_flow = ihacres.simulate(
+            ihacres_defaults, sample_precipitation, sample_pet
+        )
         sacramento_flow = sacramento.simulate(
             sacramento_defaults, sample_precipitation, sample_pet
         )
@@ -1300,6 +1309,7 @@ class TestHydroModuleIntegration:
         assert len(gardenia_flow) == len(sample_precipitation)
         assert len(hbv_flow) == len(sample_precipitation)
         assert len(hymod_flow) == len(sample_precipitation)
+        assert len(ihacres_flow) == len(sample_precipitation)
         assert len(sacramento_flow) == len(sample_precipitation)
         assert len(xinanjiang_flow) == len(sample_precipitation)
         assert np.all(np.isfinite(gr4j_flow))
@@ -1309,5 +1319,383 @@ class TestHydroModuleIntegration:
         assert np.all(np.isfinite(gardenia_flow))
         assert np.all(np.isfinite(hbv_flow))
         assert np.all(np.isfinite(hymod_flow))
+        assert np.all(np.isfinite(ihacres_flow))
         assert np.all(np.isfinite(sacramento_flow))
         assert np.all(np.isfinite(xinanjiang_flow))
+
+
+class TestIhacresInit:
+    """Tests for ihacres.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = ihacres.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 7 elements."""
+        defaults, _ = ihacres.init()
+
+        assert len(defaults) == 7
+
+    def test_bounds_shape(self):
+        """Bounds should be 7x2 array."""
+        _, bounds = ihacres.init()
+
+        assert bounds.shape == (7, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = ihacres.init()
+
+        for i in range(7):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = ihacres.init()
+
+        for i in range(7):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestIhacresSimulate:
+    """Tests for ihacres.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = ihacres.init()
+
+        streamflow = ihacres.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = ihacres.init()
+
+        streamflow = ihacres.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = ihacres.init()
+
+        streamflow = ihacres.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = ihacres.init()
+        precip = np.zeros(100)
+
+        streamflow = ihacres.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([100.0, 0.5, 50.0, 3.0])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            ihacres.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = ihacres.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            ihacres.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([500.0, 0.5, 50.0, 500.0, 2.5, 5.0, 5.0])
+
+        streamflow = ihacres.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestIhacresParamNames:
+    """Tests for ihacres.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(ihacres, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 7 parameter names."""
+        assert len(ihacres.param_names) == 7
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+        assert ihacres.param_names == expected
+
+
+class TestIhacresParamDescriptions:
+    """Tests for ihacres.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(ihacres, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(ihacres.param_descriptions) == len(ihacres.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in ihacres.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestTopmodelInit:
+    """Tests for topmodel.init function."""
+
+    def test_returns_tuple(self):
+        result = topmodel.init()
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        defaults, _ = topmodel.init()
+        assert len(defaults) == 7
+
+    def test_bounds_shape(self):
+        _, bounds = topmodel.init()
+        assert bounds.shape == (7, 2)
+
+    def test_defaults_within_bounds(self):
+        defaults, bounds = topmodel.init()
+        for i in range(7):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        _, bounds = topmodel.init()
+        for i in range(7):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestTopmodelSimulate:
+    """Tests for topmodel.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        defaults, _ = topmodel.init()
+        streamflow = topmodel.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        defaults, _ = topmodel.init()
+        streamflow = topmodel.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        defaults, _ = topmodel.init()
+        streamflow = topmodel.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        defaults, _ = topmodel.init()
+        precip = np.zeros(100)
+        streamflow = topmodel.simulate(defaults, precip, sample_pet)
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        wrong_params = np.array([100.0, 25.0, 50.0, 5.0])  # 4 instead of 7
+        with pytest.raises(HolmesValidationError, match="param"):
+            topmodel.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        defaults, _ = topmodel.init()
+        short_pet = np.array([2.0, 2.0])
+        with pytest.raises(HolmesValidationError, match="length"):
+            topmodel.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_steady_state_constant_forcing(self):
+        # P=5, PET=2 with default params should converge to Q≈3 mm/d.
+        defaults, _ = topmodel.init()
+        precip = np.full(365, 5.0)
+        pet = np.full(365, 2.0)
+        streamflow = topmodel.simulate(defaults, precip, pet)
+        assert np.isclose(streamflow[300:].mean(), 3.0, atol=1e-6)
+
+
+class TestTopmodelParamNames:
+    """Tests for topmodel.param_names constant."""
+
+    def test_param_names_exists(self):
+        assert hasattr(topmodel, "param_names")
+
+    def test_param_names_count(self):
+        assert len(topmodel.param_names) == 7
+
+    def test_param_names_values(self):
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+        assert topmodel.param_names == expected
+
+
+class TestTopmodelParamDescriptions:
+    """Tests for topmodel.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        assert hasattr(topmodel, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        assert len(topmodel.param_descriptions) == len(topmodel.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        for desc in topmodel.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestNamInit:
+    """Tests for nam.init function."""
+
+    def test_returns_tuple(self):
+        result = nam.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        defaults, _ = nam.init()
+
+        assert len(defaults) == 10
+
+    def test_bounds_shape(self):
+        _, bounds = nam.init()
+
+        assert bounds.shape == (10, 2)
+
+    def test_defaults_within_bounds(self):
+        defaults, bounds = nam.init()
+
+        for i in range(10):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        _, bounds = nam.init()
+
+        for i in range(10):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestNamSimulate:
+    """Tests for nam.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        defaults, _ = nam.init()
+
+        streamflow = nam.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        defaults, _ = nam.init()
+
+        streamflow = nam.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        defaults, _ = nam.init()
+
+        streamflow = nam.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        defaults, _ = nam.init()
+        precip = np.zeros(100)
+
+        streamflow = nam.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        wrong_params = np.array([100.0, 50.0, 50.0, 3.0])  # 4 instead of 10
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            nam.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        defaults, _ = nam.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            nam.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        # Mid-range values, all within bounds.
+        params = np.array(
+            [100.0, 10.0, 10.0, 2.0, 0.4, 50.0, 200.0, 5.0, 100.0, 1.0]
+        )
+
+        streamflow = nam.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestNamParamNames:
+    """Tests for nam.param_names constant."""
+
+    def test_param_names_exists(self):
+        assert hasattr(nam, "param_names")
+
+    def test_param_names_count(self):
+        assert len(nam.param_names) == 10
+
+    def test_param_names_values(self):
+        expected = [
+            "x1",
+            "x2",
+            "x3",
+            "x4",
+            "x5",
+            "x6",
+            "x7",
+            "x8",
+            "x9",
+            "x10",
+        ]
+        assert nam.param_names == expected
+
+
+class TestNamParamDescriptions:
+    """Tests for nam.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        assert hasattr(nam, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        assert len(nam.param_descriptions) == len(nam.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        for desc in nam.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0

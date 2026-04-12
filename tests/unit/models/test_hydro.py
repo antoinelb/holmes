@@ -138,6 +138,24 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9"]
 
+    def test_get_config_ihacres(self):
+        """IHACRES parameter config has expected structure."""
+        config = hydro.get_config("ihacres")
+        assert isinstance(config, list)
+        assert len(config) == 7
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_ihacres_param_names(self):
+        """IHACRES has expected parameter names."""
+        config = hydro.get_config("ihacres")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+
     def test_get_config_xinanjiang(self):
         """XINANJIANG parameter config has expected structure."""
         config = hydro.get_config("xinanjiang")
@@ -156,6 +174,35 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
 
+    def test_get_config_nam(self):
+        """NAM parameter config has expected structure."""
+        config = hydro.get_config("nam")
+        assert isinstance(config, list)
+        assert len(config) == 10
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_nam_param_names(self):
+        """NAM has expected parameter names."""
+        config = hydro.get_config("nam")
+        names = [p["name"] for p in config]
+        assert names == [
+            "x1",
+            "x2",
+            "x3",
+            "x4",
+            "x5",
+            "x6",
+            "x7",
+            "x8",
+            "x9",
+            "x10",
+        ]
+
     def test_get_config_sacramento(self):
         """SACRAMENTO parameter config has expected structure."""
         config = hydro.get_config("sacramento")
@@ -167,6 +214,24 @@ class TestGetConfig:
             assert "min" in param
             assert "max" in param
             assert "description" in param
+
+    def test_get_config_topmodel(self):
+        """TOPMODEL parameter config has expected structure."""
+        config = hydro.get_config("topmodel")
+        assert isinstance(config, list)
+        assert len(config) == 7
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_topmodel_param_names(self):
+        """TOPMODEL has expected parameter names."""
+        config = hydro.get_config("topmodel")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
 
     def test_sacramento_param_names(self):
         """SACRAMENTO has expected parameter names."""
@@ -194,7 +259,10 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "ihacres",
+            "nam",
             "sacramento",
+            "topmodel",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -216,7 +284,10 @@ class TestGetConfig:
             "gardenia",
             "hbv",
             "hymod",
+            "ihacres",
+            "nam",
             "sacramento",
+            "topmodel",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -330,6 +401,24 @@ class TestGetModel:
         assert len(result) == n
         assert np.all(result >= 0)
 
+    def test_get_model_ihacres(self):
+        """Returns IHACRES simulate function."""
+        simulate = hydro.get_model("ihacres")
+        assert callable(simulate)
+
+    def test_ihacres_simulate(self):
+        """IHACRES simulate produces output."""
+        simulate = hydro.get_model("ihacres")
+        config = hydro.get_config("ihacres")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
     def test_crec_simulate(self):
         """CREC simulate produces output."""
         simulate = hydro.get_model("crec")
@@ -374,6 +463,24 @@ class TestGetModel:
         assert len(result) == n
         assert np.all(result >= 0)
 
+    def test_get_model_nam(self):
+        """Returns NAM simulate function."""
+        simulate = hydro.get_model("nam")
+        assert callable(simulate)
+
+    def test_nam_simulate(self):
+        """NAM simulate produces output."""
+        simulate = hydro.get_model("nam")
+        config = hydro.get_config("nam")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
     def test_get_model_sacramento(self):
         """Returns SACRAMENTO simulate function."""
         simulate = hydro.get_model("sacramento")
@@ -383,6 +490,24 @@ class TestGetModel:
         """SACRAMENTO simulate produces output."""
         simulate = hydro.get_model("sacramento")
         config = hydro.get_config("sacramento")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_topmodel(self):
+        """Returns TOPMODEL simulate function."""
+        simulate = hydro.get_model("topmodel")
+        assert callable(simulate)
+
+    def test_topmodel_simulate(self):
+        """TOPMODEL simulate produces output."""
+        simulate = hydro.get_model("topmodel")
+        config = hydro.get_config("topmodel")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -656,6 +781,42 @@ class TestHypothesis:
         )
     )
     @settings(max_examples=20)
+    def test_ihacres_output_length_matches_input(self, precipitation):
+        """IHACRES output length matches input length."""
+        simulate = hydro.get_model("ihacres")
+        config = hydro.get_config("ihacres")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_ihacres_output_non_negative(self, precipitation):
+        """IHACRES output is non-negative."""
+        simulate = hydro.get_model("ihacres")
+        config = hydro.get_config("ihacres")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
     def test_xinanjiang_output_length_matches_input(self, precipitation):
         """XINANJIANG output length matches input length."""
         simulate = hydro.get_model("xinanjiang")
@@ -692,6 +853,42 @@ class TestHypothesis:
         )
     )
     @settings(max_examples=20)
+    def test_nam_output_length_matches_input(self, precipitation):
+        """NAM output length matches input length."""
+        simulate = hydro.get_model("nam")
+        config = hydro.get_config("nam")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_nam_output_non_negative(self, precipitation):
+        """NAM output is non-negative."""
+        simulate = hydro.get_model("nam")
+        config = hydro.get_config("nam")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
     def test_sacramento_output_length_matches_input(self, precipitation):
         """SACRAMENTO output length matches input length."""
         simulate = hydro.get_model("sacramento")
@@ -714,6 +911,42 @@ class TestHypothesis:
         """SACRAMENTO output is non-negative."""
         simulate = hydro.get_model("sacramento")
         config = hydro.get_config("sacramento")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_topmodel_output_length_matches_input(self, precipitation):
+        """TOPMODEL output length matches input length."""
+        simulate = hydro.get_model("topmodel")
+        config = hydro.get_config("topmodel")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_topmodel_output_non_negative(self, precipitation):
+        """TOPMODEL output is non-negative."""
+        simulate = hydro.get_model("topmodel")
+        config = hydro.get_config("topmodel")
         params = np.array([p["default"] for p in config])
         precip = np.array(precipitation)
         pet = np.random.uniform(0, 5, len(precipitation))
@@ -953,6 +1186,41 @@ class TestErrorHandling:
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)
 
+    def test_get_config_ihacres_numerical_error(self):
+        """get_config handles HolmesNumericalError for IHACRES."""
+        with patch(
+            "holmes_rs.hydro.ihacres.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("ihacres")
+
+    def test_simulate_ihacres_numerical_error(self):
+        """IHACRES simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.ihacres.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("ihacres")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([500.0, 0.5, 50.0, 500.0, 2.5, 5.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_ihacres_validation_error(self):
+        """IHACRES simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.ihacres.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("ihacres")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([500.0, 0.5, 50.0, 500.0, 2.5, 5.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
     def test_get_config_xinanjiang_numerical_error(self):
         """get_config handles HolmesNumericalError for XINANJIANG."""
         with patch(
@@ -987,6 +1255,45 @@ class TestErrorHandling:
             with pytest.raises(HolmesValidationError):
                 params = np.array(
                     [0.5, 10.0, 25.0, 250.0, 1000.0, 5.0, 25.0, 2.5]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_nam_numerical_error(self):
+        """get_config handles HolmesNumericalError for NAM."""
+        with patch(
+            "holmes_rs.hydro.nam.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("nam")
+
+    def test_simulate_nam_numerical_error(self):
+        """NAM simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.nam.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("nam")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [100.0, 10.0, 10.0, 2.0, 0.4, 50.0, 200.0, 5.0, 100.0, 1.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_nam_validation_error(self):
+        """NAM simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.nam.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("nam")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [100.0, 10.0, 10.0, 2.0, 0.4, 50.0, 200.0, 5.0, 100.0, 1.0]
                 )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
@@ -1027,6 +1334,41 @@ class TestErrorHandling:
                 params = np.array(
                     [10.0, 500.0, 250.0, 250.0, 10.0, 50.0, 0.5, 25.0, 5.0]
                 )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_topmodel_numerical_error(self):
+        """get_config handles HolmesNumericalError for TOPMODEL."""
+        with patch(
+            "holmes_rs.hydro.topmodel.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("topmodel")
+
+    def test_simulate_topmodel_numerical_error(self):
+        """TOPMODEL simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.topmodel.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("topmodel")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([100.0, 25.0, 50.0, 5.0, 100.0, 0.0, 0.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_topmodel_validation_error(self):
+        """TOPMODEL simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.topmodel.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("topmodel")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([100.0, 25.0, 50.0, 5.0, 100.0, 0.0, 0.0])
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)

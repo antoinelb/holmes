@@ -6,7 +6,10 @@ from . import (
     gr4j,
     hbv,
     hymod,
+    ihacres,
+    nam,
     sacramento,
+    topmodel,
     xinanjiang,
 )
 
@@ -18,6 +21,9 @@ __all__ = [
     "gr4j",
     "hbv",
     "hymod",
+    "ihacres",
+    "nam",
     "sacramento",
+    "topmodel",
     "xinanjiang",
 ]

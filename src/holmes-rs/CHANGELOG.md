@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the XINANJIANG module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - SACRAMENTO hydrological model (`hydro::sacramento`) with 9 parameters following Perrin's thesis "version retenue" of the Burnash et al. 1973 NWSRFS model (HOOPLA HM14): interception store, upper-zone tension-water reservoir with percolation/hypodermic/evaporation/overflow outflows, lower-zone routing reservoir with upward mass-balance correction, free-water baseflow store damped by deep percolation, and fractional-delay direct routing
 - Python bindings and type stubs for the SACRAMENTO module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- IHACRES hydrological model (`hydro::ihacres`) with 7 parameters following Perrin's "version retenue" of the Jakeman et al. 1990 model (HOOPLA HM8): catchment moisture index with PET-modulated drying time constant, midpoint trapezoidal effective rainfall, parallel fast/slow linear routing reservoirs sharing the `x3 * x4` time-constant coupling, and fractional-delay routing
+- Python bindings and type stubs for the IHACRES module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- TOPMODEL hydrological model (`hydro::topmodel`) with 7 parameters following Perrin's "version retenue" of the Beven & Kirkby 1979 model (HOOPLA HM18): interception reservoir, exponential groundwater store with two sigmoid partition functions for recharge and evapotranspiration, quadratic surface routing reservoir, and fractional-delay unit hydrograph
+- Python bindings and type stubs for the TOPMODEL module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- NAM hydrological model (`hydro::nam`) with 10 parameters porting HOOPLA HM12 verbatim from the Nielsen & Hansen 1973 Nedbør-Afstrømnings-Model: surface storage with three-branch evapotranspiration, soil moisture store with capillary rise, two parallel two-reservoir cascades for interflow and overland flow, groundwater deficit reservoir with baseflow threshold, and fractional-delay unit hydrograph
+- Python bindings and type stubs for the NAM module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters

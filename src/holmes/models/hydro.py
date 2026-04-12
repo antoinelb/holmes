@@ -16,7 +16,10 @@ from holmes_rs.hydro import (
     gr4j,
     hbv,
     hymod,
+    ihacres,
+    nam,
     sacramento,
+    topmodel,
     xinanjiang,
 )
 
@@ -34,7 +37,10 @@ HydroModel = Literal[
     "gardenia",
     "hbv",
     "hymod",
+    "ihacres",
+    "nam",
     "sacramento",
+    "topmodel",
     "xinanjiang",
 ]
 
@@ -88,10 +94,22 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = hymod.param_names
                 descriptions = hymod.param_descriptions
                 defaults, bounds = hymod.init()
+            case "ihacres":
+                param_names = ihacres.param_names
+                descriptions = ihacres.param_descriptions
+                defaults, bounds = ihacres.init()
+            case "nam":
+                param_names = nam.param_names
+                descriptions = nam.param_descriptions
+                defaults, bounds = nam.init()
             case "sacramento":
                 param_names = sacramento.param_names
                 descriptions = sacramento.param_descriptions
                 defaults, bounds = sacramento.init()
+            case "topmodel":
+                param_names = topmodel.param_names
+                descriptions = topmodel.param_descriptions
+                defaults, bounds = topmodel.init()
             case "xinanjiang":
                 param_names = xinanjiang.param_names
                 descriptions = xinanjiang.param_descriptions
@@ -161,8 +179,14 @@ def get_model(
             simulate_fn = hbv.simulate
         case "hymod":
             simulate_fn = hymod.simulate
+        case "ihacres":
+            simulate_fn = ihacres.simulate
+        case "nam":
+            simulate_fn = nam.simulate
         case "sacramento":
             simulate_fn = sacramento.simulate
+        case "topmodel":
+            simulate_fn = topmodel.simulate
         case "xinanjiang":
             simulate_fn = xinanjiang.simulate
         case _:  # pragma: no cover

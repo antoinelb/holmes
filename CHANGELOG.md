@@ -19,6 +19,9 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - HBV hydrological model (9-parameter Bergström/Forsman HBV0 variant) support in model registry, config, and simulation dispatching
 - XINANJIANG hydrological model (8-parameter Perrin variant of the Zhao et al. 1980 saturation-excess model) support in model registry, config, and simulation dispatching
 - SACRAMENTO hydrological model (9-parameter Perrin variant of the Burnash et al. 1973 NWSRFS model) support in model registry, config, and simulation dispatching
+- IHACRES hydrological model (7-parameter Perrin variant of the Jakeman et al. 1990 model with PET-modulated drying constant and parallel fast/slow linear routing) support in model registry, config, and simulation dispatching
+- TOPMODEL hydrological model (7-parameter Perrin variant of the Beven & Kirkby 1979 model with sigmoid recharge/ET partitioning, exponential groundwater store, and quadratic surface routing) support in model registry, config, and simulation dispatching
+- NAM hydrological model (10-parameter HOOPLA HM12 port of the Nielsen & Hansen 1973 Nedbør-Afstrømnings-Model with seven reservoirs and a fractional-delay unit hydrograph) support in model registry, config, and simulation dispatching
 
 ### Changed
 - `day_of_year` is now optional in the calibration API, only required when a snow model is active
