@@ -174,6 +174,42 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
 
+    def test_get_config_mohyse(self):
+        """MOHYSE parameter config has expected structure."""
+        config = hydro.get_config("mohyse")
+        assert isinstance(config, list)
+        assert len(config) == 7
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_mohyse_param_names(self):
+        """MOHYSE has expected parameter names."""
+        config = hydro.get_config("mohyse")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+
+    def test_get_config_mordor(self):
+        """MORDOR parameter config has expected structure."""
+        config = hydro.get_config("mordor")
+        assert isinstance(config, list)
+        assert len(config) == 6
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_mordor_param_names(self):
+        """MORDOR has expected parameter names."""
+        config = hydro.get_config("mordor")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6"]
+
     def test_get_config_xinanjiang(self):
         """XINANJIANG parameter config has expected structure."""
         config = hydro.get_config("xinanjiang")
@@ -285,6 +321,42 @@ class TestGetConfig:
             "x9",
         ]
 
+    def test_get_config_smar(self):
+        """SMAR parameter config has expected structure."""
+        config = hydro.get_config("smar")
+        assert isinstance(config, list)
+        assert len(config) == 8
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_smar_param_names(self):
+        """SMAR has expected parameter names."""
+        config = hydro.get_config("smar")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+
+    def test_get_config_simhyd(self):
+        """SIMHYD parameter config has expected structure."""
+        config = hydro.get_config("simhyd")
+        assert isinstance(config, list)
+        assert len(config) == 8
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_simhyd_param_names(self):
+        """SIMHYD has expected parameter names."""
+        config = hydro.get_config("simhyd")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+
     def test_descriptions_are_non_empty_strings(self):
         """All parameters have a non-empty string description."""
         for model in (
@@ -296,9 +368,13 @@ class TestGetConfig:
             "hbv",
             "hymod",
             "ihacres",
+            "mohyse",
+            "mordor",
             "nam",
             "pdm",
             "sacramento",
+            "simhyd",
+            "smar",
             "topmodel",
             "xinanjiang",
         ):
@@ -322,9 +398,13 @@ class TestGetConfig:
             "hbv",
             "hymod",
             "ihacres",
+            "mohyse",
+            "mordor",
             "nam",
             "pdm",
             "sacramento",
+            "simhyd",
+            "smar",
             "topmodel",
             "xinanjiang",
         ):
@@ -501,6 +581,42 @@ class TestGetModel:
         assert len(result) == n
         assert np.all(result >= 0)
 
+    def test_get_model_mohyse(self):
+        """Returns MOHYSE simulate function."""
+        simulate = hydro.get_model("mohyse")
+        assert callable(simulate)
+
+    def test_mohyse_simulate(self):
+        """MOHYSE simulate produces output."""
+        simulate = hydro.get_model("mohyse")
+        config = hydro.get_config("mohyse")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_mordor(self):
+        """Returns MORDOR simulate function."""
+        simulate = hydro.get_model("mordor")
+        assert callable(simulate)
+
+    def test_mordor_simulate(self):
+        """MORDOR simulate produces output."""
+        simulate = hydro.get_model("mordor")
+        config = hydro.get_config("mordor")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
     def test_get_model_xinanjiang(self):
         """Returns XINANJIANG simulate function."""
         simulate = hydro.get_model("xinanjiang")
@@ -564,6 +680,42 @@ class TestGetModel:
         """PDM simulate produces output."""
         simulate = hydro.get_model("pdm")
         config = hydro.get_config("pdm")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_smar(self):
+        """Returns SMAR simulate function."""
+        simulate = hydro.get_model("smar")
+        assert callable(simulate)
+
+    def test_smar_simulate(self):
+        """SMAR simulate produces output."""
+        simulate = hydro.get_model("smar")
+        config = hydro.get_config("smar")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_simhyd(self):
+        """Returns SIMHYD simulate function."""
+        simulate = hydro.get_model("simhyd")
+        assert callable(simulate)
+
+    def test_simhyd_simulate(self):
+        """SIMHYD simulate produces output."""
+        simulate = hydro.get_model("simhyd")
+        config = hydro.get_config("simhyd")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -1071,6 +1223,42 @@ class TestHypothesis:
         )
     )
     @settings(max_examples=20)
+    def test_smar_output_length_matches_input(self, precipitation):
+        """SMAR output length matches input length."""
+        simulate = hydro.get_model("smar")
+        config = hydro.get_config("smar")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_smar_output_non_negative(self, precipitation):
+        """SMAR output is non-negative."""
+        simulate = hydro.get_model("smar")
+        config = hydro.get_config("smar")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
     def test_topmodel_output_length_matches_input(self, precipitation):
         """TOPMODEL output length matches input length."""
         simulate = hydro.get_model("topmodel")
@@ -1093,6 +1281,78 @@ class TestHypothesis:
         """TOPMODEL output is non-negative."""
         simulate = hydro.get_model("topmodel")
         config = hydro.get_config("topmodel")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_mohyse_output_length_matches_input(self, precipitation):
+        """MOHYSE output length matches input length."""
+        simulate = hydro.get_model("mohyse")
+        config = hydro.get_config("mohyse")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_mohyse_output_non_negative(self, precipitation):
+        """MOHYSE output is non-negative."""
+        simulate = hydro.get_model("mohyse")
+        config = hydro.get_config("mohyse")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_mordor_output_length_matches_input(self, precipitation):
+        """MORDOR output length matches input length."""
+        simulate = hydro.get_model("mordor")
+        config = hydro.get_config("mordor")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_mordor_output_non_negative(self, precipitation):
+        """MORDOR output is non-negative."""
+        simulate = hydro.get_model("mordor")
+        config = hydro.get_config("mordor")
         params = np.array([p["default"] for p in config])
         precip = np.array(precipitation)
         pet = np.random.uniform(0, 5, len(precipitation))
@@ -1562,6 +1822,41 @@ class TestErrorHandling:
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)
 
+    def test_get_config_smar_numerical_error(self):
+        """get_config handles HolmesNumericalError for SMAR."""
+        with patch(
+            "holmes_rs.hydro.smar.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("smar")
+
+    def test_simulate_smar_numerical_error(self):
+        """SMAR simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.smar.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("smar")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([0.5, 5.0, 0.5, 250.0, 100.0, 2.5, 1.0, 0.5])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_smar_validation_error(self):
+        """SMAR simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.smar.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("smar")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([0.5, 5.0, 0.5, 250.0, 100.0, 2.5, 1.0, 0.5])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
     def test_get_config_topmodel_numerical_error(self):
         """get_config handles HolmesNumericalError for TOPMODEL."""
         with patch(
@@ -1593,6 +1888,115 @@ class TestErrorHandling:
             simulate = hydro.get_model("topmodel")
             with pytest.raises(HolmesValidationError):
                 params = np.array([100.0, 25.0, 50.0, 5.0, 100.0, 0.0, 0.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_mohyse_numerical_error(self):
+        """get_config handles HolmesNumericalError for MOHYSE."""
+        with patch(
+            "holmes_rs.hydro.mohyse.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("mohyse")
+
+    def test_simulate_mohyse_numerical_error(self):
+        """MOHYSE simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.mohyse.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("mohyse")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([0.1, 500.0, 0.1, 0.1, 0.1, 2.0, 2.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_mohyse_validation_error(self):
+        """MOHYSE simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.mohyse.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("mohyse")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([0.1, 500.0, 0.1, 0.1, 0.1, 2.0, 2.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_mordor_numerical_error(self):
+        """get_config handles HolmesNumericalError for MORDOR."""
+        with patch(
+            "holmes_rs.hydro.mordor.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("mordor")
+
+    def test_simulate_mordor_numerical_error(self):
+        """MORDOR simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.mordor.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("mordor")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([1.0, 100.0, 5.0, 2.0, 200.0, 300.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_mordor_validation_error(self):
+        """MORDOR simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.mordor.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("mordor")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([1.0, 100.0, 5.0, 2.0, 200.0, 300.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_simhyd_numerical_error(self):
+        """get_config handles HolmesNumericalError for SIMHYD."""
+        with patch(
+            "holmes_rs.hydro.simhyd.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("simhyd")
+
+    def test_simulate_simhyd_numerical_error(self):
+        """SIMHYD simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.simhyd.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("simhyd")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [5.0, 250.0, 500.0, 2.5, 250.0, 500.0, 500.0, 250.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_simhyd_validation_error(self):
+        """SIMHYD simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.simhyd.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("simhyd")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [5.0, 250.0, 500.0, 2.5, 250.0, 500.0, 500.0, 250.0]
+                )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)

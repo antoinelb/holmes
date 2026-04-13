@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- MORDOR hydrological model (`hydro::mordor`) with 6 parameters following the Garçon 1999 MORDOR formulation (HOOPLA HM11): rain correction coefficient, four cascading reservoirs (U surface → L intermediate → Z deep soil → N groundwater) with proportional rainfall partitioning, linear L drainage, percolation-weighted Z recharge, nonlinear cubic N discharge, and three-component UH2 routing (surface runoff, rapid underground, slow groundwater) using a double-sided unit hydrograph with exponent 2.5
+- Python bindings and type stubs for the MORDOR module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - MARTINE hydrological model (`hydro::martine`) with 7 parameters following Perrin's "version retenue" of the Mazenc et al. 1984 BRGM model (HOOPLA HM9): surface reservoir with overflow production, quadratic direct routing reservoir, intermediate reservoir with linear drainage and overflow, linear groundwater recession, distribution coefficient for flow partitioning, and fractional-delay routing
 - Python bindings and type stubs for the MARTINE module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - CREC hydrological model (`hydro::crec`) with 6 parameters, sigmoid rainfall-splitting function, and nonlinear surface routing
@@ -30,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python bindings and type stubs for the NAM module (`init`, `simulate`, `param_names`, `param_descriptions`)
 - PDM hydrological model (`hydro::pdm`) with 8 parameters porting HOOPLA HM13 of the Moore & Clarke 1981 Probability-Distributed Model: Pareto-distributed soil moisture capacity with saturation and infiltration excess, threshold-gated drainage to a cubic ground reservoir, two linear fast-routing reservoirs in series, and fractional-delay unit hydrograph
 - Python bindings and type stubs for the PDM module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- MOHYSE hydrological model (`hydro::mohyse`) with 7 parameters porting HOOPLA HM10 of the Fortin & Turcotte 2007 MOdèle HYdrologique Simplifié à l'Extrême: interception, capacity-limited infiltration with transpiration from soil store, linear vadose-zone drainage to river and groundwater reservoirs, linear groundwater baseflow, and gamma-shaped unit hydrograph routing
+- Python bindings and type stubs for the MOHYSE module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- SIMHYD hydrological model (`hydro::simhyd`) with 8 parameters porting HOOPLA HM15 of the Chiew et al. 2002 SIMple HYDrological model: interception limited by PET, exponential infiltration decaying with soil saturation, saturation-proportional interflow and groundwater recharge, parallel ground (slow) and routing (fast) linear reservoirs, and fractional-delay routing
+- Python bindings and type stubs for the SIMHYD module (`init`, `simulate`, `param_names`, `param_descriptions`)
+- SMAR hydrological model (`hydro::smar`) with 8 parameters following Perrin's "version retenue" of the O'Connell et al. 1970 Soil Moisture Accounting and Routing model (HOOPLA HM16): PET-corrected interception, moisture-dependent direct runoff, exponential infiltration capacity, 16-layer soil column (25 mm each, Z=400 mm) with depth-decaying ET (C^i), dual routing through linear groundwater and quadratic surface reservoirs with partitioning coefficient, and fractional-delay routing
+- Python bindings and type stubs for the SMAR module (`init`, `simulate`, `param_names`, `param_descriptions`)
 
 ### Changed
 - Made `day_of_year` parameter optional in SCE calibration API (`init`, `step`), consistent with other snow-only parameters

@@ -18,9 +18,13 @@ from holmes_rs.hydro import (
     hymod,
     ihacres,
     martine,
+    mohyse,
+    mordor,
     nam,
     pdm,
     sacramento,
+    simhyd,
+    smar,
     topmodel,
     xinanjiang,
 )
@@ -1943,5 +1947,559 @@ class TestNamParamDescriptions:
 
     def test_param_descriptions_non_empty(self):
         for desc in nam.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestMohyseInit:
+    """Tests for mohyse.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = mohyse.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 7 elements."""
+        defaults, _ = mohyse.init()
+
+        assert len(defaults) == 7
+
+    def test_bounds_shape(self):
+        """Bounds should be 7x2 array."""
+        _, bounds = mohyse.init()
+
+        assert bounds.shape == (7, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = mohyse.init()
+
+        for i in range(7):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = mohyse.init()
+
+        for i in range(7):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestMohyseSimulate:
+    """Tests for mohyse.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = mohyse.init()
+
+        streamflow = mohyse.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = mohyse.init()
+
+        streamflow = mohyse.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = mohyse.init()
+
+        streamflow = mohyse.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = mohyse.init()
+        precip = np.zeros(100)
+
+        streamflow = mohyse.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([0.5, 500.0, 0.1, 0.1])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            mohyse.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = mohyse.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            mohyse.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([0.1, 500.0, 0.1, 0.1, 0.1, 2.0, 2.0])
+
+        streamflow = mohyse.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestMohyseParamNames:
+    """Tests for mohyse.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(mohyse, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 7 parameter names."""
+        assert len(mohyse.param_names) == 7
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+        assert mohyse.param_names == expected
+
+
+class TestMohyseParamDescriptions:
+    """Tests for mohyse.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(mohyse, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(mohyse.param_descriptions) == len(mohyse.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in mohyse.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestSmarInit:
+    """Tests for smar.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = smar.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 8 elements."""
+        defaults, _ = smar.init()
+
+        assert len(defaults) == 8
+
+    def test_bounds_shape(self):
+        """Bounds should be 8x2 array."""
+        _, bounds = smar.init()
+
+        assert bounds.shape == (8, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = smar.init()
+
+        for i in range(8):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = smar.init()
+
+        for i in range(8):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestSmarSimulate:
+    """Tests for smar.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = smar.init()
+
+        streamflow = smar.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = smar.init()
+
+        streamflow = smar.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = smar.init()
+
+        streamflow = smar.simulate(defaults, sample_precipitation, sample_pet)
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = smar.init()
+        precip = np.zeros(100)
+
+        streamflow = smar.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([0.5, 5.0, 0.5, 250.0])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            smar.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = smar.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            smar.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([0.5, 5.0, 0.5, 250.0, 100.0, 2.5, 1.0, 0.5])
+
+        streamflow = smar.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestSmarParamNames:
+    """Tests for smar.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(smar, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 8 parameter names."""
+        assert len(smar.param_names) == 8
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+        assert smar.param_names == expected
+
+
+class TestSmarParamDescriptions:
+    """Tests for smar.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(smar, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(smar.param_descriptions) == len(smar.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in smar.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestSimhydInit:
+    """Tests for simhyd.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = simhyd.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 8 elements."""
+        defaults, _ = simhyd.init()
+
+        assert len(defaults) == 8
+
+    def test_bounds_shape(self):
+        """Bounds should be 8x2 array."""
+        _, bounds = simhyd.init()
+
+        assert bounds.shape == (8, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = simhyd.init()
+
+        for i in range(8):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = simhyd.init()
+
+        for i in range(8):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestSimhydSimulate:
+    """Tests for simhyd.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = simhyd.init()
+
+        streamflow = simhyd.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = simhyd.init()
+
+        streamflow = simhyd.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = simhyd.init()
+
+        streamflow = simhyd.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = simhyd.init()
+        precip = np.zeros(100)
+
+        streamflow = simhyd.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([5.0, 250.0, 500.0, 2.5])  # Only 4 params
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            simhyd.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = simhyd.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            simhyd.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([5.0, 250.0, 500.0, 2.5, 250.0, 500.0, 500.0, 250.0])
+
+        streamflow = simhyd.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestSimhydParamNames:
+    """Tests for simhyd.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(simhyd, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 8 parameter names."""
+        assert len(simhyd.param_names) == 8
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+        assert simhyd.param_names == expected
+
+
+class TestSimhydParamDescriptions:
+    """Tests for simhyd.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(simhyd, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(simhyd.param_descriptions) == len(simhyd.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in simhyd.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestMordorInit:
+    """Tests for mordor.init function."""
+
+    def test_returns_tuple(self):
+        """init should return a tuple of (defaults, bounds)."""
+        result = mordor.init()
+
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        """Default parameters should have 6 elements."""
+        defaults, _ = mordor.init()
+
+        assert len(defaults) == 6
+
+    def test_bounds_shape(self):
+        """Bounds should be 6x2 array."""
+        _, bounds = mordor.init()
+
+        assert bounds.shape == (6, 2)
+
+    def test_defaults_within_bounds(self):
+        """Default values should be within bounds."""
+        defaults, bounds = mordor.init()
+
+        for i in range(6):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        """Lower bounds should be less than upper bounds."""
+        _, bounds = mordor.init()
+
+        for i in range(6):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestMordorSimulate:
+    """Tests for mordor.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        """Output should have same length as input."""
+        defaults, _ = mordor.init()
+
+        streamflow = mordor.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        """All streamflow values should be non-negative."""
+        defaults, _ = mordor.init()
+
+        streamflow = mordor.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        """All output values should be finite."""
+        defaults, _ = mordor.init()
+
+        streamflow = mordor.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        """Should handle zero precipitation."""
+        defaults, _ = mordor.init()
+        precip = np.zeros(100)
+
+        streamflow = mordor.simulate(defaults, precip, sample_pet)
+
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        """Should raise error for wrong parameter count."""
+        wrong_params = np.array([1.0, 100.0, 5.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            mordor.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        """Should raise error for mismatched input lengths."""
+        defaults, _ = mordor.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            mordor.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        """Should work with custom parameter values."""
+        params = np.array([1.0, 100.0, 5.0, 2.0, 200.0, 300.0])
+
+        streamflow = mordor.simulate(params, sample_precipitation, sample_pet)
+
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestMordorParamNames:
+    """Tests for mordor.param_names constant."""
+
+    def test_param_names_exists(self):
+        """param_names should be accessible."""
+        assert hasattr(mordor, "param_names")
+
+    def test_param_names_count(self):
+        """Should have 6 parameter names."""
+        assert len(mordor.param_names) == 6
+
+    def test_param_names_values(self):
+        """Parameter names should match expected values."""
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6"]
+        assert mordor.param_names == expected
+
+
+class TestMordorParamDescriptions:
+    """Tests for mordor.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        """param_descriptions should be accessible."""
+        assert hasattr(mordor, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        """Should have same count as param_names."""
+        assert len(mordor.param_descriptions) == len(mordor.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        """All descriptions should be non-empty strings."""
+        for desc in mordor.param_descriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0

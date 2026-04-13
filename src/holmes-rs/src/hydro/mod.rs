@@ -8,9 +8,13 @@ pub mod hbv;
 pub mod hymod;
 pub mod ihacres;
 pub mod martine;
+pub mod mohyse;
+pub mod mordor;
 pub mod nam;
 pub mod pdm;
 pub mod sacramento;
+pub mod simhyd;
+pub mod smar;
 pub mod topmodel;
 pub mod utils;
 pub mod xinanjiang;
@@ -35,6 +39,8 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     register_submodule(py, &m, &hbv::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &ihacres::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &martine::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &mohyse::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &mordor::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &nam::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &pdm::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(
@@ -43,6 +49,8 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
         &sacramento::make_module(py)?,
         "holmes_rs.hydro",
     )?;
+    register_submodule(py, &m, &simhyd::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &smar::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(
         py,
         &m,
@@ -71,9 +79,13 @@ pub fn get_model(
         "hbv" => Ok((hbv::init, hbv::simulate)),
         "ihacres" => Ok((ihacres::init, ihacres::simulate)),
         "martine" => Ok((martine::init, martine::simulate)),
+        "mohyse" => Ok((mohyse::init, mohyse::simulate)),
+        "mordor" => Ok((mordor::init, mordor::simulate)),
         "nam" => Ok((nam::init, nam::simulate)),
         "pdm" => Ok((pdm::init, pdm::simulate)),
         "sacramento" => Ok((sacramento::init, sacramento::simulate)),
+        "simhyd" => Ok((simhyd::init, simhyd::simulate)),
+        "smar" => Ok((smar::init, smar::simulate)),
         "topmodel" => Ok((topmodel::init, topmodel::simulate)),
         "xinanjiang" => Ok((xinanjiang::init, xinanjiang::simulate)),
         _ => Err(HydroError::WrongModel(model.to_string())),

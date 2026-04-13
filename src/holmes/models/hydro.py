@@ -18,9 +18,13 @@ from holmes_rs.hydro import (
     hymod,
     ihacres,
     martine,
+    mohyse,
+    mordor,
     nam,
     pdm,
     sacramento,
+    simhyd,
+    smar,
     topmodel,
     xinanjiang,
 )
@@ -41,9 +45,13 @@ HydroModel = Literal[
     "hymod",
     "ihacres",
     "martine",
+    "mohyse",
+    "mordor",
     "nam",
     "pdm",
     "sacramento",
+    "simhyd",
+    "smar",
     "topmodel",
     "xinanjiang",
 ]
@@ -106,6 +114,14 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = martine.param_names
                 descriptions = martine.param_descriptions
                 defaults, bounds = martine.init()
+            case "mohyse":
+                param_names = mohyse.param_names
+                descriptions = mohyse.param_descriptions
+                defaults, bounds = mohyse.init()
+            case "mordor":
+                param_names = mordor.param_names
+                descriptions = mordor.param_descriptions
+                defaults, bounds = mordor.init()
             case "nam":
                 param_names = nam.param_names
                 descriptions = nam.param_descriptions
@@ -118,6 +134,14 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = sacramento.param_names
                 descriptions = sacramento.param_descriptions
                 defaults, bounds = sacramento.init()
+            case "simhyd":
+                param_names = simhyd.param_names
+                descriptions = simhyd.param_descriptions
+                defaults, bounds = simhyd.init()
+            case "smar":
+                param_names = smar.param_names
+                descriptions = smar.param_descriptions
+                defaults, bounds = smar.init()
             case "topmodel":
                 param_names = topmodel.param_names
                 descriptions = topmodel.param_descriptions
@@ -195,12 +219,20 @@ def get_model(
             simulate_fn = ihacres.simulate
         case "martine":
             simulate_fn = martine.simulate
+        case "mohyse":
+            simulate_fn = mohyse.simulate
+        case "mordor":
+            simulate_fn = mordor.simulate
         case "nam":
             simulate_fn = nam.simulate
         case "pdm":
             simulate_fn = pdm.simulate
         case "sacramento":
             simulate_fn = sacramento.simulate
+        case "simhyd":
+            simulate_fn = simhyd.simulate
+        case "smar":
+            simulate_fn = smar.simulate
         case "topmodel":
             simulate_fn = topmodel.simulate
         case "xinanjiang":

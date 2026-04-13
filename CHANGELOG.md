@@ -12,6 +12,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ## [Unreleased]
 
 ### Added
+- MORDOR hydrological model (6-parameter Garçon 1999 formulation with four cascading reservoirs U→L→Z→N, proportional rainfall partitioning, nonlinear cubic groundwater discharge, and three-component double-sided UH2 routing with exponent 2.5) support in model registry, config, and simulation dispatching
 - MARTINE hydrological model (7-parameter Perrin variant of the Mazenc et al. 1984 BRGM model with overflow production, quadratic direct routing, dual-pathway intermediate reservoir, and linear groundwater recession) support in model registry, config, and simulation dispatching
 - CREC hydrological model support in model registry, config, and simulation dispatching
 - CREC model documentation page with mathematical formulation, 6-parameter description, and model comparison table update
@@ -24,6 +25,9 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - TOPMODEL hydrological model (7-parameter Perrin variant of the Beven & Kirkby 1979 model with sigmoid recharge/ET partitioning, exponential groundwater store, and quadratic surface routing) support in model registry, config, and simulation dispatching
 - NAM hydrological model (10-parameter HOOPLA HM12 port of the Nielsen & Hansen 1973 Nedbør-Afstrømnings-Model with seven reservoirs and a fractional-delay unit hydrograph) support in model registry, config, and simulation dispatching
 - PDM hydrological model (8-parameter HOOPLA HM13 port of the Moore & Clarke 1981 Probability-Distributed Model with Pareto soil store, cubic ground reservoir, two-stage linear cascade, and fractional-delay routing) support in model registry, config, and simulation dispatching
+- MOHYSE hydrological model (7-parameter HOOPLA HM10 port of the Fortin & Turcotte 2007 MOdèle HYdrologique Simplifié à l'Extrême with capacity-limited infiltration, dual soil/groundwater linear reservoirs, and gamma unit hydrograph routing) support in model registry, config, and simulation dispatching
+- SMAR hydrological model (8-parameter Perrin variant of the O'Connell et al. 1970 Soil Moisture Accounting and Routing model with 16-layer soil column, exponentially decaying ET, dual linear/quadratic routing, and fractional-delay routing) support in model registry, config, and simulation dispatching
+- SIMHYD hydrological model (8-parameter HOOPLA HM15 port of the Chiew et al. 2002 SIMple HYDrological model with exponential infiltration, saturation-proportional interflow/recharge, and dual linear routing reservoirs) support in model registry, config, and simulation dispatching
 
 ### Changed
 - `day_of_year` is now optional in the calibration API, only required when a snow model is active
