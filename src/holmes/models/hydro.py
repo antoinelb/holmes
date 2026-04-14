@@ -25,7 +25,9 @@ from holmes_rs.hydro import (
     sacramento,
     simhyd,
     smar,
+    tank,
     topmodel,
+    wageningen,
     xinanjiang,
 )
 
@@ -52,7 +54,9 @@ HydroModel = Literal[
     "sacramento",
     "simhyd",
     "smar",
+    "tank",
     "topmodel",
+    "wageningen",
     "xinanjiang",
 ]
 
@@ -142,10 +146,18 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 param_names = smar.param_names
                 descriptions = smar.param_descriptions
                 defaults, bounds = smar.init()
+            case "tank":
+                param_names = tank.param_names
+                descriptions = tank.param_descriptions
+                defaults, bounds = tank.init()
             case "topmodel":
                 param_names = topmodel.param_names
                 descriptions = topmodel.param_descriptions
                 defaults, bounds = topmodel.init()
+            case "wageningen":
+                param_names = wageningen.param_names
+                descriptions = wageningen.param_descriptions
+                defaults, bounds = wageningen.init()
             case "xinanjiang":
                 param_names = xinanjiang.param_names
                 descriptions = xinanjiang.param_descriptions
@@ -233,8 +245,12 @@ def get_model(
             simulate_fn = simhyd.simulate
         case "smar":
             simulate_fn = smar.simulate
+        case "tank":
+            simulate_fn = tank.simulate
         case "topmodel":
             simulate_fn = topmodel.simulate
+        case "wageningen":
+            simulate_fn = wageningen.simulate
         case "xinanjiang":
             simulate_fn = xinanjiang.simulate
         case _:  # pragma: no cover

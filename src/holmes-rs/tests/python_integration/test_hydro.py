@@ -25,7 +25,9 @@ from holmes_rs.hydro import (
     sacramento,
     simhyd,
     smar,
+    tank,
     topmodel,
+    wageningen,
     xinanjiang,
 )
 
@@ -2501,5 +2503,217 @@ class TestMordorParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in mordor.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestWageningenInit:
+    """Tests for wageningen.init function."""
+
+    def test_returns_tuple(self):
+        result = wageningen.init()
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        defaults, _ = wageningen.init()
+        assert len(defaults) == 8
+
+    def test_bounds_shape(self):
+        _, bounds = wageningen.init()
+        assert bounds.shape == (8, 2)
+
+    def test_defaults_within_bounds(self):
+        defaults, bounds = wageningen.init()
+        for i in range(8):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        _, bounds = wageningen.init()
+        for i in range(8):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestWageningenSimulate:
+    """Tests for wageningen.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        defaults, _ = wageningen.init()
+        streamflow = wageningen.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        defaults, _ = wageningen.init()
+        streamflow = wageningen.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        defaults, _ = wageningen.init()
+        streamflow = wageningen.simulate(
+            defaults, sample_precipitation, sample_pet
+        )
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        defaults, _ = wageningen.init()
+        precip = np.zeros(100)
+        streamflow = wageningen.simulate(defaults, precip, sample_pet)
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        wrong_params = np.array([100.0, 500.0, 100.0, 100.0])
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            wageningen.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        defaults, _ = wageningen.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            wageningen.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        params = np.array([100.0, 500.0, 100.0, 100.0, 50.0, 3.0, 5.0, 1.0])
+        streamflow = wageningen.simulate(
+            params, sample_precipitation, sample_pet
+        )
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestWageningenParamNames:
+    """Tests for wageningen.param_names constant."""
+
+    def test_param_names_exists(self):
+        assert hasattr(wageningen, "param_names")
+
+    def test_param_names_count(self):
+        assert len(wageningen.param_names) == 8
+
+    def test_param_names_values(self):
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+        assert wageningen.param_names == expected
+
+
+class TestWageningenParamDescriptions:
+    """Tests for wageningen.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        assert hasattr(wageningen, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        assert len(wageningen.param_descriptions) == len(
+            wageningen.param_names
+        )
+
+    def test_param_descriptions_non_empty(self):
+        for desc in wageningen.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+
+class TestTankInit:
+    """Tests for tank.init function."""
+
+    def test_returns_tuple(self):
+        result = tank.init()
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_defaults_shape(self):
+        defaults, _ = tank.init()
+        assert len(defaults) == 7
+
+    def test_bounds_shape(self):
+        _, bounds = tank.init()
+        assert bounds.shape == (7, 2)
+
+    def test_defaults_within_bounds(self):
+        defaults, bounds = tank.init()
+        for i in range(7):
+            assert bounds[i, 0] <= defaults[i] <= bounds[i, 1]
+
+    def test_bounds_ordered(self):
+        _, bounds = tank.init()
+        for i in range(7):
+            assert bounds[i, 0] < bounds[i, 1]
+
+
+class TestTankSimulate:
+    """Tests for tank.simulate function."""
+
+    def test_output_length(self, sample_precipitation, sample_pet):
+        defaults, _ = tank.init()
+        streamflow = tank.simulate(defaults, sample_precipitation, sample_pet)
+        assert len(streamflow) == len(sample_precipitation)
+
+    def test_nonnegative_streamflow(self, sample_precipitation, sample_pet):
+        defaults, _ = tank.init()
+        streamflow = tank.simulate(defaults, sample_precipitation, sample_pet)
+        assert np.all(streamflow >= 0)
+
+    def test_finite_output(self, sample_precipitation, sample_pet):
+        defaults, _ = tank.init()
+        streamflow = tank.simulate(defaults, sample_precipitation, sample_pet)
+        assert np.all(np.isfinite(streamflow))
+
+    def test_zero_precipitation(self, sample_pet):
+        defaults, _ = tank.init()
+        precip = np.zeros(100)
+        streamflow = tank.simulate(defaults, precip, sample_pet)
+        assert len(streamflow) == 100
+        assert np.all(np.isfinite(streamflow))
+
+    def test_param_count_error(self, sample_precipitation, sample_pet):
+        wrong_params = np.array([10.0, 5.0, 2.0, 3.0])
+
+        with pytest.raises(HolmesValidationError, match="param"):
+            tank.simulate(wrong_params, sample_precipitation, sample_pet)
+
+    def test_length_mismatch_error(self, sample_precipitation):
+        defaults, _ = tank.init()
+        short_pet = np.array([2.0, 2.0])
+
+        with pytest.raises(HolmesValidationError, match="length"):
+            tank.simulate(defaults, sample_precipitation, short_pet)
+
+    def test_custom_params(self, sample_precipitation, sample_pet):
+        params = np.array([100.0, 20.0, 10.0, 5.0, 2.5, 1.0, 5.0])
+        streamflow = tank.simulate(params, sample_precipitation, sample_pet)
+        assert len(streamflow) == len(sample_precipitation)
+        assert np.all(np.isfinite(streamflow))
+
+
+class TestTankParamNames:
+    """Tests for tank.param_names constant."""
+
+    def test_param_names_exists(self):
+        assert hasattr(tank, "param_names")
+
+    def test_param_names_count(self):
+        assert len(tank.param_names) == 7
+
+    def test_param_names_values(self):
+        expected = ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+        assert tank.param_names == expected
+
+
+class TestTankParamDescriptions:
+    """Tests for tank.param_descriptions constant."""
+
+    def test_param_descriptions_exists(self):
+        assert hasattr(tank, "param_descriptions")
+
+    def test_param_descriptions_count(self):
+        assert len(tank.param_descriptions) == len(tank.param_names)
+
+    def test_param_descriptions_non_empty(self):
+        for desc in tank.param_descriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0

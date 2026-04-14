@@ -15,8 +15,10 @@ pub mod pdm;
 pub mod sacramento;
 pub mod simhyd;
 pub mod smar;
+pub mod tank;
 pub mod topmodel;
 pub mod utils;
+pub mod wageningen;
 pub mod xinanjiang;
 use crate::utils::register_submodule;
 
@@ -51,10 +53,17 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     )?;
     register_submodule(py, &m, &simhyd::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(py, &m, &smar::make_module(py)?, "holmes_rs.hydro")?;
+    register_submodule(py, &m, &tank::make_module(py)?, "holmes_rs.hydro")?;
     register_submodule(
         py,
         &m,
         &topmodel::make_module(py)?,
+        "holmes_rs.hydro",
+    )?;
+    register_submodule(
+        py,
+        &m,
+        &wageningen::make_module(py)?,
         "holmes_rs.hydro",
     )?;
     register_submodule(
@@ -86,7 +95,9 @@ pub fn get_model(
         "sacramento" => Ok((sacramento::init, sacramento::simulate)),
         "simhyd" => Ok((simhyd::init, simhyd::simulate)),
         "smar" => Ok((smar::init, smar::simulate)),
+        "tank" => Ok((tank::init, tank::simulate)),
         "topmodel" => Ok((topmodel::init, topmodel::simulate)),
+        "wageningen" => Ok((wageningen::init, wageningen::simulate)),
         "xinanjiang" => Ok((xinanjiang::init, xinanjiang::simulate)),
         _ => Err(HydroError::WrongModel(model.to_string())),
     }

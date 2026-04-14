@@ -339,6 +339,24 @@ class TestGetConfig:
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
 
+    def test_get_config_tank(self):
+        """TANK parameter config has expected structure."""
+        config = hydro.get_config("tank")
+        assert isinstance(config, list)
+        assert len(config) == 7
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_tank_param_names(self):
+        """TANK has expected parameter names."""
+        config = hydro.get_config("tank")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7"]
+
     def test_get_config_simhyd(self):
         """SIMHYD parameter config has expected structure."""
         config = hydro.get_config("simhyd")
@@ -354,6 +372,24 @@ class TestGetConfig:
     def test_simhyd_param_names(self):
         """SIMHYD has expected parameter names."""
         config = hydro.get_config("simhyd")
+        names = [p["name"] for p in config]
+        assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+
+    def test_get_config_wageningen(self):
+        """WAGENINGEN parameter config has expected structure."""
+        config = hydro.get_config("wageningen")
+        assert isinstance(config, list)
+        assert len(config) == 8
+        for param in config:
+            assert "name" in param
+            assert "default" in param
+            assert "min" in param
+            assert "max" in param
+            assert "description" in param
+
+    def test_wageningen_param_names(self):
+        """WAGENINGEN has expected parameter names."""
+        config = hydro.get_config("wageningen")
         names = [p["name"] for p in config]
         assert names == ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
 
@@ -375,7 +411,9 @@ class TestGetConfig:
             "sacramento",
             "simhyd",
             "smar",
+            "tank",
             "topmodel",
+            "wageningen",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -405,7 +443,9 @@ class TestGetConfig:
             "sacramento",
             "simhyd",
             "smar",
+            "tank",
             "topmodel",
+            "wageningen",
             "xinanjiang",
         ):
             config = hydro.get_config(model)
@@ -707,6 +747,24 @@ class TestGetModel:
         assert len(result) == n
         assert np.all(result >= 0)
 
+    def test_get_model_tank(self):
+        """Returns TANK simulate function."""
+        simulate = hydro.get_model("tank")
+        assert callable(simulate)
+
+    def test_tank_simulate(self):
+        """TANK simulate produces output."""
+        simulate = hydro.get_model("tank")
+        config = hydro.get_config("tank")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
     def test_get_model_simhyd(self):
         """Returns SIMHYD simulate function."""
         simulate = hydro.get_model("simhyd")
@@ -716,6 +774,24 @@ class TestGetModel:
         """SIMHYD simulate produces output."""
         simulate = hydro.get_model("simhyd")
         config = hydro.get_config("simhyd")
+        params = np.array([p["default"] for p in config])
+        n = 365
+        precipitation = np.random.uniform(0, 20, n)
+        pet = np.random.uniform(0, 5, n)
+        result = simulate(params, precipitation, pet)
+        assert isinstance(result, np.ndarray)
+        assert len(result) == n
+        assert np.all(result >= 0)
+
+    def test_get_model_wageningen(self):
+        """Returns WAGENINGEN simulate function."""
+        simulate = hydro.get_model("wageningen")
+        assert callable(simulate)
+
+    def test_wageningen_simulate(self):
+        """WAGENINGEN simulate produces output."""
+        simulate = hydro.get_model("wageningen")
+        config = hydro.get_config("wageningen")
         params = np.array([p["default"] for p in config])
         n = 365
         precipitation = np.random.uniform(0, 20, n)
@@ -1259,6 +1335,42 @@ class TestHypothesis:
         )
     )
     @settings(max_examples=20)
+    def test_tank_output_length_matches_input(self, precipitation):
+        """TANK output length matches input length."""
+        simulate = hydro.get_model("tank")
+        config = hydro.get_config("tank")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_tank_output_non_negative(self, precipitation):
+        """TANK output is non-negative."""
+        simulate = hydro.get_model("tank")
+        config = hydro.get_config("tank")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
     def test_topmodel_output_length_matches_input(self, precipitation):
         """TOPMODEL output length matches input length."""
         simulate = hydro.get_model("topmodel")
@@ -1353,6 +1465,42 @@ class TestHypothesis:
         """MORDOR output is non-negative."""
         simulate = hydro.get_model("mordor")
         config = hydro.get_config("mordor")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert np.all(result >= 0)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_wageningen_output_length_matches_input(self, precipitation):
+        """WAGENINGEN output length matches input length."""
+        simulate = hydro.get_model("wageningen")
+        config = hydro.get_config("wageningen")
+        params = np.array([p["default"] for p in config])
+        precip = np.array(precipitation)
+        pet = np.random.uniform(0, 5, len(precipitation))
+        result = simulate(params, precip, pet)
+        assert len(result) == len(precipitation)
+
+    @given(
+        st.lists(
+            st.floats(min_value=0.0, max_value=50.0, allow_nan=False),
+            min_size=100,
+            max_size=500,
+        )
+    )
+    @settings(max_examples=20)
+    def test_wageningen_output_non_negative(self, precipitation):
+        """WAGENINGEN output is non-negative."""
+        simulate = hydro.get_model("wageningen")
+        config = hydro.get_config("wageningen")
         params = np.array([p["default"] for p in config])
         precip = np.array(precipitation)
         pet = np.random.uniform(0, 5, len(precipitation))
@@ -1857,6 +2005,41 @@ class TestErrorHandling:
                 pet = np.array([2.0, 3.0, 2.5])
                 simulate(params, precip, pet)
 
+    def test_get_config_tank_numerical_error(self):
+        """get_config handles HolmesNumericalError for TANK."""
+        with patch(
+            "holmes_rs.hydro.tank.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("tank")
+
+    def test_simulate_tank_numerical_error(self):
+        """TANK simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.tank.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("tank")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array([100.0, 50.0, 10.0, 5.0, 1.0, 1.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_tank_validation_error(self):
+        """TANK simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.tank.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("tank")
+            with pytest.raises(HolmesValidationError):
+                params = np.array([100.0, 50.0, 10.0, 5.0, 1.0, 1.0, 5.0])
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
     def test_get_config_topmodel_numerical_error(self):
         """get_config handles HolmesNumericalError for TOPMODEL."""
         with patch(
@@ -1996,6 +2179,45 @@ class TestErrorHandling:
             with pytest.raises(HolmesValidationError):
                 params = np.array(
                     [5.0, 250.0, 500.0, 2.5, 250.0, 500.0, 500.0, 250.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_get_config_wageningen_numerical_error(self):
+        """get_config handles HolmesNumericalError for WAGENINGEN."""
+        with patch(
+            "holmes_rs.hydro.wageningen.init",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            with pytest.raises(HolmesNumericalError):
+                hydro.get_config("wageningen")
+
+    def test_simulate_wageningen_numerical_error(self):
+        """WAGENINGEN simulate handles HolmesNumericalError from Rust."""
+        with patch(
+            "holmes.models.hydro.wageningen.simulate",
+            side_effect=HolmesNumericalError("Numerical error"),
+        ):
+            simulate = hydro.get_model("wageningen")
+            with pytest.raises(HolmesNumericalError):
+                params = np.array(
+                    [100.0, 500.0, 200.0, 250.0, 100.0, 10.0, 10.0, 2.0]
+                )
+                precip = np.array([10.0, 20.0, 15.0])
+                pet = np.array([2.0, 3.0, 2.5])
+                simulate(params, precip, pet)
+
+    def test_simulate_wageningen_validation_error(self):
+        """WAGENINGEN simulate handles HolmesValidationError from Rust."""
+        with patch(
+            "holmes.models.hydro.wageningen.simulate",
+            side_effect=HolmesValidationError("Validation error"),
+        ):
+            simulate = hydro.get_model("wageningen")
+            with pytest.raises(HolmesValidationError):
+                params = np.array(
+                    [100.0, 500.0, 200.0, 250.0, 100.0, 10.0, 10.0, 2.0]
                 )
                 precip = np.array([10.0, 20.0, 15.0])
                 pet = np.array([2.0, 3.0, 2.5])

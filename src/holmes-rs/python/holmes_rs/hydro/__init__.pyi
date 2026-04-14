@@ -15,7 +15,9 @@ from . import (
     sacramento,
     simhyd,
     smar,
+    tank,
     topmodel,
+    wageningen,
     xinanjiang,
 )
 
@@ -36,6 +38,8 @@ __all__ = [
     "sacramento",
     "simhyd",
     "smar",
+    "tank",
     "topmodel",
+    "wageningen",
     "xinanjiang",
 ]
