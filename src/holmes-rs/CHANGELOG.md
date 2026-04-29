@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-29
+
 ### Added
 - WAGENINGEN hydrological model (`hydro::wageningen`) with 8 parameters following the HOOPLA HM19 Warmerdam et al. 1997 formulation: soil moisture store `S` with threshold-based production (`S ≥ x1` drains Is; `S < x1` allows capillary rise from intermediate store `T` via It), cosine-envelope ET that preserves unconstrained evaporation above the threshold and tapers smoothly below, fast/slow flow dissociation routed by the `DIV = min(1, T/x5)` ratio, linear drainage from `R` (time constant `x6`) and `T` (time constant `x6·x7`), and fractional-delay routing over `x8` days
 - Python bindings and type stubs for the WAGENINGEN module (`init`, `simulate`, `param_names`, `param_descriptions`)
