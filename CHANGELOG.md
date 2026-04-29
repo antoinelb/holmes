@@ -11,6 +11,8 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-04-29
+
 ### Added
 - WAGENINGEN hydrological model (8-parameter HOOPLA HM19 port of the Warmerdam et al. 1997 model with threshold-based soil-moisture production, capillary rise, cosine ET envelope, fast/slow flow dissociation via the `x5` threshold, and fractional-delay routing) support in model registry, config, and simulation dispatching
 - TANK hydrological model (7-parameter Perrin variant of the Sugawara 1979 cascade of four linear reservoirs S→R→T→L with dual-threshold side-outlets on the surface store, geometric drain-time scaling, cascading ET satisfaction, and fractional-delay routing) support in model registry, config, and simulation dispatching

@@ -1,7 +1,7 @@
 # HOLMES
 
-[![ci holmes](https://github.com/antoinelb/holmes/workflows/ci%20holmes/badge.svg?branch=main)](https://github.com/antoinelb/holmes/actions)
-[![ci holmes-rs](https://github.com/antoinelb/holmes/workflows/ci%20holmes-rs/badge.svg?branch=main)](https://github.com/antoinelb/holmes/actions)
+[![ci holmes](https://github.com/antoinelb/holmes/workflows/ci%20holmes/badge.svg)](https://github.com/antoinelb/holmes/actions)
+[![ci holmes-rs](https://github.com/antoinelb/holmes/workflows/ci%20holmes-rs/badge.svg)](https://github.com/antoinelb/holmes/actions)
 ![holmes-hydro pypi version](https://img.shields.io/pypi/v/holmes-hydro?label=holmes-hydro%20pypi%20package&color=green)
 ![holmes-rs pypi version](https://img.shields.io/pypi/v/holmes-rs?label=holmes-rs%20pypi%20package&color=green)
 [![Supported Python Version](https://img.shields.io/pypi/pyversions/holmes-hydro.svg?color=%2334D058)](https://pypi.org/project/holmes-hydro)
