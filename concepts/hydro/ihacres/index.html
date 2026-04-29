@@ -12,31 +12,31 @@
         <meta name="author" content="Université Laval">
       
       
-        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/cequeau/">
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/hydro/ihacres/">
       
       
-        <link rel="prev" href="../bucket/">
+        <link rel="prev" href="../hymod/">
       
       
-        <link rel="next" href="../snow-models/">
+        <link rel="next" href="../martine/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>CEQUEAU - HOLMES Documentation</title>
+        <title>IHACRES Model - HOLMES Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cequeau-model" class="md-skip">
+        <a href="#ihacres-model" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              CEQUEAU
+              IHACRES Model
             
           </span>
         </div>
@@ -227,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -248,7 +248,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -270,7 +270,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../user-guide/" class="md-tabs__link">
+        <a href="../../../user-guide/" class="md-tabs__link">
           
   
   
@@ -294,7 +294,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -316,7 +316,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api-reference/" class="md-tabs__link">
+        <a href="../../../api-reference/" class="md-tabs__link">
           
   
   
@@ -338,7 +338,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../data-formats/" class="md-tabs__link">
+        <a href="../../../data-formats/" class="md-tabs__link">
           
   
   
@@ -360,7 +360,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/changelog/" class="md-tabs__link">
+        <a href="../../../reference/changelog/" class="md-tabs__link">
           
   
   
@@ -402,7 +402,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -432,7 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -488,7 +488,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -532,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/installation/" class="md-nav__link">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -560,7 +560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -588,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/configuration/" class="md-nav__link">
+      <a href="../../../getting-started/configuration/" class="md-nav__link">
         
   
   
@@ -656,7 +656,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../user-guide/" class="md-nav__link ">
+            <a href="../../../user-guide/" class="md-nav__link ">
               
   
   
@@ -700,7 +700,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/interface-overview/" class="md-nav__link">
+      <a href="../../../user-guide/interface-overview/" class="md-nav__link">
         
   
   
@@ -728,7 +728,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/calibration/" class="md-nav__link">
+      <a href="../../../user-guide/calibration/" class="md-nav__link">
         
   
   
@@ -756,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/simulation/" class="md-nav__link">
+      <a href="../../../user-guide/simulation/" class="md-nav__link">
         
   
   
@@ -784,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/projection/" class="md-nav__link">
+      <a href="../../../user-guide/projection/" class="md-nav__link">
         
   
   
@@ -812,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/settings/" class="md-nav__link">
+      <a href="../../../user-guide/settings/" class="md-nav__link">
         
   
   
@@ -885,7 +885,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -932,6 +932,40 @@
   
     
     
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
       
         
       
@@ -994,14 +1028,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../gr4j/" class="md-nav__link">
+      <a href="../bucket/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    GR4J
+    Bucket Model
   
 
     
@@ -1022,14 +1056,154 @@
   
   
     <li class="md-nav__item">
-      <a href="../bucket/" class="md-nav__link">
+      <a href="../cequeau/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bucket
+    CEQUEAU Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CREC Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gardenia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GARDENIA Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gr4j/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GR4J Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hbv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hymod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HYMOD Model
   
 
     
@@ -1066,7 +1240,7 @@
   <span class="md-ellipsis">
     
   
-    CEQUEAU
+    IHACRES Model
   
 
     
@@ -1084,7 +1258,7 @@
   <span class="md-ellipsis">
     
   
-    CEQUEAU
+    IHACRES Model
   
 
     
@@ -1177,10 +1351,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-precipitation-and-evapotranspiration" class="md-nav__link">
+  <a href="#drying-exponent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Precipitation and Evapotranspiration
+        Drying Exponent
       
     </span>
   </a>
@@ -1188,10 +1362,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-infiltration" class="md-nav__link">
+  <a href="#catchment-moisture-index" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Infiltration
+        Catchment Moisture Index
       
     </span>
   </a>
@@ -1199,10 +1373,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-drainage" class="md-nav__link">
+  <a href="#effective-rainfall" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Drainage
+        Effective Rainfall
       
     </span>
   </a>
@@ -1210,10 +1384,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#groundwater-store" class="md-nav__link">
+  <a href="#fast-routing-reservoir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Groundwater Store
+        Fast Routing Reservoir
       
     </span>
   </a>
@@ -1221,10 +1395,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#total-streamflow" class="md-nav__link">
+  <a href="#slow-routing-reservoir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Total Streamflow
+        Slow Routing Reservoir
       
     </span>
   </a>
@@ -1232,10 +1406,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#routing-delay" class="md-nav__link">
+  <a href="#delay-routing-and-total-streamflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Delay
+        Delay Routing and Total Streamflow
       
     </span>
   </a>
@@ -1244,17 +1418,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#differences-from-the-original-cequeau" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Differences from the Original CEQUEAU
-      
-    </span>
-  </a>
   
 </li>
       
@@ -1278,6 +1441,342 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../martine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MARTINE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mohyse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOHYSE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mordor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MORDOR Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nam/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NAM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sacramento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SACRAMENTO Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../simhyd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SIMHYD Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../smar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SMAR Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TANK Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../topmodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOPMODEL Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wageningen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WAGENINGEN Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xinanjiang/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XINANJIANG Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1293,7 +1792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../snow-models/" class="md-nav__link">
+      <a href="../../snow-models/" class="md-nav__link">
         
   
   
@@ -1321,7 +1820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pet-models/" class="md-nav__link">
+      <a href="../../pet-models/" class="md-nav__link">
         
   
   
@@ -1349,7 +1848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../calibration-algorithms/" class="md-nav__link">
+      <a href="../../calibration-algorithms/" class="md-nav__link">
         
   
   
@@ -1377,7 +1876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../metrics/" class="md-nav__link">
+      <a href="../../metrics/" class="md-nav__link">
         
   
   
@@ -1453,7 +1952,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/" class="md-nav__link ">
+            <a href="../../../api-reference/" class="md-nav__link ">
               
   
   
@@ -1497,7 +1996,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/data/" class="md-nav__link">
+      <a href="../../../api-reference/data/" class="md-nav__link">
         
   
   
@@ -1525,7 +2024,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/app/" class="md-nav__link">
+      <a href="../../../api-reference/app/" class="md-nav__link">
         
   
   
@@ -1553,7 +2052,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/config/" class="md-nav__link">
+      <a href="../../../api-reference/config/" class="md-nav__link">
         
   
   
@@ -1581,7 +2080,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/exceptions/" class="md-nav__link">
+      <a href="../../../api-reference/exceptions/" class="md-nav__link">
         
   
   
@@ -1609,7 +2108,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/logging/" class="md-nav__link">
+      <a href="../../../api-reference/logging/" class="md-nav__link">
         
   
   
@@ -1637,7 +2136,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/validation/" class="md-nav__link">
+      <a href="../../../api-reference/validation/" class="md-nav__link">
         
   
   
@@ -1698,7 +2197,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/api/" class="md-nav__link ">
+            <a href="../../../api-reference/api/" class="md-nav__link ">
               
   
   
@@ -1742,7 +2241,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/api/" class="md-nav__link">
+      <a href="../../../api-reference/api/api/" class="md-nav__link">
         
   
   
@@ -1770,7 +2269,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/calibration/" class="md-nav__link">
+      <a href="../../../api-reference/api/calibration/" class="md-nav__link">
         
   
   
@@ -1798,7 +2297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/simulation/" class="md-nav__link">
+      <a href="../../../api-reference/api/simulation/" class="md-nav__link">
         
   
   
@@ -1826,7 +2325,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/projection/" class="md-nav__link">
+      <a href="../../../api-reference/api/projection/" class="md-nav__link">
         
   
   
@@ -1854,7 +2353,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/utils/" class="md-nav__link">
+      <a href="../../../api-reference/api/utils/" class="md-nav__link">
         
   
   
@@ -1921,7 +2420,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/models/" class="md-nav__link ">
+            <a href="../../../api-reference/models/" class="md-nav__link ">
               
   
   
@@ -1965,7 +2464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/hydro/" class="md-nav__link">
+      <a href="../../../api-reference/models/hydro/" class="md-nav__link">
         
   
   
@@ -1993,7 +2492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/snow/" class="md-nav__link">
+      <a href="../../../api-reference/models/snow/" class="md-nav__link">
         
   
   
@@ -2021,7 +2520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/calibration/" class="md-nav__link">
+      <a href="../../../api-reference/models/calibration/" class="md-nav__link">
         
   
   
@@ -2049,7 +2548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/utils/" class="md-nav__link">
+      <a href="../../../api-reference/models/utils/" class="md-nav__link">
         
   
   
@@ -2114,7 +2613,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/utils/" class="md-nav__link ">
+            <a href="../../../api-reference/utils/" class="md-nav__link ">
               
   
   
@@ -2158,7 +2657,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/paths/" class="md-nav__link">
+      <a href="../../../api-reference/utils/paths/" class="md-nav__link">
         
   
   
@@ -2186,7 +2685,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/print/" class="md-nav__link">
+      <a href="../../../api-reference/utils/print/" class="md-nav__link">
         
   
   
@@ -2214,7 +2713,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/websocket/" class="md-nav__link">
+      <a href="../../../api-reference/utils/websocket/" class="md-nav__link">
         
   
   
@@ -2288,7 +2787,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../data-formats/" class="md-nav__link ">
+            <a href="../../../data-formats/" class="md-nav__link ">
               
   
   
@@ -2332,7 +2831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/observations/" class="md-nav__link">
+      <a href="../../../data-formats/observations/" class="md-nav__link">
         
   
   
@@ -2360,7 +2859,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/cemaneige-info/" class="md-nav__link">
+      <a href="../../../data-formats/cemaneige-info/" class="md-nav__link">
         
   
   
@@ -2388,7 +2887,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/projections/" class="md-nav__link">
+      <a href="../../../data-formats/projections/" class="md-nav__link">
         
   
   
@@ -2416,7 +2915,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/exports/" class="md-nav__link">
+      <a href="../../../data-formats/exports/" class="md-nav__link">
         
   
   
@@ -2509,7 +3008,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/changelog/" class="md-nav__link">
+      <a href="../../../reference/changelog/" class="md-nav__link">
         
   
   
@@ -2537,7 +3036,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/license/" class="md-nav__link">
+      <a href="../../../reference/license/" class="md-nav__link">
         
   
   
@@ -2659,10 +3158,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-precipitation-and-evapotranspiration" class="md-nav__link">
+  <a href="#drying-exponent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Precipitation and Evapotranspiration
+        Drying Exponent
       
     </span>
   </a>
@@ -2670,10 +3169,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-infiltration" class="md-nav__link">
+  <a href="#catchment-moisture-index" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Infiltration
+        Catchment Moisture Index
       
     </span>
   </a>
@@ -2681,10 +3180,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#surface-store-drainage" class="md-nav__link">
+  <a href="#effective-rainfall" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Surface Store: Drainage
+        Effective Rainfall
       
     </span>
   </a>
@@ -2692,10 +3191,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#groundwater-store" class="md-nav__link">
+  <a href="#fast-routing-reservoir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Groundwater Store
+        Fast Routing Reservoir
       
     </span>
   </a>
@@ -2703,10 +3202,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#total-streamflow" class="md-nav__link">
+  <a href="#slow-routing-reservoir" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Total Streamflow
+        Slow Routing Reservoir
       
     </span>
   </a>
@@ -2714,10 +3213,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#routing-delay" class="md-nav__link">
+  <a href="#delay-routing-and-total-streamflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Delay
+        Delay Routing and Total Streamflow
       
     </span>
   </a>
@@ -2726,17 +3225,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#differences-from-the-original-cequeau" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Differences from the Original CEQUEAU
-      
-    </span>
-  </a>
   
 </li>
       
@@ -2771,39 +3259,53 @@
   
 
 
-<h1 id="cequeau-model">CEQUEAU Model<a class="headerlink" href="#cequeau-model" title="Permanent link">&para;</a></h1>
+<h1 id="ihacres-model">IHACRES Model<a class="headerlink" href="#ihacres-model" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>CEQUEAU is a conceptual rainfall-runoff model originally developed at INRS-Eau (Institut National de la Recherche Scientifique) in Québec, Canada, by Girard, Morin, and Charbonneau (1972). The name comes from the former name of the institute. In its original form, CEQUEAU is a spatially distributed model designed for use with physiographic databases, but it can also operate in lumped mode.</p>
-<p>The version implemented in HOLMES follows the simplified "CEQU" variant described in Perrin (2000), which reduces the original 11-parameter formulation to 9 parameters. This simplified version removes the impervious surface partitioning mechanism, fixes the evapotranspiration threshold, and adds a pure time delay parameter. Despite these simplifications, the core two-reservoir structure of the original model is preserved.</p>
-<p>CEQUEAU represents the catchment using two interconnected reservoirs: a surface (soil) store that handles precipitation, evapotranspiration, and infiltration, and a groundwater store that receives percolated water and produces slower flow components. Both reservoirs generate multiple outflow pathways — some threshold-based, some continuous — giving the model considerable flexibility in reproducing different hydrograph shapes.</p>
+<p>IHACRES (Identification of unit Hydrographs And Component flows from Rainfall, Evaporation and Streamflow data) is a seven-parameter daily lumped rainfall–runoff model jointly developed at the Institute of Hydrology (Wallingford, UK) and the Australian National University in the early 1990s.
+The original formulation appears in Jakeman et al. (1990) and the operational PC version is documented in Littlewood et al. (1997).</p>
+<p>IHACRES occupies a distinctive niche among lumped models: it explicitly separates a <strong>non-linear loss module</strong> (which converts gross rainfall into "effective rainfall") from a <strong>linear unit-hydrograph routing module</strong> (which transforms effective rainfall into streamflow).
+The loss module is built around a single dimensionless <strong>catchment moisture index</strong> <span class="arithmatex">\(S\)</span> that decays exponentially between rain events at a rate modulated by potential evapotranspiration.
+The routing module places two parallel linear reservoirs in series with a pure delay — a fast store and a slow store sharing a multiplicative coupling — making it equivalent to a two-tap impulse response.</p>
+<p>The HOLMES implementation follows Perrin's (2000) "version retenue" of the model, which uses PET in place of temperature in the drying-rate term.
+Students often pick IHACRES as a teaching contrast to soil-bucket models (GR4J, GARDENIA, BUCKET): it shows that you can produce realistic streamflow without an explicit "reservoir capacity", relying instead on a moisture <em>index</em> that gates an otherwise linear system.</p>
 <h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p><strong>Surface store</strong>: The upper reservoir receiving precipitation directly. It produces three distinct outflow pathways (overflow, threshold-based drainage, and continuous drainage) and loses water to both evapotranspiration and infiltration to the groundwater store.</p>
-</li>
-<li>
-<p><strong>Groundwater store</strong>: The lower reservoir fed by infiltration from the surface store. It produces two outflow pathways (threshold-based hypodermic flow and continuous baseflow) and is also subject to evapotranspiration from remaining PET demand.</p>
-</li>
-<li>
-<p><strong>Threshold-based drainage</strong>: Several outflows in CEQUEAU activate only when the store level exceeds a threshold. This allows the model to represent nonlinear behavior where certain flow pathways only contribute during wet conditions.</p>
-</li>
-<li>
-<p><strong>Continuous drainage</strong>: Other outflows are proportional to the current store level regardless of any threshold, providing a baseline contribution at all times.</p>
-</li>
-<li>
-<p><strong>Routing delay</strong>: A pure time translation applied to the total streamflow before output, representing the travel time of water through the channel network to the catchment outlet.</p>
-</li>
+<li><strong>Catchment moisture index (<span class="arithmatex">\(S\)</span>)</strong>: A dimensionless state variable that tracks how wet the catchment is. Unlike a soil bucket, <span class="arithmatex">\(S\)</span> has no upper bound — it grows during wet periods and decays during dry periods at a rate set by PET.</li>
+<li><strong>Effective rainfall (<span class="arithmatex">\(P_r\)</span>)</strong>: The fraction of incoming rainfall that actually contributes to streamflow, computed as the product of the moisture index and the rainfall depth. When <span class="arithmatex">\(S\)</span> is small (dry), most rain is lost; when <span class="arithmatex">\(S\)</span> is large (wet), most rain becomes runoff.</li>
+<li><strong>PET-modulated drying constant (<span class="arithmatex">\(\tau_w\)</span>)</strong>: The time constant of the moisture index recession. It is <em>not</em> a fixed parameter — it shrinks when PET is high (faster drying) and expands when PET is low (slower drying), reproducing the seasonal asymmetry between summer and winter recessions.</li>
+<li><strong>Mass-balance forcing (<span class="arithmatex">\(1/C\)</span>)</strong>: A calibrated scaler (<span class="arithmatex">\(X_1\)</span>) that converts gross rainfall into the moisture-index increment. It absorbs systematic differences between long-term gauge precipitation and observed runoff so that calibrated total flow matches observed total flow.</li>
+<li><strong>Parallel fast/slow routing</strong>: Effective rainfall is split between two linear reservoirs by a fraction <span class="arithmatex">\(X_2\)</span>. The fast reservoir empties with time constant <span class="arithmatex">\(X_3\)</span> (peak response); the slow reservoir empties with time constant <span class="arithmatex">\(X_3 \cdot X_4\)</span> (baseflow). The shared <span class="arithmatex">\(X_3\)</span> is a structural coupling — calibrating one affects both.</li>
+<li><strong>Pure delay (<span class="arithmatex">\(X_5\)</span>)</strong>: A fractional delay-line at the catchment outlet representing in-channel travel time, distributed between the two cells nearest to <span class="arithmatex">\(\lceil X_5 \rceil\)</span>.</li>
 </ul>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>CEQUEAU operates on a daily time step, processing precipitation and potential evapotranspiration through the following sequence:</p>
-<p><strong>Step 1: Precipitation input</strong>. All precipitation enters the surface store directly. Unlike the original CEQUEAU model, the simplified version does not partition precipitation between impervious surface runoff and soil input (the TRI coefficient is set to zero).</p>
-<p><strong>Step 2: Surface evapotranspiration</strong>. The surface store loses water to evapotranspiration. Actual evapotranspiration is limited by both the PET demand and the available water, with a linear scaling factor that depends on the ratio of the store level to half its capacity (<span class="arithmatex">\(X_5/2\)</span>). When the store is more than half full, actual ET equals potential ET; below that, it decreases linearly.</p>
-<p><strong>Step 3: Infiltration (percolation)</strong>. Water above the infiltration threshold <span class="arithmatex">\(X_1\)</span> percolates to the groundwater store at a rate controlled by the infiltration constant <span class="arithmatex">\(X_3\)</span>. This is the only pathway connecting the two reservoirs.</p>
-<p><strong>Step 4: Surface drainage</strong>. The surface store produces three outflows in sequence: threshold-based lateral drainage (above <span class="arithmatex">\(X_2\)</span>, controlled by <span class="arithmatex">\(X_4\)</span>), continuous lateral drainage (controlled by <span class="arithmatex">\(X_4 \cdot X_8\)</span>), and overflow if the store exceeds its capacity <span class="arithmatex">\(X_5\)</span>. Each outflow is subtracted from the store before the next is computed, so their order matters.</p>
-<p><strong>Step 5: Groundwater dynamics</strong>. The groundwater store receives the infiltrated water and produces two outflows: threshold-based hypodermic flow (above <span class="arithmatex">\(X_7\)</span>, controlled by <span class="arithmatex">\(X_4 \cdot X_9\)</span>) and continuous baseflow (controlled by <span class="arithmatex">\(X_4 \cdot X_8 \cdot X_9^2\)</span>). Any remaining PET demand after surface evapotranspiration is applied to the groundwater store, again with linear scaling relative to <span class="arithmatex">\(X_7\)</span>.</p>
-<p><strong>Step 6: Total streamflow and delay</strong>. The five outflow components are summed to produce total streamflow, which is then delayed by <span class="arithmatex">\(X_6\)</span> time steps using linear interpolation for non-integer delays.</p>
+<p>The IHACRES model processes precipitation and PET through the following steps:</p>
+<p><strong>Step 1: Compute the drying-rate exponent</strong>.
+At time step <span class="arithmatex">\(k\)</span>, the model first computes a drying exponent <span class="arithmatex">\(E_l = \max(0, X_7 - E_k / X_6)\)</span>, where <span class="arithmatex">\(X_7\)</span> is the baseline drying constant and <span class="arithmatex">\(X_6\)</span> is the PET-modulation factor.
+When PET is high, <span class="arithmatex">\(E_k / X_6\)</span> grows large, <span class="arithmatex">\(E_l\)</span> shrinks toward zero, and the moisture index decays slowly (or not at all in the saturated-drying limit).
+When PET is low, <span class="arithmatex">\(E_l\)</span> stays close to <span class="arithmatex">\(X_7\)</span> and the recession is fast.</p>
+<p><strong>Step 2: Update the catchment moisture index</strong>.
+The moisture index obeys an IIR filter equation: the previous value is multiplied by a decay coefficient <span class="arithmatex">\(1 - 1/\exp(E_l) \in [0, 1)\)</span> and incremented by <span class="arithmatex">\(P_k / X_1\)</span>.
+The mass-balance scaler <span class="arithmatex">\(X_1\)</span> converts the rainfall depth to a dimensionless increment that keeps long-term simulated and observed totals consistent.</p>
+<p><strong>Step 3: Compute effective rainfall</strong>.
+Effective rainfall is the product of the average moisture index over the time step and the rainfall depth: <span class="arithmatex">\(P_r = \frac{1}{2}(S_{k-1} + S_k) \cdot P_k\)</span>.
+The midpoint trapezoidal rule reflects the fact that the catchment is wetting up <em>during</em> the time step, so the contributing wetness is the average of the start and end values.</p>
+<p><strong>Step 4: Split between fast and slow paths</strong>.
+A fraction <span class="arithmatex">\(X_2\)</span> of the effective rainfall enters the fast linear reservoir <span class="arithmatex">\(R\)</span>; the complementary fraction <span class="arithmatex">\(1 - X_2\)</span> enters the slow linear reservoir <span class="arithmatex">\(T\)</span>.
+This split is purely empirical — there is no soil-physics derivation for it.</p>
+<p><strong>Step 5: Drain the routing reservoirs</strong>.
+The fast reservoir releases <span class="arithmatex">\(Q_r = R / X_3\)</span> each step; the slow reservoir releases <span class="arithmatex">\(Q_t = T / (X_3 \cdot X_4)\)</span>.
+The shared <span class="arithmatex">\(X_3\)</span> couples the two recessions so that calibration cannot make them fully independent.
+The slow store inherits a longer memory (<span class="arithmatex">\(X_4 \geq 1\)</span> enforces slow <span class="arithmatex">\(\geq\)</span> fast).</p>
+<p><strong>Step 6: Apply the pure delay</strong>.
+The combined outflow <span class="arithmatex">\(Q_r + Q_t\)</span> enters a fractional-delay line of length <span class="arithmatex">\(\lceil X_5 \rceil + 1\)</span>.
+Two non-zero weights distribute the new pulse across the last two cells, producing a smooth interpolation between integer delays.</p>
+<p><strong>Step 7: Read the simulated streamflow</strong>.
+The streamflow at the catchment outlet is the leading cell of the delay array, clamped at zero to guarantee non-negative output.</p>
 <h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
-<p>CEQUEAU (CEQU variant) has nine calibratable parameters:</p>
+<p>The IHACRES model has seven calibratable parameters.
+Note that the lower bound on <span class="arithmatex">\(X_3\)</span> is set to 1 day rather than the more permissive values found in the original literature.
+This is a <em>numerical stability</em> constraint: the explicit-Euler routing scheme <span class="arithmatex">\(Q = R / X_3\)</span> followed by <span class="arithmatex">\(R \leftarrow R - Q\)</span> becomes unstable when <span class="arithmatex">\(X_3 &lt; 1\)</span>, since the per-step decay coefficient <span class="arithmatex">\(|1 - 1/X_3|\)</span> exceeds 1 and the reservoir oscillates with growing amplitude.
+A 1-day floor is also physically reasonable for a model running on daily forcing.</p>
 <table>
 <thead>
 <tr>
@@ -2816,139 +3318,131 @@
 </thead>
 <tbody>
 <tr>
-<td><span class="arithmatex">\(X_1\)</span></td>
-<td>Infiltration threshold</td>
-<td>0–3000</td>
-<td>mm</td>
-<td>Surface store level above which water infiltrates to the groundwater store. Higher values reduce percolation.</td>
+<td><span class="arithmatex">\(X_1\)</span> (<span class="arithmatex">\(1/C\)</span>)</td>
+<td>Mass-balance forcing parameter</td>
+<td>1–1000</td>
+<td>–</td>
+<td>Inverse of the calibrated forcing constant. Smaller values amplify rainfall into the moisture index, producing more total runoff. Used to correct long-term water-balance errors.</td>
 </tr>
 <tr>
-<td><span class="arithmatex">\(X_2\)</span></td>
-<td>Soil drainage threshold</td>
-<td>1–3000</td>
-<td>mm</td>
-<td>Surface store level above which threshold-based lateral drainage occurs. Controls when quick lateral flow activates.</td>
+<td><span class="arithmatex">\(X_2\)</span> (<span class="arithmatex">\(\alpha\)</span>)</td>
+<td>Fast-flow fraction of effective rainfall</td>
+<td>0.01–0.99</td>
+<td>–</td>
+<td>Fraction of effective rainfall routed to the fast store. Higher values produce flashier hydrographs; lower values emphasize baseflow.</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_3\)</span></td>
-<td>Infiltration constant</td>
+<td>Fast routing reservoir time constant</td>
 <td>1–100</td>
-<td>-</td>
-<td>Controls the rate of infiltration. Larger values slow infiltration to the groundwater store.</td>
+<td>days</td>
+<td>Linear residence time of the fast store. Smaller values produce sharper peaks; values below 1 are excluded for numerical stability.</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_4\)</span></td>
-<td>Upper drainage constant</td>
-<td>1–50</td>
-<td>-</td>
-<td>Primary drainage time constant for the surface store. Also appears as a factor in groundwater drainage constants.</td>
+<td>Slow routing multiplier</td>
+<td>1–1000</td>
+<td>–</td>
+<td>Multiplicative coupling: the slow store has time constant <span class="arithmatex">\(X_3 \cdot X_4\)</span>. Constrained to <span class="arithmatex">\(\geq 1\)</span> to enforce "slow <span class="arithmatex">\(\geq\)</span> fast".</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_5\)</span></td>
-<td>Surface store capacity</td>
-<td>1–8000</td>
-<td>mm</td>
-<td>Maximum capacity of the surface (soil) reservoir. Also determines the evapotranspiration scaling threshold at <span class="arithmatex">\(X_5/2\)</span>.</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(X_6\)</span></td>
-<td>Routing delay</td>
-<td>0.1–20</td>
+<td>Pure delay</td>
+<td>0.5–5.0</td>
 <td>days</td>
-<td>Pure time translation applied to total streamflow. Reflects channel travel time to the outlet.</td>
+<td>Channel travel time from catchment to outlet. A fractional value distributes the pulse across two adjacent time cells.</td>
 </tr>
 <tr>
-<td><span class="arithmatex">\(X_7\)</span></td>
-<td>Groundwater drainage threshold</td>
-<td>0.01–500</td>
-<td>mm</td>
-<td>Groundwater store level above which hypodermic flow occurs. Also scales groundwater evapotranspiration.</td>
+<td><span class="arithmatex">\(X_6\)</span> (<span class="arithmatex">\(f\)</span>)</td>
+<td>PET modulation factor</td>
+<td>0.1–10</td>
+<td>–</td>
+<td>Sensitivity of the drying time constant to PET. Larger values weaken the PET coupling; smaller values make recession highly seasonal.</td>
 </tr>
 <tr>
-<td><span class="arithmatex">\(X_8\)</span></td>
-<td>Lower drainage constant</td>
-<td>1–1000</td>
-<td>-</td>
-<td>Multiplier for continuous (slow) drainage from the surface store. Also contributes to groundwater baseflow constant.</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(X_9\)</span></td>
-<td>Groundwater drainage constant</td>
-<td>1–3000</td>
-<td>-</td>
-<td>Controls both hypodermic flow rate (as <span class="arithmatex">\(X_4 \cdot X_9\)</span>) and baseflow rate (as <span class="arithmatex">\(X_4 \cdot X_8 \cdot X_9^2\)</span>).</td>
+<td><span class="arithmatex">\(X_7\)</span> (<span class="arithmatex">\(T_w\)</span>)</td>
+<td>Characteristic catchment drying constant</td>
+<td>0.1–10</td>
+<td>–</td>
+<td>Baseline drying exponent at zero PET. Larger values mean the catchment retains moisture longer. The natural recession time scale (in days) is approximately <span class="arithmatex">\(1 / (1 - 1/\exp(X_7))\)</span>.</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Understanding the parameters:</strong></p>
 <ul>
-<li><strong><span class="arithmatex">\(X_1\)</span> and <span class="arithmatex">\(X_2\)</span></strong> are thresholds that control when different drainage pathways activate. If <span class="arithmatex">\(X_1\)</span> is very large, almost no water reaches the groundwater store; if <span class="arithmatex">\(X_2\)</span> is very large, the threshold-based surface drainage rarely activates.</li>
-<li><strong><span class="arithmatex">\(X_3\)</span> and <span class="arithmatex">\(X_4\)</span></strong> are the primary drainage constants. <span class="arithmatex">\(X_4\)</span> appears in multiple outflow equations, making it a central parameter that influences the overall speed of the catchment response.</li>
-<li><strong><span class="arithmatex">\(X_5\)</span></strong> plays a dual role: it sets the overflow threshold for the surface store and determines when evapotranspiration becomes water-limited (at <span class="arithmatex">\(X_5/2\)</span>).</li>
-<li><strong><span class="arithmatex">\(X_6\)</span></strong> is purely a timing parameter — it shifts the entire hydrograph without changing its shape.</li>
-<li><strong><span class="arithmatex">\(X_8\)</span> and <span class="arithmatex">\(X_9\)</span></strong> interact with <span class="arithmatex">\(X_4\)</span> to form composite drainage constants for the slower flow pathways. This parameterization means that adjusting <span class="arithmatex">\(X_4\)</span> affects all drainage rates simultaneously.</li>
+<li>
+<p><strong><span class="arithmatex">\(X_1\)</span> alone</strong> scales the entire mass balance.
+Calibration drives it to whatever value makes long-term simulated and observed runoff totals match — its value carries no physical meaning beyond "what the data demands".
+A common diagnostic during manual calibration is to plot cumulative simulated vs. observed runoff: if the slope is wrong, <span class="arithmatex">\(X_1\)</span> is wrong.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_2\)</span>, <span class="arithmatex">\(X_3\)</span>, and <span class="arithmatex">\(X_4\)</span> together</strong> define the linear routing.
+Because <span class="arithmatex">\(X_3\)</span> is shared between the fast (<span class="arithmatex">\(X_3\)</span>) and slow (<span class="arithmatex">\(X_3 \cdot X_4\)</span>) recessions, you cannot calibrate them fully independently — moving <span class="arithmatex">\(X_3\)</span> rescales both.
+Practical workflow: fix <span class="arithmatex">\(X_3\)</span> from a recession analysis on the observed streamflow, then calibrate <span class="arithmatex">\(X_2\)</span> and <span class="arithmatex">\(X_4\)</span> from the peak/baseflow ratio.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_5\)</span></strong> is a pure timing parameter and only matters if the catchment is large enough to introduce a noticeable lag between peak rainfall and peak flow.
+For small catchments at daily resolution, <span class="arithmatex">\(X_5 \approx 1\)</span> day is usually adequate.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_6\)</span> and <span class="arithmatex">\(X_7\)</span> together</strong> control the moisture index dynamics.
+The drying time constant is approximately <span class="arithmatex">\(\tau_w \approx \exp(X_7 - E/X_6)\)</span> days when the argument is positive.
+For temperate catchments with summer PET around 4 mm/day, <span class="arithmatex">\(X_6\)</span> in the range 1–5 and <span class="arithmatex">\(X_7\)</span> in the range 1–5 typically gives the seasonal recession asymmetry observed in the data.
+Setting <span class="arithmatex">\(X_7\)</span> very small forces the moisture index to decay aggressively even in winter, which is rarely realistic.</p>
+</li>
 </ul>
 <h2 id="mathematical-formulation">Mathematical Formulation<a class="headerlink" href="#mathematical-formulation" title="Permanent link">&para;</a></h2>
 <h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
-<p>The surface store is initialized at a fixed level, while the groundwater store is set to 20% of its capacity parameter:</p>
-<div class="arithmatex">\[S_0 = 500, \quad T_0 = 0.2 \cdot X_5\]</div>
-<p>where <span class="arithmatex">\(S\)</span> is the surface store level and <span class="arithmatex">\(T\)</span> is the groundwater store level.</p>
-<h3 id="surface-store-precipitation-and-evapotranspiration">Surface Store: Precipitation and Evapotranspiration<a class="headerlink" href="#surface-store-precipitation-and-evapotranspiration" title="Permanent link">&para;</a></h3>
-<p>Precipitation is added directly to the surface store:</p>
-<div class="arithmatex">\[S \leftarrow S + P\]</div>
-<p>Actual evapotranspiration from the surface store is limited by both the PET demand and available water, with linear scaling when the store is below half capacity:</p>
-<div class="arithmatex">\[E_s = \min\!\left(S,\ E \cdot \min\!\left(1,\ \frac{2S}{X_5}\right)\right)\]</div>
-<p>The store is updated and the remaining PET demand is computed:</p>
-<div class="arithmatex">\[S \leftarrow S - E_s, \quad E' = E - E_s\]</div>
-<h3 id="surface-store-infiltration">Surface Store: Infiltration<a class="headerlink" href="#surface-store-infiltration" title="Permanent link">&para;</a></h3>
-<p>Water above the infiltration threshold percolates to the groundwater store:</p>
-<div class="arithmatex">\[I_s = \frac{\max(0,\ S - X_1)}{X_3}\]</div>
-<div class="arithmatex">\[S \leftarrow S - I_s\]</div>
-<h3 id="surface-store-drainage">Surface Store: Drainage<a class="headerlink" href="#surface-store-drainage" title="Permanent link">&para;</a></h3>
-<p>Three outflows are computed sequentially, each depleting the store before the next:</p>
-<p><strong>Threshold-based lateral drainage</strong> (activated when <span class="arithmatex">\(S &gt; X_2\)</span>):</p>
-<div class="arithmatex">\[Q_{s2} = \frac{\max(0,\ S - X_2)}{X_4}\]</div>
-<div class="arithmatex">\[S \leftarrow S - Q_{s2}\]</div>
-<p><strong>Continuous lateral drainage</strong> (always active):</p>
-<div class="arithmatex">\[Q_{s3} = \frac{S}{X_4 \cdot X_8}\]</div>
-<div class="arithmatex">\[S \leftarrow S - Q_{s3}\]</div>
-<p><strong>Overflow</strong> (when the store exceeds capacity):</p>
-<div class="arithmatex">\[Q_{s1} = \max(0,\ S - X_5)\]</div>
-<div class="arithmatex">\[S \leftarrow S - Q_{s1}\]</div>
-<h3 id="groundwater-store">Groundwater Store<a class="headerlink" href="#groundwater-store" title="Permanent link">&para;</a></h3>
-<p>The groundwater store receives infiltration from the surface store:</p>
-<div class="arithmatex">\[T \leftarrow T + I_s\]</div>
-<p><strong>Threshold-based hypodermic flow</strong> (activated when <span class="arithmatex">\(T &gt; X_7\)</span>):</p>
-<div class="arithmatex">\[Q_{t1} = \frac{\max(0,\ T - X_7)}{X_4 \cdot X_9}\]</div>
-<div class="arithmatex">\[T \leftarrow T - Q_{t1}\]</div>
-<p><strong>Continuous baseflow</strong>:</p>
-<div class="arithmatex">\[Q_{t2} = \frac{T}{X_4 \cdot X_8 \cdot X_9^2}\]</div>
-<div class="arithmatex">\[T \leftarrow T - Q_{t2}\]</div>
-<p><strong>Groundwater evapotranspiration</strong> from the remaining PET demand:</p>
-<div class="arithmatex">\[E_t = \min\!\left(T,\ E' \cdot \min\!\left(1,\ \frac{T}{X_7}\right)\right)\]</div>
-<div class="arithmatex">\[T \leftarrow T - E_t\]</div>
-<h3 id="total-streamflow">Total Streamflow<a class="headerlink" href="#total-streamflow" title="Permanent link">&para;</a></h3>
-<p>The total streamflow is the sum of all five drainage components:</p>
-<div class="arithmatex">\[Q_{total} = Q_{s1} + Q_{s2} + Q_{s3} + Q_{t1} + Q_{t2}\]</div>
-<h3 id="routing-delay">Routing Delay<a class="headerlink" href="#routing-delay" title="Permanent link">&para;</a></h3>
-<p>The total streamflow is delayed by <span class="arithmatex">\(X_6\)</span> time steps using a linear interpolation scheme. For a delay of <span class="arithmatex">\(X_6\)</span> days, a delay line of length <span class="arithmatex">\(\lceil X_6 \rceil + 1\)</span> distributes the flow between two adjacent positions to handle non-integer delays:</p>
-<div class="arithmatex">\[Q(t) = \text{delayed}(Q_{total},\ X_6)\]</div>
-<h2 id="differences-from-the-original-cequeau">Differences from the Original CEQUEAU<a class="headerlink" href="#differences-from-the-original-cequeau" title="Permanent link">&para;</a></h2>
-<p>The CEQU variant implemented in HOLMES differs from the original CEQUEAU model (Girard et al., 1972) in three ways:</p>
-<ol>
-<li>
-<p><strong>No impervious surface partitioning</strong>: The TRI coefficient and HRIMP threshold are removed. All precipitation enters the surface store directly, reducing the parameter count by two.</p>
-</li>
-<li>
-<p><strong>Fixed evapotranspiration threshold</strong>: The original model uses a separate parameter (HINT) as the threshold above which actual ET equals potential ET. The simplified version fixes this threshold at half the surface store capacity (<span class="arithmatex">\(X_5/2\)</span>), eliminating one parameter.</p>
-</li>
-<li>
-<p><strong>Added routing delay</strong>: A pure time delay parameter (<span class="arithmatex">\(X_6\)</span>) is added to translate the total streamflow in time, representing channel routing. The original model handles routing through its distributed grid structure.</p>
-</li>
-</ol>
+<p>The reservoir states are initialized to the HOOPLA HM8 defaults, independent of the parameter values:</p>
+<div class="arithmatex">\[S_0 = 0.5, \quad R_0 = 5, \quad T_0 = 50\]</div>
+<p>The pure-delay vector of length <span class="arithmatex">\(n = \lceil X_5 \rceil + 1\)</span> is built once with all-zero history and two non-zero weights at the trailing cells:</p>
+<div class="arithmatex">\[d_{n-2} = \frac{1}{X_5 - n + 3}, \quad d_{n-1} = 1 - d_{n-2}, \quad d_i = 0 \text{ for } i &lt; n-2\]</div>
+<h3 id="drying-exponent">Drying Exponent<a class="headerlink" href="#drying-exponent" title="Permanent link">&para;</a></h3>
+<p>At each time step, the drying exponent is computed from the current PET:</p>
+<div class="arithmatex">\[E_{l,k} = \max\left(0, \; X_7 - \frac{E_k}{X_6}\right)\]</div>
+<p>The <span class="arithmatex">\(\max(\cdot, 0)\)</span> clamp implements the "saturated-drying limit": no matter how high PET gets, the drying rate cannot become negative (i.e. the catchment cannot anti-dry).</p>
+<h3 id="catchment-moisture-index">Catchment Moisture Index<a class="headerlink" href="#catchment-moisture-index" title="Permanent link">&para;</a></h3>
+<p>The moisture index updates via a linear IIR filter with rainfall input:</p>
+<div class="arithmatex">\[S_k \leftarrow S_{k-1} + \frac{P_k}{X_1} - \frac{S_{k-1}}{\exp(E_{l,k})}\]</div>
+<p>Equivalently, <span class="arithmatex">\(S_k = \alpha_k \cdot S_{k-1} + P_k / X_1\)</span> with <span class="arithmatex">\(\alpha_k = 1 - 1/\exp(E_{l,k}) \in [0, 1]\)</span>.
+The filter is strictly stable as long as <span class="arithmatex">\(E_{l,k} &gt; 0\)</span>; the bounds enforced on <span class="arithmatex">\(X_3\)</span>, <span class="arithmatex">\(X_6\)</span>, and <span class="arithmatex">\(X_7\)</span> keep the routing reservoirs numerically stable in the rare event that <span class="arithmatex">\(E_{l,k}\)</span> touches zero.</p>
+<h3 id="effective-rainfall">Effective Rainfall<a class="headerlink" href="#effective-rainfall" title="Permanent link">&para;</a></h3>
+<p>Effective rainfall is the trapezoidal-rule midpoint of the moisture index times the rainfall depth:</p>
+<div class="arithmatex">\[P_{r,k} = \frac{1}{2} \left(S_{k-1} + S_k\right) \cdot P_k\]</div>
+<p>When <span class="arithmatex">\(S\)</span> is near zero (dry catchment), almost all rainfall is lost.
+When <span class="arithmatex">\(S\)</span> is large (saturated catchment), almost all rainfall reaches the routing module.</p>
+<h3 id="fast-routing-reservoir">Fast Routing Reservoir<a class="headerlink" href="#fast-routing-reservoir" title="Permanent link">&para;</a></h3>
+<p>The fast store receives a fraction <span class="arithmatex">\(X_2\)</span> of the effective rainfall and drains linearly with time constant <span class="arithmatex">\(X_3\)</span>:</p>
+<div class="arithmatex">\[R_k \leftarrow R_{k-1} + X_2 \cdot P_{r,k}\]</div>
+<div class="arithmatex">\[Q_{r,k} = \frac{R_k}{X_3}\]</div>
+<div class="arithmatex">\[R_k \leftarrow R_k - Q_{r,k}\]</div>
+<h3 id="slow-routing-reservoir">Slow Routing Reservoir<a class="headerlink" href="#slow-routing-reservoir" title="Permanent link">&para;</a></h3>
+<p>The slow store receives the complementary fraction <span class="arithmatex">\(1 - X_2\)</span> and drains with the longer time constant <span class="arithmatex">\(X_3 \cdot X_4\)</span>:</p>
+<div class="arithmatex">\[T_k \leftarrow T_{k-1} + (1 - X_2) \cdot P_{r,k}\]</div>
+<div class="arithmatex">\[Q_{t,k} = \frac{T_k}{X_3 \cdot X_4}\]</div>
+<div class="arithmatex">\[T_k \leftarrow T_k - Q_{t,k}\]</div>
+<h3 id="delay-routing-and-total-streamflow">Delay Routing and Total Streamflow<a class="headerlink" href="#delay-routing-and-total-streamflow" title="Permanent link">&para;</a></h3>
+<p>The combined fast-plus-slow outflow <span class="arithmatex">\(Q_{r,k} + Q_{t,k}\)</span> is convolved with the static delay vector by shifting the in-channel buffer one cell forward and depositing the new pulse at the trailing cells:</p>
+<div class="arithmatex">\[h_i \leftarrow h_{i+1} + d_i \cdot (Q_{r,k} + Q_{t,k}) \quad \text{for } i = 0, \ldots, n-2\]</div>
+<div class="arithmatex">\[h_{n-1} \leftarrow d_{n-1} \cdot (Q_{r,k} + Q_{t,k})\]</div>
+<p>The simulated streamflow at the catchment outlet is the leading cell, clamped at zero:</p>
+<div class="arithmatex">\[Q_{\text{sim},k} = \max(h_0, 0)\]</div>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<p>Girard, G., Morin, G., &amp; Charbonneau, R. (1972). Modèle précipitations-débits à discrétisation spatiale. <em>Cahiers ORSTOM, Série Hydrologie</em>, IX(4), 35-52.</p>
-<p>Perrin, C. (2000). <em>Vers une amélioration d'un modèle global pluie-débit</em>. PhD Thesis, INPG Grenoble, Appendix 1, pp. 322-326. <a href="https://tel.archives-ouvertes.fr/tel-00006216">https://tel.archives-ouvertes.fr/tel-00006216</a></p>
+<p>Jakeman, A. J., Littlewood, I. G., &amp; Whitehead, P. G. (1990).
+Computation of the instantaneous unit hydrograph and identifiable component flows with application to two small upland catchments.
+<em>Journal of Hydrology</em>, 117(1–4), 275–300.</p>
+<p>Littlewood, I. G., Down, K., Parker, J. R., &amp; Post, D. A. (1997).
+<em>The PC version of IHACRES for catchment-scale rainfall-streamflow modelling. Version 1.0. User Guide</em>.
+Institute of Hydrology, Wallingford, UK, 89 pp.</p>
+<p>Jakeman, A. J., &amp; Hornberger, G. M. (1993).
+How much complexity is warranted in a rainfall-runoff model?
+<em>Water Resources Research</em>, 29(8), 2637–2649.</p>
+<p>Perrin, C. (2000).
+<em>Vers une amélioration d'un modèle global pluie-débit au travers d'une approche comparative</em> (PhD thesis).
+INPG, Grenoble. Annexe 1, fiche analytique n°17.</p>
+<p>Thiboult, A., Seiller, G., Poncelet, C., &amp; Anctil, F. (2020).
+The HOOPLA toolbox: a HydrOlOgical Prediction LAboratory.
+<em>Hydrology and Earth System Sciences Discussions</em>.</p>
 
 
 
@@ -2971,7 +3465,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 31, 2026 20:14:12 UTC">January 31, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 12:42:14 UTC">April 12, 2026</span>
   </span>
 
     
@@ -2981,7 +3475,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 31, 2026 20:14:12 UTC">January 31, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 12:42:14 UTC">April 12, 2026</span>
   </span>
 
     
@@ -3018,7 +3512,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../bucket/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Bucket">
+          <a href="../hymod/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HYMOD Model">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3028,20 +3522,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Bucket
+                HYMOD Model
               </div>
             </div>
           </a>
         
         
           
-          <a href="../snow-models/" class="md-footer__link md-footer__link--next" aria-label="Next: Snow models">
+          <a href="../martine/" class="md-footer__link md-footer__link--next" aria-label="Next: MARTINE Model">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Snow models
+                MARTINE Model
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3094,12 +3588,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../../assets/javascripts/mathjax.js"></script>
+        <script src="../../../assets/javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

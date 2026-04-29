@@ -1,0 +1,3724 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="HydrOLogical Modeling Educational Software - Documentation">
+      
+      
+        <meta name="author" content="Université Laval">
+      
+      
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/hydro/nam/">
+      
+      
+        <link rel="prev" href="../mordor/">
+      
+      
+        <link rel="next" href="../pdm/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>NAM Model - HOLMES Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#nam-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HOLMES Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              NAM Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinelb/holmes" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../user-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../data-formats/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Data Formats
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HOLMES Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinelb/holmes" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/interface-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interface Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/projection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydrological models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hydrological models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bucket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bucket Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cequeau/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CEQUEAU Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CREC Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gardenia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GARDENIA Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gr4j/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GR4J Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hbv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hymod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HYMOD Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ihacres/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IHACRES Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../martine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MARTINE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mohyse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOHYSE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mordor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MORDOR Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NAM Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NAM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mathematical-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mathematical Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mathematical Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-reservoir-and-interflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Reservoir and Interflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#three-branch-evapotranspiration-from-u" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-Branch Evapotranspiration from \(U\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overland-flow-partitioning-of-the-spill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overland-Flow Partitioning of the Spill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overland-flow-cascade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overland-Flow Cascade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soil-moisture-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Soil Moisture Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groundwater-deficit-and-baseflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groundwater Deficit and Baseflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soil-cap-and-capillary-rise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Soil Cap and Capillary Rise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-streamflow-and-fractional-delay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Total Streamflow and Fractional Delay
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sacramento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SACRAMENTO Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../simhyd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SIMHYD Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../smar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SMAR Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TANK Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../topmodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOPMODEL Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wageningen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WAGENINGEN Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xinanjiang/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XINANJIANG Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../snow-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Snow models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pet-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Potential evapotranspiration models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../calibration-algorithms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api-reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api-reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_8" id="__nav_5_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    api
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/api/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.api
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/api/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/api/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/api/projection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.projection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/api/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    api.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api-reference/models/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/models/hydro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.hydro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/models/snow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.snow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/models/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/models/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    models.utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api-reference/utils/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_10" id="__nav_5_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    utils
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/utils/paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/utils/print/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.print
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/utils/websocket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.websocket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../data-formats/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Formats
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data Formats
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data-formats/observations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observations CSV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data-formats/cemaneige-info/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CemaNeige Info
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data-formats/projections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projections CSV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data-formats/exports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exported Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mathematical-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mathematical Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mathematical Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#surface-reservoir-and-interflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Surface Reservoir and Interflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#three-branch-evapotranspiration-from-u" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-Branch Evapotranspiration from \(U\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overland-flow-partitioning-of-the-spill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overland-Flow Partitioning of the Spill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overland-flow-cascade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overland-Flow Cascade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soil-moisture-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Soil Moisture Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groundwater-deficit-and-baseflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groundwater Deficit and Baseflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soil-cap-and-capillary-rise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Soil Cap and Capillary Rise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-streamflow-and-fractional-delay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Total Streamflow and Fractional Delay
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="nam-model">NAM Model<a class="headerlink" href="#nam-model" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>NAM (Nedbør-Afstrømnings-Model, "precipitation-runoff model" in Danish) is a ten-parameter daily lumped rainfall-runoff model originally developed by Nielsen and Hansen (1973) at the Technical University of Denmark.
+It became one of the most widely used operational hydrological models in Scandinavia and is still distributed today as part of the DHI MIKE software suite, where it powers flood forecasting and water resources studies on hundreds of catchments around the world.</p>
+<p>NAM represents the catchment as <strong>seven reservoirs</strong>: a surface storage <span class="arithmatex">\(U\)</span>, a soil-moisture store <span class="arithmatex">\(L\)</span>, two two-reservoir cascades for interflow and overland flow (<span class="arithmatex">\(CK_1 \to CK_2\)</span> and <span class="arithmatex">\(CK_{1b} \to CK_{2b}\)</span>), and a groundwater store <span class="arithmatex">\(GW\)</span> that — unusually — is tracked as a <em>deficit</em> rather than as a stored volume.
+Inputs are partitioned between three flow pathways (overland flow, interflow, baseflow) by piecewise rules driven by the soil filling ratio <span class="arithmatex">\(L / X_7\)</span>, and the channel response is smoothed by a fractional-delay unit hydrograph.</p>
+<p>The HOLMES implementation is a verbatim port of HOOPLA's HM12 step (Thiboult et al., 2020), which itself is the operational version studied in Perrin's thesis (fiche n°9): a richer ten-parameter formulation than the four-parameter NAM0 reduction also documented in the same thesis.
+We chose this richer variant because it preserves NAM's structural distinction between overland flow and interflow, which is what makes it pedagogically interesting compared to HOLMES's simpler models.</p>
+<p>Students typically choose NAM to study how a model with <strong>a soil-moisture deficit groundwater store</strong> and <strong>explicit overland-flow vs. interflow separation</strong> behaves under varying soil-moisture conditions, especially the way capillary rise from the deep aquifer "feeds back" into the soil store during dry periods.</p>
+<h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>Surface storage (<span class="arithmatex">\(U\)</span>)</strong>: A fast canopy-and-depression reservoir of capacity <span class="arithmatex">\(X_9\)</span> that intercepts rainfall, drains laterally as interflow, and evaporates at the full PET rate before any water reaches the soil. When <span class="arithmatex">\(U\)</span> overflows, the spill <span class="arithmatex">\(PN\)</span> enters the production phase.</p>
+</li>
+<li>
+<p><strong>Soil moisture store (<span class="arithmatex">\(L\)</span>)</strong>: The main moisture-accounting reservoir of capacity <span class="arithmatex">\(X_7\)</span>. Its filling ratio <span class="arithmatex">\(L / X_7\)</span> controls every flow-partitioning decision in the model: the higher it is, the more water goes to overland flow and to deep percolation, the less stays in the soil.</p>
+</li>
+<li>
+<p><strong>Groundwater deficit (<span class="arithmatex">\(GW\)</span>)</strong>: NAM's defining feature. Unlike most rainfall-runoff models, <span class="arithmatex">\(GW\)</span> tracks how <em>empty</em> the deep aquifer is rather than how full. Recharge from the soil reduces <span class="arithmatex">\(GW\)</span>, baseflow only switches on once <span class="arithmatex">\(GW\)</span> drops below the threshold <span class="arithmatex">\(X_1\)</span>, and capillary rise from the saturated zone is driven by the <em>inverse</em> of <span class="arithmatex">\(GW\)</span>.</p>
+</li>
+<li>
+<p><strong>Interflow cascade (<span class="arithmatex">\(CK_1 \to CK_2\)</span>)</strong>: A two-reservoir linear cascade with shared time constant <span class="arithmatex">\(X_2\)</span>. Smooths the surface-extracted interflow <span class="arithmatex">\(QIF\)</span> before it reaches the channel, contributing the medium-speed component of the hydrograph.</p>
+</li>
+<li>
+<p><strong>Overland-flow cascade (<span class="arithmatex">\(CK_{1b} \to CK_{2b}\)</span>)</strong>: A second two-reservoir linear cascade, also with time constant <span class="arithmatex">\(X_2\)</span>, that smooths the overland flow <span class="arithmatex">\(QOF\)</span>. Two parallel cascades with the same time constant let NAM distinguish <em>where</em> water came from (surface saturation vs. interflow) without distinguishing <em>how fast</em> it travels.</p>
+</li>
+<li>
+<p><strong>Three-branch evapotranspiration</strong>: After PET is debited from <span class="arithmatex">\(U\)</span>, the model lands in one of three states: (a) <span class="arithmatex">\(U\)</span> still positive — no PET demand left over; (b) <span class="arithmatex">\(U\)</span> went negative — the unsatisfied demand <span class="arithmatex">\(E_1\)</span> is forwarded to the soil; &copy; <span class="arithmatex">\(U\)</span> overflowed <span class="arithmatex">\(X_9\)</span> — the spill <span class="arithmatex">\(PN\)</span> feeds the production phase.</p>
+</li>
+<li>
+<p><strong>Capillary rise</strong>: A small upward flux <span class="arithmatex">\(caflu\)</span> that moves water from the saturated zone back into the soil store. It is proportional to <span class="arithmatex">\(\sqrt{1 - L/X_7}\)</span> (the soil's <em>unsaturated</em> fraction) and to <span class="arithmatex">\((X_{10} / GW)^2\)</span> (the <em>inverse-square</em> of the groundwater deficit), so it grows rapidly when both stores are dry. This is the only upward water transfer in NAM.</p>
+</li>
+<li>
+<p><strong>Fractional-delay unit hydrograph</strong>: All four channel-bound fluxes (<span class="arithmatex">\(BF + BF_1 + B_1 + B_2\)</span>) are summed and pushed through a shift-register of length <span class="arithmatex">\(\lceil X_4 \rceil + 1\)</span>, identical in construction to the GR4J / SACRAMENTO delay mechanism, so a non-integer routing time <span class="arithmatex">\(X_4\)</span> translates to a smooth lag without per-step interpolation.</p>
+</li>
+</ul>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p>The NAM model processes rainfall and PET through the following steps in each daily time step:</p>
+<p><strong>Step 1: Surface storage and interflow extraction</strong>.
+The rainfall <span class="arithmatex">\(P\)</span> is added to the surface store <span class="arithmatex">\(U\)</span>.
+The interflow <span class="arithmatex">\(QIF = \min(U, \, (L/X_7) \cdot U / X_3)\)</span> is then extracted; the soil filling ratio <span class="arithmatex">\(L/X_7\)</span> acts as a <em>gate</em> — when the soil is dry, very little interflow forms even if <span class="arithmatex">\(U\)</span> is full.
+<span class="arithmatex">\(QIF\)</span> feeds the first interflow cascade reservoir <span class="arithmatex">\(CK_1\)</span>, then propagates through <span class="arithmatex">\(CK_2\)</span> to produce the channel-bound interflow <span class="arithmatex">\(B_2 = CK_2 / X_2\)</span>.</p>
+<p><strong>Step 2: Three-branch evapotranspiration from <span class="arithmatex">\(U\)</span></strong>.
+PET <span class="arithmatex">\(E\)</span> is debited from <span class="arithmatex">\(U\)</span>.
+If <span class="arithmatex">\(U\)</span> stays in <span class="arithmatex">\([0, X_9]\)</span>, there is no residual demand.
+If <span class="arithmatex">\(U\)</span> went negative, the unsatisfied demand <span class="arithmatex">\(E_1 = -U\)</span> is carried forward to the soil store.
+If <span class="arithmatex">\(U\)</span> overflowed <span class="arithmatex">\(X_9\)</span>, the surplus <span class="arithmatex">\(PN = U - X_9\)</span> enters the production phase below.</p>
+<p><strong>Step 3: Overland-flow partitioning of the spill <span class="arithmatex">\(PN\)</span></strong>.
+When <span class="arithmatex">\(PN &gt; 0\)</span>, the spill is split into three components:
+overland flow <span class="arithmatex">\(QOF = PN \cdot (L / X_7) / X_8\)</span>,
+groundwater recharge <span class="arithmatex">\(G = (PN - QOF) \cdot (L/X_7 - X_5) / (1 - X_5)\)</span> — only when the soil is wetter than the percolation threshold <span class="arithmatex">\(X_5\)</span>,
+and soil-store recharge <span class="arithmatex">\(DL_0 = PN - QOF - G\)</span>.
+A bookkeeping subtlety: when <span class="arithmatex">\(DL_0\)</span> would push the soil store above its capacity <span class="arithmatex">\(X_7\)</span>, the surplus is forced into <span class="arithmatex">\(G\)</span> but <span class="arithmatex">\(DL_0\)</span> itself is <em>not</em> decremented; the explicit clip <span class="arithmatex">\(L \leftarrow \min(L, X_7)\)</span> later restores mass conservation.</p>
+<p><strong>Step 4: Overland-flow cascade</strong>.
+The overland flow <span class="arithmatex">\(QOF\)</span> feeds <span class="arithmatex">\(CK_{1b}\)</span>, which propagates through <span class="arithmatex">\(CK_{2b}\)</span>, producing the channel-bound overland flow <span class="arithmatex">\(B_1 = CK_{2b} / X_2\)</span>.</p>
+<p><strong>Step 5: Soil-moisture update</strong>.
+The soil store receives <span class="arithmatex">\(DL_0\)</span> from Step 3 and is then evaporated by the carried-over surface deficit <span class="arithmatex">\(E_1\)</span>, scaled by the filling ratio: <span class="arithmatex">\(L \leftarrow \max(0, \, L - E_1 \cdot L / X_7)\)</span>.
+This water-limited form prevents a very dry soil from being driven negative by an unsatisfied PET demand.</p>
+<p><strong>Step 6: Groundwater deficit update and baseflow</strong>.
+<span class="arithmatex">\(GW\)</span> first absorbs the recharge <span class="arithmatex">\(G\)</span> (which <em>reduces</em> the deficit because <span class="arithmatex">\(GW\)</span> is sign-flipped).
+If the new deficit drops below the threshold <span class="arithmatex">\(X_1\)</span>, baseflow <span class="arithmatex">\(BF = (X_1 - GW) / X_6\)</span> switches on and closes the gap toward <span class="arithmatex">\(X_1\)</span> over the time constant <span class="arithmatex">\(X_6\)</span>.
+If baseflow would drive <span class="arithmatex">\(GW\)</span> to or below zero — which would later cause the capillary-rise term to divide by zero — an emergency reset <span class="arithmatex">\(BF_1\)</span> flushes the surplus and clamps <span class="arithmatex">\(GW\)</span> to a small positive floor.</p>
+<p><strong>Step 7: Capillary rise</strong>.
+A small upward flux <span class="arithmatex">\(caflu = \sqrt{1 - L/X_7} \cdot (X_{10} / GW)^2\)</span> moves water from the saturated zone back into the soil store, capped at the soil's free capacity <span class="arithmatex">\(X_7 - L\)</span>.
+<span class="arithmatex">\(caflu\)</span> is added to <span class="arithmatex">\(L\)</span> and <em>also</em> to <span class="arithmatex">\(GW\)</span> (deficit grows again as water leaves the aquifer).
+This is the only upward water transfer in the model.</p>
+<p><strong>Step 8: Channel routing</strong>.
+The four channel-bound fluxes are summed as <span class="arithmatex">\(Q = BF + BF_1 + B_1 + B_2\)</span> and pushed through the fractional-delay shift register <span class="arithmatex">\(\{HY_k\}\)</span> of length <span class="arithmatex">\(n = \lceil X_4 \rceil + 1\)</span>.
+The first element of the register is returned (clamped at zero) as the simulated streamflow for the current time step.</p>
+<h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
+<p>The NAM model has ten calibratable parameters.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th style="text-align: center;">Range</th>
+<th>Units</th>
+<th>Physical Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(X_1\)</span></td>
+<td>Groundwater baseflow threshold</td>
+<td style="text-align: center;">1–1000</td>
+<td>mm</td>
+<td>The soil-moisture deficit at which baseflow switches on. When <span class="arithmatex">\(GW\)</span> drops below this value, the aquifer starts releasing water.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_2\)</span></td>
+<td>Routing reservoir time constant</td>
+<td style="text-align: center;">1–100</td>
+<td>days</td>
+<td>Shared time constant of the four cascade reservoirs (<span class="arithmatex">\(CK_1\)</span>, <span class="arithmatex">\(CK_2\)</span>, <span class="arithmatex">\(CK_{1b}\)</span>, <span class="arithmatex">\(CK_{2b}\)</span>). Controls how much smoothing is applied to both interflow and overland flow.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_3\)</span></td>
+<td>Interflow time constant</td>
+<td style="text-align: center;">1–100</td>
+<td>days</td>
+<td>Damps the interflow extraction <span class="arithmatex">\(QIF = (L/X_7) \cdot U / X_3\)</span>. Larger values starve the interflow pathway and shift more water to overland flow or percolation.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_4\)</span></td>
+<td>Routing delay</td>
+<td style="text-align: center;">0.5–10</td>
+<td>days</td>
+<td>Fractional delay applied to total channel inflow through the unit hydrograph. Pure timing parameter — does not affect hydrograph shape.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_5\)</span></td>
+<td>Soil percolation threshold</td>
+<td style="text-align: center;">0.01–0.99</td>
+<td>-</td>
+<td>Soil filling ratio above which groundwater recharge <span class="arithmatex">\(G\)</span> activates. Below this, all spill water stays in the surface and overland-flow cascades.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_6\)</span></td>
+<td>Baseflow time constant</td>
+<td style="text-align: center;">1–500</td>
+<td>days</td>
+<td>Recession time constant of the groundwater store. Larger values give long, slow baseflow recessions.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_7\)</span></td>
+<td>Soil reservoir capacity</td>
+<td style="text-align: center;">1–1000</td>
+<td>mm</td>
+<td>Storage capacity of the soil-moisture store <span class="arithmatex">\(L\)</span>. Most other parameters scale via the filling ratio <span class="arithmatex">\(L / X_7\)</span>, so this parameter is the <em>master scale</em> of the production phase.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_8\)</span></td>
+<td>Overland flow time constant</td>
+<td style="text-align: center;">1–100</td>
+<td>days</td>
+<td>Damps the overland-flow extraction <span class="arithmatex">\(QOF = (L/X_7) \cdot PN / X_8\)</span>. Larger values shift water from overland flow to either groundwater recharge or soil storage.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_9\)</span></td>
+<td>Surface reservoir capacity</td>
+<td style="text-align: center;">1–1000</td>
+<td>mm</td>
+<td>Storage capacity of the surface store <span class="arithmatex">\(U\)</span>. Acts as an interception threshold: rainfall less than <span class="arithmatex">\(X_9\)</span> never reaches the production phase.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_{10}\)</span></td>
+<td>Capillary rise scale</td>
+<td style="text-align: center;">0.01–10</td>
+<td>mm</td>
+<td>Numerator of the capillary-rise driver <span class="arithmatex">\((X_{10}/GW)^2\)</span>. Larger values produce stronger upward flux during dry spells.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Understanding the parameters:</strong></p>
+<ul>
+<li>
+<p><strong><span class="arithmatex">\(X_7\)</span> is the master scale of the model</strong>. Almost every flow-partitioning rule depends on the filling ratio <span class="arithmatex">\(L / X_7\)</span>, so the calibrated value of <span class="arithmatex">\(X_7\)</span> implicitly sets the moisture-related sensitivities. Typical Perrin-calibrated values fall in the 100–500 mm range; below 50 mm the model is hyper-reactive, above 800 mm it becomes sluggish.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_1\)</span> and <span class="arithmatex">\(X_6\)</span> together shape baseflow</strong>. <span class="arithmatex">\(X_1\)</span> sets <em>when</em> baseflow turns on (the deficit threshold), while <span class="arithmatex">\(X_6\)</span> sets <em>how fast</em> it recedes. A small <span class="arithmatex">\(X_1\)</span> with a large <span class="arithmatex">\(X_6\)</span> produces a delayed but very long baseflow tail; a large <span class="arithmatex">\(X_1\)</span> with a small <span class="arithmatex">\(X_6\)</span> gives a quick, sharp baseflow response. Use the observed recession constant of the catchment as a starting point for <span class="arithmatex">\(X_6\)</span>.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_3\)</span> vs. <span class="arithmatex">\(X_8\)</span> controls the interflow-vs.-overland-flow balance</strong>. Both pathways are gated by the same filling ratio, so the relative magnitudes of <span class="arithmatex">\(X_3\)</span> and <span class="arithmatex">\(X_8\)</span> decide which one dominates. A small <span class="arithmatex">\(X_3\)</span> and a large <span class="arithmatex">\(X_8\)</span> make the model interflow-dominated; the reverse makes it overland-flow-dominated.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_5\)</span> is the percolation switch</strong>. Below this soil filling ratio, <em>no</em> groundwater recharge takes place — all production-phase water cascades through the surface pathways. Catchments with shallow aquifers often calibrate to a low <span class="arithmatex">\(X_5\)</span> (always recharging), while karstic or impermeable catchments calibrate to a high <span class="arithmatex">\(X_5\)</span>.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_4\)</span> should be calibrated last</strong>, after the other parameters have produced a hydrograph of the right <em>shape</em>. It only affects the timing of the response, not its magnitude or recession structure.</p>
+</li>
+<li>
+<p><strong><span class="arithmatex">\(X_{10}\)</span> is usually small</strong>. The capillary-rise term enters as <span class="arithmatex">\((X_{10}/GW)^2\)</span>, so even modest values produce a meaningful upward flux when the aquifer is dry. Calibrated values are typically below 2 mm; values above 5 mm tend to over-feed the soil during dry spells and degrade summer baseflow performance.</p>
+</li>
+</ul>
+<h2 id="mathematical-formulation">Mathematical Formulation<a class="headerlink" href="#mathematical-formulation" title="Permanent link">&para;</a></h2>
+<h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
+<p>Initial reservoir states (from HOOPLA's <code>ini_HydroMod12.m</code>):</p>
+<div class="arithmatex">\[U_0 = X_9, \quad L_0 = \frac{X_7}{2}, \quad GW_0 = 50 \ \text{mm}\]</div>
+<div class="arithmatex">\[CK_{1,0} = CK_{2,0} = CK_{1b,0} = CK_{2b,0} = 0\]</div>
+<p>The fractional-delay routing array <span class="arithmatex">\(\{DL_k\}\)</span> has length <span class="arithmatex">\(n = \lceil X_4 \rceil + 1\)</span> and only its last two entries are non-zero:</p>
+<div class="arithmatex">\[DL_{n-2} = \frac{1}{X_4 - n + 3}, \quad DL_{n-1} = 1 - DL_{n-2}\]</div>
+<p>This represents a non-integer delay of <span class="arithmatex">\(X_4\)</span> days as a two-element stencil at the tail of an otherwise-empty array. The unit hydrograph register <span class="arithmatex">\(\{HY_k\}\)</span> starts at zero in every cell.</p>
+<h3 id="surface-reservoir-and-interflow">Surface Reservoir and Interflow<a class="headerlink" href="#surface-reservoir-and-interflow" title="Permanent link">&para;</a></h3>
+<p>Add rainfall, then extract interflow gated by the soil filling ratio:</p>
+<div class="arithmatex">\[U \leftarrow U + P\]</div>
+<div class="arithmatex">\[QIF = \min\left(U, \ \frac{L}{X_7} \cdot \frac{U}{X_3}\right), \quad U \leftarrow U - QIF\]</div>
+<p>Interflow propagates through the two-reservoir cascade <span class="arithmatex">\(CK_1 \to CK_2\)</span>:</p>
+<div class="arithmatex">\[CK_1 \leftarrow CK_1 + QIF, \quad B_{21} = \frac{CK_1}{X_2}, \quad CK_1 \leftarrow CK_1 - B_{21}\]</div>
+<div class="arithmatex">\[CK_2 \leftarrow CK_2 + B_{21}, \quad B_2 = \frac{CK_2}{X_2}, \quad CK_2 \leftarrow CK_2 - B_2\]</div>
+<h3 id="three-branch-evapotranspiration-from-u">Three-Branch Evapotranspiration from <span class="arithmatex">\(U\)</span><a class="headerlink" href="#three-branch-evapotranspiration-from-u" title="Permanent link">&para;</a></h3>
+<p>Debit PET, then branch on the resulting state of <span class="arithmatex">\(U\)</span>:</p>
+<div class="arithmatex">\[U \leftarrow U - E\]</div>
+<div class="arithmatex">\[
+(E_1, PN) =
+\begin{cases}
+(0, 0) &amp; \text{if } 0 \le U \le X_9 \\
+(-U, \, 0); \ U \leftarrow 0 &amp; \text{if } U &lt; 0 \\
+(0, \, U - X_9); \ U \leftarrow X_9 &amp; \text{if } U &gt; X_9
+\end{cases}
+\]</div>
+<p>Only one of <span class="arithmatex">\(E_1\)</span> or <span class="arithmatex">\(PN\)</span> can be non-zero in any given time step.</p>
+<h3 id="overland-flow-partitioning-of-the-spill">Overland-Flow Partitioning of the Spill<a class="headerlink" href="#overland-flow-partitioning-of-the-spill" title="Permanent link">&para;</a></h3>
+<p>When the surface store overflows (<span class="arithmatex">\(PN &gt; 0\)</span>), partition the spill into overland flow, groundwater recharge, and soil-store recharge:</p>
+<div class="arithmatex">\[QOF = PN \cdot \frac{L}{X_7} \cdot \frac{1}{X_8}\]</div>
+<div class="arithmatex">\[G =
+\begin{cases}
+(PN - QOF) \cdot \dfrac{L/X_7 - X_5}{1 - X_5} &amp; \text{if } L/X_7 &gt; X_5 \\
+0 &amp; \text{otherwise}
+\end{cases}\]</div>
+<div class="arithmatex">\[DL_0 = PN - QOF - G\]</div>
+<p>If <span class="arithmatex">\(DL_0 &gt; X_7\)</span>, the surplus is added to <span class="arithmatex">\(G\)</span> (without decrementing <span class="arithmatex">\(DL_0\)</span> — the over-fill is corrected later by an explicit clip on <span class="arithmatex">\(L\)</span>):</p>
+<div class="arithmatex">\[\text{if } DL_0 &gt; X_7: \quad G \leftarrow G + (DL_0 - (X_7 - L))\]</div>
+<h3 id="overland-flow-cascade">Overland-Flow Cascade<a class="headerlink" href="#overland-flow-cascade" title="Permanent link">&para;</a></h3>
+<p>The overland flow propagates through the second two-reservoir cascade <span class="arithmatex">\(CK_{1b} \to CK_{2b}\)</span>:</p>
+<div class="arithmatex">\[CK_{1b} \leftarrow CK_{1b} + QOF, \quad B_{12} = \frac{CK_{1b}}{X_2}, \quad CK_{1b} \leftarrow CK_{1b} - B_{12}\]</div>
+<div class="arithmatex">\[CK_{2b} \leftarrow CK_{2b} + B_{12}, \quad B_1 = \frac{CK_{2b}}{X_2}, \quad CK_{2b} \leftarrow CK_{2b} - B_1\]</div>
+<h3 id="soil-moisture-store">Soil Moisture Store<a class="headerlink" href="#soil-moisture-store" title="Permanent link">&para;</a></h3>
+<p>Recharge, then evaporate the residual surface deficit, scaled by the filling ratio and clamped to zero:</p>
+<div class="arithmatex">\[L \leftarrow L + DL_0\]</div>
+<div class="arithmatex">\[L \leftarrow \max\!\left(0, \ L - E_1 \cdot \frac{L}{X_7}\right)\]</div>
+<h3 id="groundwater-deficit-and-baseflow">Groundwater Deficit and Baseflow<a class="headerlink" href="#groundwater-deficit-and-baseflow" title="Permanent link">&para;</a></h3>
+<p>Recall that <span class="arithmatex">\(GW\)</span> is a <em>deficit</em>: subtracting recharge <span class="arithmatex">\(G\)</span> makes the aquifer wetter.</p>
+<div class="arithmatex">\[GW \leftarrow GW - G\]</div>
+<p>Baseflow switches on when the deficit drops below the threshold <span class="arithmatex">\(X_1\)</span>:</p>
+<div class="arithmatex">\[BF =
+\begin{cases}
+\dfrac{X_1 - GW}{X_6} &amp; \text{if } GW \le X_1 \\
+0 &amp; \text{otherwise}
+\end{cases}, \quad GW \leftarrow GW + BF\]</div>
+<p>If baseflow would drive <span class="arithmatex">\(GW \le 0\)</span>, an emergency reset releases the surplus and clamps the deficit to a small positive floor:</p>
+<div class="arithmatex">\[BF_1 =
+\begin{cases}
+-GW + 0.1; \ GW \leftarrow 0.1 &amp; \text{if } GW \le 0 \\
+0 &amp; \text{otherwise}
+\end{cases}\]</div>
+<h3 id="soil-cap-and-capillary-rise">Soil Cap and Capillary Rise<a class="headerlink" href="#soil-cap-and-capillary-rise" title="Permanent link">&para;</a></h3>
+<p>Restore mass conservation by clipping the soil store at its capacity:</p>
+<div class="arithmatex">\[L \leftarrow \min(L, X_7)\]</div>
+<p>Capillary rise from the aquifer into the soil, capped at the soil's free capacity:</p>
+<div class="arithmatex">\[caflu = \min\!\left(\sqrt{1 - L/X_7} \cdot \left(\frac{X_{10}}{GW}\right)^2, \ X_7 - L\right)\]</div>
+<div class="arithmatex">\[L \leftarrow L + caflu, \quad GW \leftarrow GW + caflu\]</div>
+<h3 id="total-streamflow-and-fractional-delay">Total Streamflow and Fractional Delay<a class="headerlink" href="#total-streamflow-and-fractional-delay" title="Permanent link">&para;</a></h3>
+<p>The four channel-bound fluxes are summed:</p>
+<div class="arithmatex">\[Q = BF + BF_1 + B_1 + B_2\]</div>
+<p>The unit-hydrograph register <span class="arithmatex">\(\{HY_k\}\)</span> of length <span class="arithmatex">\(n = \lceil X_4 \rceil + 1\)</span> advances by one step and adds the new contribution:</p>
+<div class="arithmatex">\[HY_k \leftarrow HY_{k+1} + DL_k \cdot Q \quad \text{for } k = 0, 1, \ldots, n-2\]</div>
+<div class="arithmatex">\[HY_{n-1} \leftarrow DL_{n-1} \cdot Q\]</div>
+<div class="arithmatex">\[Q_{\text{sim}} = \max(0, \ HY_0)\]</div>
+<p>The first element of the register is returned as the simulated streamflow for the current time step; the rest of the register is shifted on the next call.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Nielsen, S. A., &amp; Hansen, E. (1973).
+Numerical simulation of the rainfall-runoff process on a daily basis.
+<em>Nordic Hydrology</em>, 4(3), 171–190.
+<a href="https://doi.org/10.2166/nh.1973.0013">https://doi.org/10.2166/nh.1973.0013</a></p>
+<p>Perrin, C. (2000).
+<em>Vers une amélioration d'un modèle global pluie-débit au travers d'une approche comparative</em>.
+PhD dissertation, Institut National Polytechnique de Grenoble, France.
+Annex 1, Fiche n°9 (NAM).</p>
+<p>Thiboult, A., Seiller, G., Poncelet, C., &amp; Anctil, F. (2020).
+The HOOPLA toolbox: a HydrOlOgical Prediction LAboratory.
+<em>Hydrology and Earth System Sciences Discussions</em>.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 01:53:45 UTC">April 12, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 12, 2026 01:53:45 UTC">April 12, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../mordor/" class="md-footer__link md-footer__link--prev" aria-label="Previous: MORDOR Model">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                MORDOR Model
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../pdm/" class="md-footer__link md-footer__link--next" aria-label="Next: PDM Model">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                PDM Model
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/antoinelb/holmes" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../assets/javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

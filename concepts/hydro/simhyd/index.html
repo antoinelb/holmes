@@ -12,31 +12,31 @@
         <meta name="author" content="Université Laval">
       
       
-        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/gr4j/">
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/concepts/hydro/simhyd/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../sacramento/">
       
       
-        <link rel="next" href="../bucket/">
+        <link rel="next" href="../smar/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>GR4J - HOLMES Documentation</title>
+        <title>SIMHYD Model - HOLMES Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#gr4j-model" class="md-skip">
+        <a href="#simhyd-model" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../../.." title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GR4J
+              SIMHYD Model
             
           </span>
         </div>
@@ -227,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -248,7 +248,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -270,7 +270,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../user-guide/" class="md-tabs__link">
+        <a href="../../../user-guide/" class="md-tabs__link">
           
   
   
@@ -294,7 +294,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -316,7 +316,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api-reference/" class="md-tabs__link">
+        <a href="../../../api-reference/" class="md-tabs__link">
           
   
   
@@ -338,7 +338,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../data-formats/" class="md-tabs__link">
+        <a href="../../../data-formats/" class="md-tabs__link">
           
   
   
@@ -360,7 +360,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../reference/changelog/" class="md-tabs__link">
+        <a href="../../../reference/changelog/" class="md-tabs__link">
           
   
   
@@ -402,7 +402,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+    <a href="../../.." title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -432,7 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -488,7 +488,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -532,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/installation/" class="md-nav__link">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -560,7 +560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -588,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/configuration/" class="md-nav__link">
+      <a href="../../../getting-started/configuration/" class="md-nav__link">
         
   
   
@@ -656,7 +656,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../user-guide/" class="md-nav__link ">
+            <a href="../../../user-guide/" class="md-nav__link ">
               
   
   
@@ -700,7 +700,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/interface-overview/" class="md-nav__link">
+      <a href="../../../user-guide/interface-overview/" class="md-nav__link">
         
   
   
@@ -728,7 +728,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/calibration/" class="md-nav__link">
+      <a href="../../../user-guide/calibration/" class="md-nav__link">
         
   
   
@@ -756,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/simulation/" class="md-nav__link">
+      <a href="../../../user-guide/simulation/" class="md-nav__link">
         
   
   
@@ -784,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/projection/" class="md-nav__link">
+      <a href="../../../user-guide/projection/" class="md-nav__link">
         
   
   
@@ -812,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/settings/" class="md-nav__link">
+      <a href="../../../user-guide/settings/" class="md-nav__link">
         
   
   
@@ -885,7 +885,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -932,6 +932,40 @@
   
     
     
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
       
         
       
@@ -991,6 +1025,398 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../bucket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bucket Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cequeau/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CEQUEAU Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CREC Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gardenia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GARDENIA Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gr4j/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GR4J Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hbv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HBV Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hymod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HYMOD Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ihacres/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IHACRES Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../martine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MARTINE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mohyse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOHYSE Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mordor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MORDOR Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nam/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NAM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PDM Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sacramento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SACRAMENTO Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1010,7 +1436,7 @@
   <span class="md-ellipsis">
     
   
-    GR4J
+    SIMHYD Model
   
 
     
@@ -1028,7 +1454,7 @@
   <span class="md-ellipsis">
     
   
-    GR4J
+    SIMHYD Model
   
 
     
@@ -1121,10 +1547,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#net-precipitation-and-evapotranspiration" class="md-nav__link">
+  <a href="#interception" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Net Precipitation and Evapotranspiration
+        Interception
       
     </span>
   </a>
@@ -1132,10 +1558,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#production-store" class="md-nav__link">
+  <a href="#infiltration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Production Store
+        Infiltration
       
     </span>
   </a>
@@ -1143,10 +1569,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#unit-hydrographs" class="md-nav__link">
+  <a href="#interflow-and-groundwater-recharge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unit Hydrographs
+        Interflow and Groundwater Recharge
       
     </span>
   </a>
@@ -1154,10 +1580,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#groundwater-exchange" class="md-nav__link">
+  <a href="#soil-moisture-accounting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Groundwater Exchange
+        Soil Moisture Accounting
       
     </span>
   </a>
@@ -1165,10 +1591,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#routing-store" class="md-nav__link">
+  <a href="#ground-reservoir-slow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Store
+        Ground Reservoir (Slow)
       
     </span>
   </a>
@@ -1176,10 +1602,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#direct-flow" class="md-nav__link">
+  <a href="#routing-reservoir-fast" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Direct Flow
+        Routing Reservoir (Fast)
       
     </span>
   </a>
@@ -1229,14 +1655,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../bucket/" class="md-nav__link">
+      <a href="../smar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bucket
+    SMAR Model
   
 
     
@@ -1257,14 +1683,98 @@
   
   
     <li class="md-nav__item">
-      <a href="../cequeau/" class="md-nav__link">
+      <a href="../tank/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    CEQUEAU
+    TANK Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../topmodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOPMODEL Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wageningen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WAGENINGEN Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xinanjiang/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XINANJIANG Model
   
 
     
@@ -1293,7 +1803,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../snow-models/" class="md-nav__link">
+      <a href="../../snow-models/" class="md-nav__link">
         
   
   
@@ -1321,7 +1831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pet-models/" class="md-nav__link">
+      <a href="../../pet-models/" class="md-nav__link">
         
   
   
@@ -1349,7 +1859,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../calibration-algorithms/" class="md-nav__link">
+      <a href="../../calibration-algorithms/" class="md-nav__link">
         
   
   
@@ -1377,7 +1887,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../metrics/" class="md-nav__link">
+      <a href="../../metrics/" class="md-nav__link">
         
   
   
@@ -1453,7 +1963,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/" class="md-nav__link ">
+            <a href="../../../api-reference/" class="md-nav__link ">
               
   
   
@@ -1497,7 +2007,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/data/" class="md-nav__link">
+      <a href="../../../api-reference/data/" class="md-nav__link">
         
   
   
@@ -1525,7 +2035,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/app/" class="md-nav__link">
+      <a href="../../../api-reference/app/" class="md-nav__link">
         
   
   
@@ -1553,7 +2063,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/config/" class="md-nav__link">
+      <a href="../../../api-reference/config/" class="md-nav__link">
         
   
   
@@ -1581,7 +2091,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/exceptions/" class="md-nav__link">
+      <a href="../../../api-reference/exceptions/" class="md-nav__link">
         
   
   
@@ -1609,7 +2119,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/logging/" class="md-nav__link">
+      <a href="../../../api-reference/logging/" class="md-nav__link">
         
   
   
@@ -1637,7 +2147,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/validation/" class="md-nav__link">
+      <a href="../../../api-reference/validation/" class="md-nav__link">
         
   
   
@@ -1698,7 +2208,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/api/" class="md-nav__link ">
+            <a href="../../../api-reference/api/" class="md-nav__link ">
               
   
   
@@ -1742,7 +2252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/api/" class="md-nav__link">
+      <a href="../../../api-reference/api/api/" class="md-nav__link">
         
   
   
@@ -1770,7 +2280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/calibration/" class="md-nav__link">
+      <a href="../../../api-reference/api/calibration/" class="md-nav__link">
         
   
   
@@ -1798,7 +2308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/simulation/" class="md-nav__link">
+      <a href="../../../api-reference/api/simulation/" class="md-nav__link">
         
   
   
@@ -1826,7 +2336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/projection/" class="md-nav__link">
+      <a href="../../../api-reference/api/projection/" class="md-nav__link">
         
   
   
@@ -1854,7 +2364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/api/utils/" class="md-nav__link">
+      <a href="../../../api-reference/api/utils/" class="md-nav__link">
         
   
   
@@ -1921,7 +2431,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/models/" class="md-nav__link ">
+            <a href="../../../api-reference/models/" class="md-nav__link ">
               
   
   
@@ -1965,7 +2475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/hydro/" class="md-nav__link">
+      <a href="../../../api-reference/models/hydro/" class="md-nav__link">
         
   
   
@@ -1993,7 +2503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/snow/" class="md-nav__link">
+      <a href="../../../api-reference/models/snow/" class="md-nav__link">
         
   
   
@@ -2021,7 +2531,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/calibration/" class="md-nav__link">
+      <a href="../../../api-reference/models/calibration/" class="md-nav__link">
         
   
   
@@ -2049,7 +2559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/models/utils/" class="md-nav__link">
+      <a href="../../../api-reference/models/utils/" class="md-nav__link">
         
   
   
@@ -2114,7 +2624,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/utils/" class="md-nav__link ">
+            <a href="../../../api-reference/utils/" class="md-nav__link ">
               
   
   
@@ -2158,7 +2668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/paths/" class="md-nav__link">
+      <a href="../../../api-reference/utils/paths/" class="md-nav__link">
         
   
   
@@ -2186,7 +2696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/print/" class="md-nav__link">
+      <a href="../../../api-reference/utils/print/" class="md-nav__link">
         
   
   
@@ -2214,7 +2724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/utils/websocket/" class="md-nav__link">
+      <a href="../../../api-reference/utils/websocket/" class="md-nav__link">
         
   
   
@@ -2288,7 +2798,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../data-formats/" class="md-nav__link ">
+            <a href="../../../data-formats/" class="md-nav__link ">
               
   
   
@@ -2332,7 +2842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/observations/" class="md-nav__link">
+      <a href="../../../data-formats/observations/" class="md-nav__link">
         
   
   
@@ -2360,7 +2870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/cemaneige-info/" class="md-nav__link">
+      <a href="../../../data-formats/cemaneige-info/" class="md-nav__link">
         
   
   
@@ -2388,7 +2898,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/projections/" class="md-nav__link">
+      <a href="../../../data-formats/projections/" class="md-nav__link">
         
   
   
@@ -2416,7 +2926,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-formats/exports/" class="md-nav__link">
+      <a href="../../../data-formats/exports/" class="md-nav__link">
         
   
   
@@ -2509,7 +3019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/changelog/" class="md-nav__link">
+      <a href="../../../reference/changelog/" class="md-nav__link">
         
   
   
@@ -2537,7 +3047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/license/" class="md-nav__link">
+      <a href="../../../reference/license/" class="md-nav__link">
         
   
   
@@ -2659,10 +3169,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#net-precipitation-and-evapotranspiration" class="md-nav__link">
+  <a href="#interception" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Net Precipitation and Evapotranspiration
+        Interception
       
     </span>
   </a>
@@ -2670,10 +3180,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#production-store" class="md-nav__link">
+  <a href="#infiltration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Production Store
+        Infiltration
       
     </span>
   </a>
@@ -2681,10 +3191,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#unit-hydrographs" class="md-nav__link">
+  <a href="#interflow-and-groundwater-recharge" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unit Hydrographs
+        Interflow and Groundwater Recharge
       
     </span>
   </a>
@@ -2692,10 +3202,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#groundwater-exchange" class="md-nav__link">
+  <a href="#soil-moisture-accounting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Groundwater Exchange
+        Soil Moisture Accounting
       
     </span>
   </a>
@@ -2703,10 +3213,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#routing-store" class="md-nav__link">
+  <a href="#ground-reservoir-slow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Store
+        Ground Reservoir (Slow)
       
     </span>
   </a>
@@ -2714,10 +3224,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#direct-flow" class="md-nav__link">
+  <a href="#routing-reservoir-fast" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Direct Flow
+        Routing Reservoir (Fast)
       
     </span>
   </a>
@@ -2771,43 +3281,50 @@
   
 
 
-<h1 id="gr4j-model">GR4J Model<a class="headerlink" href="#gr4j-model" title="Permanent link">&para;</a></h1>
+<h1 id="simhyd-model">SIMHYD Model<a class="headerlink" href="#simhyd-model" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>GR4J (Génie Rural à 4 paramètres Journalier) is a daily lumped rainfall-runoff model developed by IRSTEA (formerly Cemagref) in France. The name translates to "Rural Engineering with 4 Daily Parameters," reflecting both its origins in French agricultural water management and its parsimonious design.</p>
-<p>GR4J has become one of the most widely used conceptual hydrological models worldwide, appearing in hundreds of research publications and operational forecasting systems. Its popularity stems from a careful balance: it is simple enough to calibrate reliably with limited data, yet complex enough to capture the essential dynamics of catchment hydrology. With only four parameters, GR4J avoids the overparameterization problems that plague more complex models while still achieving strong predictive performance across diverse climatic and physiographic conditions.</p>
-<p>The model represents a catchment as two interconnected reservoirs: a production store that handles soil moisture accounting and a routing store that controls baseflow generation. Water moves through the system via two parallel pathways with different response times, allowing the model to reproduce both the quick response to rainfall events and the slower baseflow recession.</p>
+<p>SIMHYD (SIMple HYDrological model) is an eight-parameter conceptual rainfall-runoff model developed in Australia by Chiew, Peel, and Western (2002).
+It belongs to the family of threshold-based models where infiltration capacity decays exponentially with soil saturation, a common simplification in Australian water-resources practice.</p>
+<p>The HOLMES implementation follows the modified version from the HOOPLA toolbox (Thiboult et al., 2020, HM15), which adds two routing reservoirs and a fractional-delay parameter to the original formulation.
+The model represents a catchment as an interception store, a soil moisture store, and two linear routing reservoirs (ground and main) connected by a time-delay register.</p>
+<p>SIMHYD is a good choice when a simple model with explicit interflow and groundwater-recharge pathways is desired.
+Its eight parameters are easy to interpret physically, making it well-suited for teaching and for benchmarking against more complex models.</p>
 <h2 id="key-concepts">Key Concepts<a class="headerlink" href="#key-concepts" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p><strong>Lumped model</strong>: Treats the entire catchment as a single unit without spatial discretization. All processes are averaged over the catchment area.</p>
-</li>
-<li>
-<p><strong>Conceptual approach</strong>: Uses reservoirs and transfer functions to represent physical processes rather than solving the underlying physics directly. This trades some physical realism for practical applicability.</p>
-</li>
-<li>
-<p><strong>Production store</strong>: The upper reservoir that partitions incoming water between storage, evaporation, and percolation. Think of it as representing the soil's capacity to absorb and hold water.</p>
-</li>
-<li>
-<p><strong>Routing store</strong>: The lower reservoir that generates baseflow and receives water from the production store. Represents the slower groundwater component of streamflow.</p>
-</li>
-<li>
-<p><strong>Unit hydrographs</strong>: Mathematical functions that distribute flow in time, representing the delay between water entering the system and appearing at the outlet. GR4J uses two unit hydrographs with different lengths.</p>
-</li>
-<li>
-<p><strong>Groundwater exchange</strong>: A term allowing water to enter or leave the modeled system, representing interactions with deep aquifers or neighboring catchments that cannot be directly measured.</p>
-</li>
+<li><strong>Interception store</strong>: a conceptual reservoir of capacity <span class="arithmatex">\(X_1\)</span> that captures precipitation before it reaches the soil, limited by both rainfall and available PET.</li>
+<li><strong>Soil moisture store</strong>: a bucket of capacity <span class="arithmatex">\(X_2\)</span> that receives infiltrated water and loses water to evapotranspiration, interflow, groundwater recharge, and overflow.</li>
+<li><strong>Exponential infiltration</strong>: the maximum infiltration rate decays as <span class="arithmatex">\(X_8 \cdot e^{-2\,S/X_2}\)</span> — a saturated soil admits very little additional water.</li>
+<li><strong>Interflow</strong>: lateral subsurface flow proportional to soil saturation and inversely proportional to <span class="arithmatex">\(X_6\)</span>.</li>
+<li><strong>Groundwater recharge</strong>: deep percolation proportional to soil saturation and inversely proportional to <span class="arithmatex">\(X_7\)</span>.</li>
+<li><strong>Ground reservoir</strong>: a slow linear reservoir (emptying constant <span class="arithmatex">\(X_3 \cdot X_5\)</span>) that receives soil excess and recharge.</li>
+<li><strong>Routing reservoir</strong>: a fast linear reservoir (emptying constant <span class="arithmatex">\(X_5\)</span>) that collects all flow components before delay routing.</li>
+<li><strong>Fractional delay</strong>: a two-weight unit hydrograph of base <span class="arithmatex">\(X_4\)</span> days that shifts the routed flow in time.</li>
 </ul>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>GR4J operates on a daily time step, processing precipitation and potential evapotranspiration to produce streamflow. The model structure can be understood as a series of water transformations:</p>
-<p><strong>Step 1: Net inputs</strong>. The model first determines whether the day is wet (precipitation exceeds PET) or dry (PET exceeds precipitation). This determines whether water enters or leaves the production store.</p>
-<p><strong>Step 2: Production store dynamics</strong>. During wet periods, precipitation fills the production store following a saturation curve—a nearly empty store accepts water readily, while a nearly full store accepts little. During dry periods, evaporation depletes the store following a similar nonlinear relationship. Water that cannot enter the store becomes available for routing.</p>
-<p><strong>Step 3: Percolation</strong>. A fraction of water in the production store percolates downward regardless of conditions. This percolation increases nonlinearly as the store fills, representing gravity-driven drainage.</p>
-<p><strong>Step 4: Flow partitioning</strong>. Water available for routing (surface excess plus percolation) splits between two pathways: 90% follows a slower route through the routing store, while 10% takes a faster direct path.</p>
-<p><strong>Step 5: Unit hydrograph convolution</strong>. Each pathway's water is delayed by a unit hydrograph that spreads the response over multiple days. The slow pathway uses a longer hydrograph (up to <span class="arithmatex">\(X_4\)</span> days), while the fast pathway uses a shorter one (up to <span class="arithmatex">\(2X_4\)</span> days, but quicker peak).</p>
-<p><strong>Step 6: Routing store and exchange</strong>. Water from the slow pathway enters the routing store, which generates outflow following a power-law relationship. Simultaneously, groundwater exchange adds or removes water from the system.</p>
-<p><strong>Step 7: Total streamflow</strong>. The model sums outflow from the routing store and the direct pathway to produce total streamflow.</p>
+<p><strong>Step 1: Interception.</strong>
+Incoming precipitation <span class="arithmatex">\(P\)</span> is first intercepted up to a limit set by both the interception capacity <span class="arithmatex">\(X_1\)</span> and the available PET <span class="arithmatex">\(E\)</span>.
+The intercepted amount is <span class="arithmatex">\(\text{CAP} = \min(P,\, X_1,\, E)\)</span>.
+If precipitation exceeds this amount, the excess <span class="arithmatex">\(\text{EXC} = P - \text{CAP}\)</span> proceeds to infiltration; otherwise all precipitation is intercepted and no excess remains.</p>
+<p><strong>Step 2: Infiltration.</strong>
+The excess rainfall is partitioned between surface runoff and infiltration based on the soil's ability to absorb water.
+The infiltration capacity is <span class="arithmatex">\(\text{RINF} = X_8 \cdot e^{-2\,S/X_2}\)</span>, which decays exponentially as the soil saturates.
+If the excess exceeds this capacity, the surplus becomes surface runoff <span class="arithmatex">\(Q_\text{srun}\)</span> and only <span class="arithmatex">\(\text{RINF}\)</span> infiltrates.</p>
+<p><strong>Step 3: Interflow and groundwater recharge.</strong>
+From the infiltrated water, a fraction proportional to soil saturation <span class="arithmatex">\(S/X_2\)</span> is diverted as interflow (<span class="arithmatex">\(\text{SINT}\)</span>, governed by <span class="arithmatex">\(X_6\)</span>) and groundwater recharge (<span class="arithmatex">\(\text{REC}\)</span>, governed by <span class="arithmatex">\(X_7\)</span>).
+Both quantities increase as the soil approaches saturation, representing the idea that wetter soils lose water faster through lateral and vertical pathways.</p>
+<p><strong>Step 4: Soil moisture accounting.</strong>
+The soil store <span class="arithmatex">\(S\)</span> receives the infiltrated water minus what was lost to interflow and recharge.
+If <span class="arithmatex">\(S\)</span> exceeds capacity <span class="arithmatex">\(X_2\)</span>, the excess <span class="arithmatex">\(\text{EX}_2\)</span> overflows to the ground reservoir.
+Remaining PET (after interception) drives actual evapotranspiration from the soil, limited to <span class="arithmatex">\(10 \cdot S / X_2\)</span> mm, and the soil level is clamped to zero.</p>
+<p><strong>Step 5: Routing.</strong>
+Soil excess and recharge feed the <strong>ground reservoir</strong> <span class="arithmatex">\(R\)</span> (slow pathway, emptying at rate <span class="arithmatex">\(1/(X_3 \cdot X_5)\)</span>).
+Surface runoff, interflow, and the ground reservoir outflow feed the <strong>routing reservoir</strong> <span class="arithmatex">\(T\)</span> (fast pathway, emptying at rate <span class="arithmatex">\(1/X_5\)</span>).
+This two-reservoir arrangement lets the model separate fast response from slow baseflow.</p>
+<p><strong>Step 6: Delay and streamflow.</strong>
+The routing reservoir output <span class="arithmatex">\(Q_t\)</span> is convolved with a two-weight fractional-delay function of base <span class="arithmatex">\(X_4\)</span> days, producing the final simulated streamflow <span class="arithmatex">\(Q\)</span>.
+The delay shifts the hydrograph peak in time without changing its volume, representing travel time through the channel network.</p>
 <h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
-<p>GR4J has exactly four parameters that must be calibrated:</p>
+<p>The SIMHYD model has 8 calibratable parameters:</p>
 <table>
 <thead>
 <tr>
@@ -2821,106 +3338,101 @@
 <tbody>
 <tr>
 <td><span class="arithmatex">\(X_1\)</span></td>
-<td>Production store capacity</td>
-<td>10–1500</td>
+<td>Interception store capacity</td>
+<td>0.5 – 10.0</td>
 <td>mm</td>
-<td>Maximum soil water storage. Larger values indicate greater soil depth or water-holding capacity.</td>
+<td>Maximum rainfall that can be held by vegetation canopy before reaching the soil</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_2\)</span></td>
-<td>Groundwater exchange coefficient</td>
-<td>-5 to 3</td>
-<td>mm/day</td>
-<td>Water exchange with deep aquifers. Negative values indicate losses; positive indicates gains.</td>
+<td>Soil moisture store capacity</td>
+<td>1.0 – 500.0</td>
+<td>mm</td>
+<td>Total amount of water the soil can hold before overflowing</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_3\)</span></td>
-<td>Routing store capacity</td>
-<td>10–400</td>
-<td>mm</td>
-<td>Size of the baseflow reservoir. Controls the volume of slow-release storage.</td>
+<td>Ground reservoir emptying constant</td>
+<td>1.0 – 1000.0</td>
+<td>-</td>
+<td>Multiplier that slows the ground reservoir relative to the routing reservoir</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(X_4\)</span></td>
-<td>Unit hydrograph time base</td>
-<td>0.8–10</td>
-<td>days</td>
-<td>Characteristic response time. Controls how quickly the catchment responds to rainfall.</td>
+<td>Delay</td>
+<td>0.5 – 5.0</td>
+<td>d</td>
+<td>Fractional time shift applied to routed streamflow</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_5\)</span></td>
+<td>Routing reservoir emptying constant</td>
+<td>1.0 – 500.0</td>
+<td>d</td>
+<td>Controls how quickly the main routing reservoir drains</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_6\)</span></td>
+<td>Interflow constant</td>
+<td>1.0 – 1000.0</td>
+<td>-</td>
+<td>Larger values reduce interflow; inversely proportional to the standard SIMHYD SUB parameter</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_7\)</span></td>
+<td>Groundwater recharge constant</td>
+<td>1.0 – 1000.0</td>
+<td>-</td>
+<td>Larger values reduce deep percolation; inversely proportional to the standard SIMHYD CRAK parameter</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_8\)</span></td>
+<td>Maximum infiltration capacity</td>
+<td>1.0 – 500.0</td>
+<td>mm</td>
+<td>Infiltration rate when the soil is completely dry; decays exponentially with saturation</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Practical guidance on parameters:</strong></p>
+<p><strong>Understanding the parameters:</strong></p>
 <ul>
-<li><strong><span class="arithmatex">\(X_1\)</span></strong> typically ranges from 100–500 mm for most catchments. Very large values (&gt;1000 mm) may indicate model identifiability problems.</li>
-<li><strong><span class="arithmatex">\(X_2\)</span></strong> is often negative (water loss to deep aquifers is common). Values near zero suggest a closed water balance.</li>
-<li><strong><span class="arithmatex">\(X_3\)</span></strong> interacts with <span class="arithmatex">\(X_4\)</span> in controlling recession behavior. Larger <span class="arithmatex">\(X_3\)</span> produces more sustained baseflow.</li>
-<li><strong><span class="arithmatex">\(X_4\)</span></strong> reflects catchment size and slope. Smaller, steeper catchments have lower <span class="arithmatex">\(X_4\)</span>; larger, flatter catchments have higher values.</li>
+<li><span class="arithmatex">\(X_1\)</span> is small (typically 1–5 mm) because canopy interception is a minor component of the water balance. It mainly affects peak timing and ET partitioning.</li>
+<li><span class="arithmatex">\(X_2\)</span> controls the overall wetness of the catchment — larger values mean more buffering before soil excess triggers overflow to the ground reservoir.</li>
+<li><span class="arithmatex">\(X_3\)</span> and <span class="arithmatex">\(X_5\)</span> together control the slow/fast flow separation: the routing reservoir empties at rate <span class="arithmatex">\(1/X_5\)</span> while the ground reservoir empties at rate <span class="arithmatex">\(1/(X_3 \cdot X_5)\)</span>. Increasing <span class="arithmatex">\(X_3\)</span> makes baseflow more persistent.</li>
+<li><span class="arithmatex">\(X_6\)</span> and <span class="arithmatex">\(X_7\)</span> compete for infiltrated water — when both are small, the soil loses water quickly through lateral and vertical pathways; when both are large, water stays in the soil longer and is eventually lost to ET or overflow.</li>
+<li><span class="arithmatex">\(X_8\)</span> sets the infiltration ceiling. On dry soils the full <span class="arithmatex">\(X_8\)</span> mm is available, but as <span class="arithmatex">\(S \to X_2\)</span> the effective infiltration drops to about <span class="arithmatex">\(14\%\)</span> of <span class="arithmatex">\(X_8\)</span> (because <span class="arithmatex">\(e^{-2} \approx 0.135\)</span>).</li>
 </ul>
 <h2 id="mathematical-formulation">Mathematical Formulation<a class="headerlink" href="#mathematical-formulation" title="Permanent link">&para;</a></h2>
 <h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
-<p>The stores are initialized at half capacity:</p>
-<div class="arithmatex">\[S_0 = \frac{X_1}{2}, \quad R_0 = \frac{X_3}{2}\]</div>
-<p>where <span class="arithmatex">\(S\)</span> is the production store level and <span class="arithmatex">\(R\)</span> is the routing store level.</p>
-<h3 id="net-precipitation-and-evapotranspiration">Net Precipitation and Evapotranspiration<a class="headerlink" href="#net-precipitation-and-evapotranspiration" title="Permanent link">&para;</a></h3>
-<p>Given precipitation <span class="arithmatex">\(P\)</span> and potential evapotranspiration <span class="arithmatex">\(E\)</span>:</p>
-<div class="arithmatex">\[P_n = \max(P - E, 0)\]</div>
-<div class="arithmatex">\[E_n = \max(E - P, 0)\]</div>
-<p>where <span class="arithmatex">\(P_n\)</span> is net precipitation (when <span class="arithmatex">\(P &gt; E\)</span>) and <span class="arithmatex">\(E_n\)</span> is net evapotranspiration (when <span class="arithmatex">\(E &gt; P\)</span>).</p>
-<h3 id="production-store">Production Store<a class="headerlink" href="#production-store" title="Permanent link">&para;</a></h3>
-<p><strong>Filling (wet conditions, <span class="arithmatex">\(P_n &gt; 0\)</span>):</strong></p>
-<p>The fraction of net precipitation entering the store follows a saturation function:</p>
-<div class="arithmatex">\[P_s = \frac{X_1 \left(1 - \left(\frac{S}{X_1}\right)^2\right) \tanh\left(\frac{P_n}{X_1}\right)}{1 + \frac{S}{X_1} \tanh\left(\frac{P_n}{X_1}\right)}\]</div>
-<p>The store is then updated: <span class="arithmatex">\(S \leftarrow S + P_s\)</span></p>
-<p><strong>Emptying (dry conditions, <span class="arithmatex">\(E_n &gt; 0\)</span>):</strong></p>
-<p>Actual evaporation from the store:</p>
-<div class="arithmatex">\[E_s = \frac{S \left(2 - \frac{S}{X_1}\right) \tanh\left(\frac{E_n}{X_1}\right)}{1 + \left(1 - \frac{S}{X_1}\right) \tanh\left(\frac{E_n}{X_1}\right)}\]</div>
-<p>The store is then updated: <span class="arithmatex">\(S \leftarrow S - E_s\)</span></p>
-<p><strong>Percolation:</strong></p>
-<p>Water percolates from the production store regardless of wet/dry conditions:</p>
-<div class="arithmatex">\[\text{Perc} = S \left(1 - \left(1 + \left(\frac{4S}{9X_1}\right)^4\right)^{-0.25}\right)\]</div>
-<p>The store is updated: <span class="arithmatex">\(S \leftarrow S - \text{Perc}\)</span></p>
-<p><strong>Routing precipitation:</strong></p>
-<p>Water available for routing combines surface excess and percolation:</p>
-<div class="arithmatex">\[P_r = P_n - P_s + \text{Perc}\]</div>
-<p>(In dry conditions, <span class="arithmatex">\(P_n = P_s = 0\)</span>, so <span class="arithmatex">\(P_r = \text{Perc}\)</span>)</p>
-<h3 id="unit-hydrographs">Unit Hydrographs<a class="headerlink" href="#unit-hydrographs" title="Permanent link">&para;</a></h3>
-<p>GR4J uses two unit hydrographs to distribute flow in time. Both are based on S-curves (cumulative distributions):</p>
-<p><strong>UH1 (for 90% of flow, slower pathway):</strong></p>
-<div class="arithmatex">\[SH_1(t) = \begin{cases}
-0 &amp; t = 0 \\
-\left(\frac{t}{X_4}\right)^{2.5} &amp; 0 &lt; t &lt; X_4 \\
-1 &amp; t \geq X_4
-\end{cases}\]</div>
-<p><strong>UH2 (for 10% of flow, faster pathway):</strong></p>
-<div class="arithmatex">\[SH_2(t) = \begin{cases}
-0 &amp; t = 0 \\
-\frac{1}{2}\left(\frac{t}{X_4}\right)^{2.5} &amp; 0 &lt; t &lt; X_4 \\
-1 - \frac{1}{2}\left(2 - \frac{t}{X_4}\right)^{2.5} &amp; X_4 \leq t &lt; 2X_4 \\
-1 &amp; t \geq 2X_4
-\end{cases}\]</div>
-<p>The unit hydrograph ordinates are computed as:</p>
-<div class="arithmatex">\[UH_1(j) = SH_1(j) - SH_1(j-1), \quad j = 1, 2, \ldots, \lceil X_4 \rceil\]</div>
-<div class="arithmatex">\[UH_2(j) = SH_2(j) - SH_2(j-1), \quad j = 1, 2, \ldots, \lceil 2X_4 \rceil\]</div>
-<p>The routed flows are computed by convolution:</p>
-<div class="arithmatex">\[Q_9(t) = 0.9 \sum_{j=1}^{\lceil X_4 \rceil} UH_1(j) \cdot P_r(t-j+1)\]</div>
-<div class="arithmatex">\[Q_1(t) = 0.1 \sum_{j=1}^{\lceil 2X_4 \rceil} UH_2(j) \cdot P_r(t-j+1)\]</div>
-<h3 id="groundwater-exchange">Groundwater Exchange<a class="headerlink" href="#groundwater-exchange" title="Permanent link">&para;</a></h3>
-<p>The exchange term depends on the routing store level:</p>
-<div class="arithmatex">\[F = X_2 \left(\frac{R}{X_3}\right)^{3.5}\]</div>
-<p>A positive <span class="arithmatex">\(X_2\)</span> adds water to the system; negative <span class="arithmatex">\(X_2\)</span> removes water.</p>
-<h3 id="routing-store">Routing Store<a class="headerlink" href="#routing-store" title="Permanent link">&para;</a></h3>
-<p>The routing store receives water from UH1 and exchanges with groundwater:</p>
-<div class="arithmatex">\[R \leftarrow \max(R + Q_9 + F, 0)\]</div>
-<p>Outflow from the routing store follows a power relationship:</p>
-<div class="arithmatex">\[Q_r = R \left(1 - \left(1 + \left(\frac{R}{X_3}\right)^4\right)^{-0.25}\right)\]</div>
-<p>The store is then depleted: <span class="arithmatex">\(R \leftarrow R - Q_r\)</span></p>
-<h3 id="direct-flow">Direct Flow<a class="headerlink" href="#direct-flow" title="Permanent link">&para;</a></h3>
-<p>The direct pathway also receives the groundwater exchange:</p>
-<div class="arithmatex">\[Q_d = \max(Q_1 + F, 0)\]</div>
+<div class="arithmatex">\[S_0 = \frac{X_2}{2}, \quad R_0 = 80, \quad T_0 = 1\]</div>
+<h3 id="interception">Interception<a class="headerlink" href="#interception" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\text{CAP} = \min(P,\, X_1,\, E)\]</div>
+<div class="arithmatex">\[\text{EXC} = \max(0,\; P - \text{CAP}), \quad E_1 = \begin{cases} \text{CAP} &amp; \text{if } P &gt; \text{CAP} \\ P &amp; \text{otherwise} \end{cases}\]</div>
+<h3 id="infiltration">Infiltration<a class="headerlink" href="#infiltration" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\text{RINF} = X_8 \cdot \exp\!\left(-2\,\frac{S}{X_2}\right)\]</div>
+<div class="arithmatex">\[Q_\text{srun} = \max(0,\; \text{EXC} - \text{RINF}), \quad \text{FILT} = \min(\text{EXC},\; \text{RINF})\]</div>
+<h3 id="interflow-and-groundwater-recharge">Interflow and Groundwater Recharge<a class="headerlink" href="#interflow-and-groundwater-recharge" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\text{SINT} = \frac{S}{X_2} \cdot \frac{\text{FILT}}{X_6}\]</div>
+<div class="arithmatex">\[\text{REC} = \max\!\left(0,\; \frac{S}{X_2} \cdot \frac{\text{FILT} - \text{SINT}}{X_7}\right)\]</div>
+<h3 id="soil-moisture-accounting">Soil Moisture Accounting<a class="headerlink" href="#soil-moisture-accounting" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[S \leftarrow S + \text{FILT} - \text{SINT} - \text{REC}\]</div>
+<div class="arithmatex">\[\text{EX}_2 = \max(0,\; S - X_2), \quad S \leftarrow \min(S,\; X_2)\]</div>
+<div class="arithmatex">\[\text{ET} = \min\!\left(E - E_1,\; 10 \cdot \frac{S}{X_2}\right), \quad S \leftarrow \max(0,\; S - \text{ET})\]</div>
+<h3 id="ground-reservoir-slow">Ground Reservoir (Slow)<a class="headerlink" href="#ground-reservoir-slow" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[R \leftarrow R + \text{EX}_2 + \text{REC}\]</div>
+<div class="arithmatex">\[Q_r = \frac{R}{X_3 \cdot X_5}, \quad R \leftarrow R - Q_r\]</div>
+<h3 id="routing-reservoir-fast">Routing Reservoir (Fast)<a class="headerlink" href="#routing-reservoir-fast" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[T \leftarrow T + \text{SINT} + Q_\text{srun} + Q_r\]</div>
+<div class="arithmatex">\[Q_t = \frac{T}{X_5}, \quad T \leftarrow T - Q_t\]</div>
 <h3 id="total-streamflow">Total Streamflow<a class="headerlink" href="#total-streamflow" title="Permanent link">&para;</a></h3>
-<div class="arithmatex">\[Q = Q_r + Q_d\]</div>
+<div class="arithmatex">\[Q = \text{delay}(Q_t,\; X_4)\]</div>
+<p>where <span class="arithmatex">\(\text{delay}(\cdot, X_4)\)</span> is a two-weight fractional-delay convolution of base <span class="arithmatex">\(\lceil X_4 \rceil + 1\)</span> time steps.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<p>Perrin, C., Michel, C., &amp; Andréassian, V. (2003). Improvement of a parsimonious model for streamflow simulation. <em>Journal of Hydrology</em>, 279(1-4), 275-289. <a href="https://doi.org/10.1016/S0022-1694(03)00225-7">https://doi.org/10.1016/S0022-1694(03)00225-7</a></p>
+<ul>
+<li>Chiew, F.H.S., Peel, M.C., &amp; Western, A.W. (2002). Application and testing of the simple rainfall-runoff model SIMHYD. In V.P. Singh, D.K. Frevert (Eds.), <em>Mathematical Models of Small Watershed Hydrology and Applications</em> (pp. 335–367). Water Resources Publications.</li>
+<li>Thiboult, A., Seiller, G., Poncelet, C., &amp; Anctil, F. (2020). The HOOPLA toolbox: a HydrOlOgical Prediction LAboratory. <em>Hydrology and Earth System Sciences Discussions</em>.</li>
+<li>Perrin, C. (2000). <em>Vers une amélioration d'un modèle global pluie-débit au travers d'une approche comparative</em> (PhD thesis). INPG, Grenoble.</li>
+</ul>
 
 
 
@@ -2943,7 +3455,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 21:03:31 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 00:20:25 UTC">April 13, 2026</span>
   </span>
 
     
@@ -2953,7 +3465,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 14:42:03 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 13, 2026 00:20:25 UTC">April 13, 2026</span>
   </span>
 
     
@@ -2990,7 +3502,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concepts">
+          <a href="../sacramento/" class="md-footer__link md-footer__link--prev" aria-label="Previous: SACRAMENTO Model">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3000,20 +3512,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Concepts
+                SACRAMENTO Model
               </div>
             </div>
           </a>
         
         
           
-          <a href="../bucket/" class="md-footer__link md-footer__link--next" aria-label="Next: Bucket">
+          <a href="../smar/" class="md-footer__link md-footer__link--next" aria-label="Next: SMAR Model">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Bucket
+                SMAR Model
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3066,12 +3578,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../../assets/javascripts/mathjax.js"></script>
+        <script src="../../../assets/javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
