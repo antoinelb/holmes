@@ -86,6 +86,7 @@ def read_data(
 
     data_ = data_.filter(pl.col("date").is_between(warmup_start, end_dt))
     data_ = data_.collect()
+    assert isinstance(data_, pl.DataFrame)
 
     warmup_steps = data_.filter(pl.col("date") < start_dt).shape[0]
 
@@ -376,4 +377,5 @@ def _get_available_period(catchment: str) -> tuple[str, str]:
             f"Failed to read date range from '{path.name}': {exc}"
         ) from exc
 
+    assert isinstance(min_max, pl.DataFrame)
     return min_max[0, 0], min_max[0, 1]

@@ -23,7 +23,7 @@ R = TypeVar("R")
 
 
 def init_logging() -> None:
-    current_loggers = logging.Logger.manager.loggerDict.keys()  # type: ignore
+    current_loggers = logging.Logger.manager.loggerDict.keys()
 
     logging.config.dictConfig(
         {
@@ -38,7 +38,7 @@ def init_logging() -> None:
                     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                 },
             },
-            "filters": {"route": {"()": RouteFilter}},  # type: ignore
+            "filters": {"route": {"()": RouteFilter}},
             "handlers": {
                 "console": {
                     "class": "logging.StreamHandler",
@@ -48,7 +48,7 @@ def init_logging() -> None:
                     "filters": ["route"],
                 },
             },
-            "loggers": {  # type: ignore
+            "loggers": {
                 **{
                     logger: {
                         "handlers": ["console"],
@@ -264,7 +264,8 @@ def log_with_timing(
             return result
         finally:
             elapsed = time.perf_counter() - start_time
-            logger.debug(f"{func.__name__} completed in {elapsed:.3f}s")
+            func_name = getattr(func, "__name__", repr(func))
+            logger.debug(f"{func_name} completed in {elapsed:.3f}s")
 
     return wrapper
 

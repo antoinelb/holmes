@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, cast, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -284,6 +284,13 @@ def _run_simulation(
     hydro_params: dict[str, float],
     warmup_steps: int,
 ) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
+    assert hydro_model in get_args(hydro.HydroModel), (
+        f"Invalid hydro model: {hydro_model}"
+    )
+    assert snow_model == "none" or snow_model in get_args(snow.SnowModel), (
+        f"Invalid snow model: {snow_model}"
+    )
+
     hydro_simulate = hydro.get_model(cast(hydro.HydroModel, hydro_model))
     hydro_params_ = np.array(list(hydro_params.values()), dtype=np.float64)
 

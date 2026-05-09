@@ -149,11 +149,13 @@ class TestReadCatchmentData:
         result = data.read_catchment_data("Au Saumon")
         assert isinstance(result, pl.LazyFrame)
         collected = result.collect()
+        assert isinstance(collected, pl.DataFrame)
         assert "Date" in collected.columns
 
     def test_date_column_parsed(self):
         """Date column is parsed as Date type."""
         result = data.read_catchment_data("Au Saumon").collect()
+        assert isinstance(result, pl.DataFrame)
         assert result["Date"].dtype == pl.Date
 
 

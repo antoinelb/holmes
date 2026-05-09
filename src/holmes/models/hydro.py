@@ -163,7 +163,7 @@ def get_config(model: HydroModel) -> list[dict[str, str | float]]:
                 descriptions = xinanjiang.param_descriptions
                 defaults, bounds = xinanjiang.init()
             case _:  # pragma: no cover
-                assert_never(model)  # type: ignore
+                assert_never(model)
     except (HolmesNumericalError, HolmesValidationError) as exc:
         logger.error(f"Failed to initialize {model} model: {exc}")
         raise
@@ -254,7 +254,7 @@ def get_model(
         case "xinanjiang":
             simulate_fn = xinanjiang.simulate
         case _:  # pragma: no cover
-            assert_never(model)  # type: ignore
+            assert_never(model)
 
     def wrapped_simulate(
         params: npt.NDArray[np.float64],

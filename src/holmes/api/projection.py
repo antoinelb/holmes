@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Callable, cast
+from typing import Any, Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -101,19 +101,17 @@ async def _handle_projection_message(
     catchment = msg_data["calibration"]["catchment"]
 
     try:
-        _data = cast(
-            pl.DataFrame,
-            (
-                data.read_projection_data(catchment)
-                .filter(
-                    pl.col("model") == msg_data["config"]["model"],
-                    pl.col("horizon") == msg_data["config"]["horizon"],
-                    pl.col("scenario") == msg_data["config"]["scenario"],
-                )
-                .sort("member")
-                .collect()
-            ),
+        _data = (
+            data.read_projection_data(catchment)
+            .filter(
+                pl.col("model") == msg_data["config"]["model"],
+                pl.col("horizon") == msg_data["config"]["horizon"],
+                pl.col("scenario") == msg_data["config"]["scenario"],
+            )
+            .sort("member")
+            .collect()
         )
+        assert isinstance(_data, pl.DataFrame)
         # CemaNeige info is always needed for latitude (PET calculation)
         metadata = data.read_cemaneige_info(catchment)
     except HolmesFileNotFoundError as exc:

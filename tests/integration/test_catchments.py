@@ -19,12 +19,13 @@ import pytest
 from holmes import data
 from holmes.exceptions import HolmesDataError
 from holmes.models import hydro, snow
+from holmes.models.hydro import HydroModel
 from holmes.models.utils import evaluate
 
 # Available catchments
 CATCHMENTS = ["Au Saumon", "Baskatong", "Leaf"]
 SNOW_CATCHMENTS = ["Au Saumon", "Baskatong"]
-HYDRO_MODELS = ["gr4j", "bucket"]
+HYDRO_MODELS: list[HydroModel] = ["gr4j", "bucket"]
 
 
 def load_catchment_data(catchment: str) -> dict:
@@ -47,7 +48,7 @@ def load_catchment_data(catchment: str) -> dict:
 
     catchment_data, warmup_steps = data.read_data(catchment, start_str, end)
 
-    result = {
+    result: dict[str, np.ndarray | int | float | None] = {
         "precipitation": catchment_data["precipitation"].to_numpy(),
         "pet": catchment_data["pet"].to_numpy(),
         "observations": catchment_data["streamflow"].to_numpy(),
@@ -83,10 +84,12 @@ def load_catchment_data(catchment: str) -> dict:
     return result
 
 
-def run_hydro_simulation(model: str, catchment_data: dict) -> np.ndarray:
+def run_hydro_simulation(
+    model: HydroModel, catchment_data: dict
+) -> np.ndarray:
     """Run hydro model simulation with default parameters."""
-    simulate = hydro.get_model(model)  # type: ignore[arg-type]
-    config = hydro.get_config(model)  # type: ignore[arg-type]
+    simulate = hydro.get_model(model)
+    config = hydro.get_config(model)
     params = np.array([p["default"] for p in config])
     return simulate(
         params, catchment_data["precipitation"], catchment_data["pet"]
@@ -94,12 +97,12 @@ def run_hydro_simulation(model: str, catchment_data: dict) -> np.ndarray:
 
 
 def run_snow_hydro_simulation(
-    hydro_model: str, catchment_data: dict
+    hydro_model: HydroModel, catchment_data: dict
 ) -> np.ndarray:
     """Run snow + hydro model simulation with default parameters."""
     snow_simulate = snow.get_model("cemaneige")
-    hydro_simulate = hydro.get_model(hydro_model)  # type: ignore[arg-type]
-    hydro_config = hydro.get_config(hydro_model)  # type: ignore[arg-type]
+    hydro_simulate = hydro.get_model(hydro_model)
+    hydro_config = hydro.get_config(hydro_model)
     hydro_params = np.array([p["default"] for p in hydro_config])
     snow_params = np.array([0.25, 3.74, catchment_data["qnbv"]])
     effective_precip = snow_simulate(
