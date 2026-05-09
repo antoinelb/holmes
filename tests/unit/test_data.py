@@ -8,7 +8,7 @@ import polars as pl
 import pytest
 
 from holmes import data
-from holmes.exceptions import HolmesDataError, HolmesFileNotFoundError
+from holmes.exceptions import HolmesDataError
 from holmes.utils.paths import data_dir
 
 
@@ -64,12 +64,10 @@ class TestReadData:
 
     def test_read_data_all_catchments(self):
         """Verify all catchments can be read."""
-        for (
-            catchment_name,
-            _,
-            (start_avail, end_avail),
+        for catchment_name, (
+            start_avail,
+            end_avail,
         ) in data.get_available_catchments():
-            # Use the available date range for each catchment
             result, warmup_steps = data.read_data(
                 catchment_name, start_avail, end_avail
             )
@@ -89,15 +87,13 @@ class TestGetAvailableCatchments:
     def test_get_available_catchments(self):
         """List catchments returns correct structure."""
         result = data.get_available_catchments()
-        # Result is a tuple (for caching) of tuples
         assert isinstance(result, (list, tuple))
         assert len(result) > 0
         for item in result:
             assert isinstance(item, tuple)
-            assert len(item) == 3
-            name, has_snow, date_range = item
+            assert len(item) == 2
+            name, date_range = item
             assert isinstance(name, str)
-            assert isinstance(has_snow, bool)
             assert isinstance(date_range, tuple)
             assert len(date_range) == 2
 
@@ -107,11 +103,11 @@ class TestGetAvailableCatchments:
         names = [c[0] for c in result]
         assert names == sorted(names)
 
-    def test_snow_catchments_have_cemaneige_file(self):
-        """Catchments marked as having snow have CemaNeige files."""
-        for name, has_snow, _ in data.get_available_catchments():
+    def test_all_catchments_have_cemaneige_file(self):
+        """Every catchment ships with a CemaNeige file."""
+        for name, _ in data.get_available_catchments():
             cemaneige_path = data_dir / f"{name}_CemaNeigeInfo.csv"
-            assert has_snow == cemaneige_path.exists()
+            assert cemaneige_path.exists()
 
 
 class TestReadCemaNeigeInfo:
@@ -170,8 +166,8 @@ class TestReadProjectionData:
             assert isinstance(result, pl.LazyFrame)
 
     def test_read_projection_data_file_not_found(self):
-        """read_projection_data with missing file raises HolmesFileNotFoundError."""
-        with pytest.raises(HolmesFileNotFoundError) as exc_info:
+        """read_projection_data with missing file raises HolmesDataError."""
+        with pytest.raises(HolmesDataError) as exc_info:
             data.read_projection_data("NonExistentCatchment")
         assert "not found" in str(exc_info.value).lower()
 

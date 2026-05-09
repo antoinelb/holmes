@@ -79,9 +79,8 @@ async def _handle_config_message(ws: WebSocket) -> None:
     catchments = [
         {
             "name": c[0],
-            "snow": c[1],
-            "start": c[2][0],
-            "end": c[2][1],
+            "start": c[1][0],
+            "end": c[1][1],
         }
         for c in data.get_available_catchments()
     ]
@@ -179,15 +178,7 @@ async def _handle_manual_calibration_message(
             await send(ws, "error", str(exc))
             return
 
-        try:
-            temperature = _data["temperature"].to_numpy()
-        except pl.exceptions.ColumnNotFoundError:
-            await send(
-                ws,
-                "error",
-                f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
-            )
-            return
+        temperature = _data["temperature"].to_numpy()
         day_of_year = (
             _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
                 "date"
@@ -281,15 +272,7 @@ async def _handle_calibration_start_message(
         except HolmesDataError as exc:
             await send(ws, "error", str(exc))
             return
-        try:
-            temperature = _data["temperature"].to_numpy()
-        except pl.exceptions.ColumnNotFoundError:
-            await send(
-                ws,
-                "error",
-                f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
-            )
-            return
+        temperature = _data["temperature"].to_numpy()
         day_of_year = (
             _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
                 "date"

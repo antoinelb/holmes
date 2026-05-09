@@ -134,16 +134,3 @@ class TestProjectionWebSocket:
             assert "projection" in data
             assert "results" in data
             assert len(data["projection"]) > 0
-
-    def test_projection_on_catchment_without_projection_data_errors(
-        self, client
-    ):
-        """Projection fails on catchment without projection data."""
-        with client.websocket_connect("/projection/") as ws:
-            ws.send_json({"type": "config", "data": "Leaf"})
-            response = ws.receive_json()
-            assert response["type"] == "not_found_error"
-            assert (
-                "Projection" in response["data"]
-                or "not found" in response["data"]
-            )

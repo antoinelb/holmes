@@ -20,7 +20,6 @@ __all__ = [
     "HolmesValidationError",
     # Python exceptions
     "HolmesDataError",
-    "HolmesFileNotFoundError",
     "HolmesWebSocketError",
     "HolmesConfigError",
 ]
@@ -56,10 +55,4 @@ class HolmesConfigError(Exception):
     - Environment variables have invalid values
     - Port numbers are out of range
     - Host addresses are invalid
-    """
-
-
-class HolmesFileNotFoundError(Exception):
-    """
-    Raised for missing file.
     """
