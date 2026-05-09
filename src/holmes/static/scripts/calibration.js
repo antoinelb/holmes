@@ -311,12 +311,6 @@ function updateCatchment(model, catchment, dispatch) {
   const _catchment = model.availableConfig.catchment.filter(
     (c) => c.name == catchment,
   )[0];
-  if (!_catchment.snow && model.config.snowModel !== "none") {
-    dispatch({
-      type: "UpdateConfigField",
-      data: { field: "snowModel", value: "none" },
-    });
-  }
   if (model.config.start === null || model.config.start < _catchment.start) {
     dispatch({
       type: "UpdateConfigField",
@@ -860,7 +854,6 @@ function generalSettingsView(model) {
   }
 
   datesView(model);
-  snowConfigView(model);
 }
 
 function datesView(model) {
@@ -894,25 +887,6 @@ function datesView(model) {
     }
     if (model.config.end !== null && start.end !== model.config.end) {
       end.value = model.config.end;
-    }
-  }
-}
-
-function snowConfigView(model) {
-  if (model.availableConfig !== null && model.config.catchment !== null) {
-    const label = document.querySelector(
-      "label[for='calibration__snow-model']",
-    );
-    const select = document.getElementById("calibration__snow-model");
-    const catchment = model.availableConfig.catchment.filter(
-      (c) => c.name == model.config.catchment,
-    )[0];
-    if (catchment.snow) {
-      label.removeAttribute("disabled");
-      select.removeAttribute("disabled");
-    } else {
-      label.setAttribute("disabled", true);
-      select.setAttribute("disabled", true);
     }
   }
 }

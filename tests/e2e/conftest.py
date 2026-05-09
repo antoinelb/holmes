@@ -128,30 +128,6 @@ def calibration_file(tmp_path: Path, valid_calibration_json: dict) -> Path:
 
 
 @pytest.fixture
-def leaf_calibration_json() -> dict:
-    """Calibration config for Leaf catchment: GR4J, no snow, RMSE."""
-    return {
-        "hydroModel": "gr4j",
-        "catchment": "Leaf",
-        "objective": "rmse",
-        "transformation": "none",
-        "algorithm": "sce",
-        "algorithmParams": {
-            "seed": 0,
-            "n_complexes": 25,
-            "max_evaluations": 200,
-            "k_stop": 10,
-            "p_convergence_threshold": 0.001,
-            "geometric_range_threshold": 0.001,
-        },
-        "start": "1973-01-01",
-        "end": "1977-12-31",
-        "snowModel": "none",
-        "hydroParams": {"x1": 350.0, "x2": 0.5, "x3": 90.0, "x4": 1.7},
-    }
-
-
-@pytest.fixture
 def baskatong_calibration_json() -> dict:
     """Calibration config for Baskatong catchment: GR4J, CemaNeige, RMSE."""
     return {
@@ -200,14 +176,6 @@ def au_saumon_snow_calibration_json() -> dict:
 
 
 @pytest.fixture
-def leaf_calibration_file(tmp_path: Path, leaf_calibration_json: dict) -> Path:
-    """Create a Leaf calibration JSON file."""
-    file_path = tmp_path / "leaf_gr4j_params.json"
-    file_path.write_text(json.dumps(leaf_calibration_json))
-    return file_path
-
-
-@pytest.fixture
 def baskatong_calibration_file(
     tmp_path: Path, baskatong_calibration_json: dict
 ) -> Path:
@@ -228,10 +196,10 @@ def au_saumon_snow_calibration_file(
 
 
 @pytest.fixture
-def leaf_multiple_calibration_files(
-    tmp_path: Path, leaf_calibration_json: dict
+def baskatong_multiple_calibration_files(
+    tmp_path: Path, baskatong_calibration_json: dict
 ) -> list[Path]:
-    """Create 3 Leaf calibration files with different hydroParams."""
+    """Create 3 Baskatong calibration files with different hydroParams."""
     import copy
 
     param_sets = [
@@ -241,9 +209,9 @@ def leaf_multiple_calibration_files(
     ]
     files = []
     for i, params in enumerate(param_sets):
-        cal = copy.deepcopy(leaf_calibration_json)
+        cal = copy.deepcopy(baskatong_calibration_json)
         cal["hydroParams"] = params
-        file_path = tmp_path / f"leaf_gr4j_params_{i}.json"
+        file_path = tmp_path / f"baskatong_gr4j_params_{i}.json"
         file_path.write_text(json.dumps(cal))
         files.append(file_path)
     return files

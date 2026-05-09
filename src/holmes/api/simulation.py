@@ -73,7 +73,7 @@ async def _handle_config_message(ws: WebSocket, msg_data: str) -> None:
         await send(ws, "error", f"Unknown catchment {msg_data}.")
         return
 
-    config = {"start": catchment[2][0], "end": catchment[2][1]}
+    config = {"start": catchment[1][0], "end": catchment[1][1]}
     await send(ws, "config", config)
 
 
@@ -156,15 +156,7 @@ async def _handle_simulation_message(
         except HolmesDataError as exc:
             await send(ws, "error", str(exc))
             return
-        try:
-            temperature = _data["temperature"].to_numpy()
-        except pl.exceptions.ColumnNotFoundError:
-            await send(
-                ws,
-                "error",
-                f"The {catchment} catchment doesn't have any temperature data.",
-            )
-            return
+        temperature = _data["temperature"].to_numpy()
         elevation_layers = np.array(metadata["altitude_layers"])
         median_elevation = metadata["median_altitude"]
         qnbv = metadata["qnbv"]

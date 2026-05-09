@@ -167,11 +167,12 @@ class TestSimulationWorkflow:
         file1 = tmp_path / "cal1.json"
         file1.write_text(json.dumps(valid_calibration_json))
 
-        # Create calibration for Leaf catchment (different date range)
+        # Create calibration for Baskatong catchment (different date range)
         cal2 = copy.deepcopy(valid_calibration_json)
-        cal2["catchment"] = "Leaf"
-        cal2["start"] = "1990-01-01"
-        cal2["end"] = "1991-12-31"
+        cal2["catchment"] = "Baskatong"
+        cal2["snowModel"] = "cemaneige"
+        cal2["start"] = "1999-01-01"
+        cal2["end"] = "2000-12-31"
         file2 = tmp_path / "cal2.json"
         file2.write_text(json.dumps(cal2))
 
@@ -205,5 +206,5 @@ class TestSimulationWorkflow:
         second_start = simulation_page.get_start_date()
         second_end = simulation_page.get_end_date()
 
-        # Leaf catchment has different observation dates than Au Saumon
+        # Baskatong catchment has different observation dates than Au Saumon
         assert first_start != second_start or first_end != second_end

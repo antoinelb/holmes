@@ -11,8 +11,7 @@ from holmes.app import create_app
 from holmes.models import hydro
 
 # Available catchments
-CATCHMENTS = ["Au Saumon", "Baskatong", "Leaf"]
-SNOW_CATCHMENTS = ["Au Saumon", "Baskatong"]
+CATCHMENTS = ["Au Saumon", "Baskatong"]
 HYDRO_MODELS = ["gr4j", "bucket"]
 
 
@@ -34,12 +33,6 @@ def catchment(request):
     return request.param
 
 
-@pytest.fixture(params=SNOW_CATCHMENTS)
-def snow_catchment(request):
-    """Parametrized fixture for catchments with snow data."""
-    return request.param
-
-
 @pytest.fixture(params=HYDRO_MODELS)
 def hydro_model(request):
     """Parametrized fixture for hydro models."""
@@ -56,12 +49,6 @@ def au_saumon_data() -> tuple[pl.DataFrame, int]:
 def baskatong_data() -> tuple[pl.DataFrame, int]:
     """Load Baskatong catchment data for testing."""
     return data.read_data("Baskatong", "2000-01-01", "2005-12-31")
-
-
-@pytest.fixture
-def leaf_data() -> tuple[pl.DataFrame, int]:
-    """Load Leaf catchment data for testing."""
-    return data.read_data("Leaf", "2000-01-01", "2005-12-31")
 
 
 @pytest.fixture

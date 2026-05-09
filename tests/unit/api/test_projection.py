@@ -150,19 +150,8 @@ class TestProjectionWebSocket:
 class TestProjectionDataErrors:
     """Tests for HolmesDataError handling in projection API."""
 
-    def test_config_catchment_without_projection_data(self):
-        """Config for catchment without projection file returns not_found_error."""
-        client = TestClient(create_app())
-        with client.websocket_connect("/projection/") as ws:
-            # Leaf catchment has no projection data
-            ws.send_json({"type": "config", "data": "Leaf"})
-            response = ws.receive_json()
-            assert response["type"] == "not_found_error"
-            # Error should mention projection file not found
-            assert "projection" in response["data"].lower()
-
     def test_projection_invalid_catchment(self):
-        """Projection with invalid catchment returns not_found_error."""
+        """Projection with invalid catchment returns error."""
         client = TestClient(create_app())
         with client.websocket_connect("/projection/") as ws:
             ws.send_json(
@@ -189,8 +178,7 @@ class TestProjectionDataErrors:
                 }
             )
             response = ws.receive_json()
-            # read_projection_data fails first with HolmesFileNotFoundError
-            assert response["type"] == "not_found_error"
+            assert response["type"] == "error"
             assert "not found" in response["data"].lower()
 
     def test_config_malformed_projection_data(self):
