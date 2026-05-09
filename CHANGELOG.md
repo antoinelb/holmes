@@ -11,6 +11,22 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ## [Unreleased]
 
+### Added
+- `_run_simulation` validates `hydroModel` and `snowModel` from JSON with runtime `assert` before the `Literal` cast, replacing a silent `typing.cast` on user input
+
+### Changed
+- Catchment data contract is now uniform: every catchment must ship `<name>_Observations.csv` (including the `T` temperature column), `<name>_CemaNeigeInfo.csv`, and projection files; `data.py` enforces this once at load time and consumers no longer carry per-feature fallbacks
+- `get_available_catchments` returns `(name, period)` 2-tuples — the `has_snow` flag is gone since every remaining catchment supports snow
+- Tightened typing across `api/`, `data.py`, `logging.py`, and `models/`: removed 14 stale `# type: ignore` comments, narrowed `LazyFrame.collect()` returns with `assert isinstance(..., pl.DataFrame)`, and replaced a `typing.cast` in `projection.py`
+
+### Removed
+- Leaf catchment dataset (`src/holmes/data/Leaf_Observations.csv`) and all the scaffolding it required (snow-model auto-reset, `snowConfigView` greying-out path in the frontend, and per-handler `ColumnNotFoundError` fallbacks for the missing `T` column)
+- `HolmesFileNotFoundError` exception and the WebSocket `not_found_error` branch — missing catchment data now flows through the regular error channel
+- `read_cemaneige_info` and `read_projection_data` no longer special-case missing files
+
+### Fixed
+- `RemoveCalibration` in `simulation.js` now clears `holmes--simulation--start`, `holmes--simulation--end`, and `holmes--simulation--multimodel` from `localStorage` when all calibrations are removed, so the persisted state matches the in-memory reset
+
 ## [3.5.0] - 2026-04-29
 
 ### Added
