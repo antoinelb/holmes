@@ -359,57 +359,6 @@ class TestCalibrationDataErrors:
                 assert response["type"] == "error"
                 assert "cemaneige" in response["data"].lower()
 
-    def test_manual_calibration_with_snow_model_missing_temperature(self):
-        """Manual calibration with snow model fails when temperature is missing."""
-        mock_data = pl.DataFrame(
-            {
-                "date": pl.date_range(
-                    pl.date(2000, 1, 1), pl.date(2000, 12, 31), eager=True
-                ),
-                "precipitation": [1.0] * 366,
-                "pet": [2.0] * 366,
-                "streamflow": [0.5] * 366,
-            }
-        )
-
-        mock_cemaneige = {
-            "qnbv": 1.0,
-            "altitude_layers": [500.0, 1000.0],
-            "median_altitude": 750.0,
-            "latitude": 45.0,
-        }
-
-        with (
-            patch(
-                "holmes.api.calibration.data.read_data",
-                return_value=(mock_data, 0),
-            ),
-            patch(
-                "holmes.api.calibration.data.read_cemaneige_info",
-                return_value=mock_cemaneige,
-            ),
-        ):
-            client = TestClient(create_app())
-            with client.websocket_connect("/calibration/") as ws:
-                ws.send_json(
-                    {
-                        "type": "manual",
-                        "data": {
-                            "catchment": "MockCatchment",
-                            "start": "2000-01-01",
-                            "end": "2000-12-31",
-                            "hydroModel": "gr4j",
-                            "snowModel": "cemaneige",
-                            "hydroParams": [100.0, 0.0, 50.0, 2.0],
-                            "objective": "nse",
-                            "transformation": "none",
-                        },
-                    }
-                )
-                response = ws.receive_json()
-                assert response["type"] == "error"
-                assert "temperature" in response["data"].lower()
-
     def test_calibration_start_with_snow_model_invalid_cemaneige_info(self):
         """Calibration start with snow model fails when cemaneige info is invalid."""
         mock_data = pl.DataFrame(

@@ -302,13 +302,6 @@ function handleMessage(event, dispatch, createNotification) {
     case "error":
       createNotification(msg.data, true);
       break;
-    case "not_found_error":
-      createNotification(
-        "There is no projection data for this catchment.",
-        true,
-      );
-      dispatch({ type: "RemoveCalibration" });
-      break;
     case "config":
       dispatch({ type: "GotAvailableConfig", data: msg.data });
       break;

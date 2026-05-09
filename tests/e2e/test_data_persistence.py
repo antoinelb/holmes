@@ -1,9 +1,12 @@
 """E2E tests for localStorage persistence."""
 
+import json
+from pathlib import Path
+
 import pytest
 from playwright.sync_api import Page, expect
 
-from .pages import CalibrationPage, SettingsPage
+from .pages import CalibrationPage, SettingsPage, SimulationPage
 
 
 class TestDataPersistence:
@@ -102,6 +105,61 @@ class TestDataPersistence:
         expect(
             calibration_page.page.locator(calibration_page.END_DATE)
         ).to_have_value("2001-06-01")
+
+    def test_simulation_dates_cleared_when_all_calibrations_removed(
+        self,
+        app_page: Page,
+        tmp_path: Path,
+        valid_calibration_json: dict,
+    ) -> None:
+        """Removing all simulation calibrations clears the persisted dates.
+
+        Without the cleanup the in-memory state diverges from localStorage:
+        on reload, `initModel` would rehydrate stale start/end dates that no
+        longer correspond to any loaded calibration.
+        """
+        simulation = SimulationPage(app_page)
+        simulation.navigate_to_section()
+
+        cal_file = tmp_path / "cal.json"
+        cal_file.write_text(json.dumps(valid_calibration_json))
+        simulation.upload_calibration(cal_file)
+        simulation.wait_for_config()
+        simulation.wait_for_dates_populated()
+
+        # Sanity: the dates were persisted while a calibration was loaded.
+        stored_start = app_page.evaluate(
+            "localStorage.getItem('holmes--simulation--start')"
+        )
+        assert stored_start is not None and stored_start != ""
+
+        simulation.remove_calibration()
+        simulation.wait_for_table_hidden()
+
+        stored_start_after = app_page.evaluate(
+            "localStorage.getItem('holmes--simulation--start')"
+        )
+        stored_end_after = app_page.evaluate(
+            "localStorage.getItem('holmes--simulation--end')"
+        )
+        stored_multimodel_after = app_page.evaluate(
+            "localStorage.getItem('holmes--simulation--multimodel')"
+        )
+        assert stored_start_after is None
+        assert stored_end_after is None
+        assert stored_multimodel_after is None
+
+        # And after a reload the inputs are blank, not rehydrated.
+        app_page.reload()
+        app_page.wait_for_selector("header h1", state="visible")
+        simulation_after = SimulationPage(app_page)
+        simulation_after.navigate_to_section()
+        expect(
+            simulation_after.page.locator(simulation_after.START_DATE)
+        ).to_have_value("")
+        expect(
+            simulation_after.page.locator(simulation_after.END_DATE)
+        ).to_have_value("")
 
 
 class TestResetAllButton:

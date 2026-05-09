@@ -1,7 +1,7 @@
 """E2E tests for TP2 workflows: calibration and simulation validation.
 
 Covers the step-by-step lab assignment workflow:
-- Manual calibration on Leaf (no snow) and Baskatong (CemaNeige)
+- Manual calibration on Baskatong (CemaNeige)
 - Automatic calibration with SCE-UA, different objectives, periods, seeds
 - Simulation validation on independent periods
 - Export functionality for parameters and data
@@ -25,22 +25,6 @@ class TestTP2ManualCalibration:
         page.wait_for_loading_complete()
         return page
 
-    def test_manual_calibration_leaf_no_snow(
-        self, calibration_page: CalibrationPage
-    ) -> None:
-        """TP2 step 3-4: GR4J on Leaf, no snow, manual calibration."""
-        calibration_page.select_hydro_model("gr4j")
-        calibration_page.select_catchment("Leaf")
-        calibration_page.select_objective("rmse")
-        calibration_page.select_transformation("none")
-        # Leaf has no temperature data so snow model dropdown is disabled
-        calibration_page.set_date_range("1978-01-01", "1982-12-31")
-
-        calibration_page.run_manual_calibration()
-        calibration_page.wait_for_simulation_result()
-
-        assert calibration_page.has_simulation_path()
-
     def test_manual_calibration_baskatong_with_cemaneige(
         self, calibration_page: CalibrationPage
     ) -> None:
@@ -62,9 +46,10 @@ class TestTP2ManualCalibration:
     ) -> None:
         """TP2 step 4b-d: Adjust parameters and re-run to see chart update."""
         calibration_page.select_hydro_model("gr4j")
-        calibration_page.select_catchment("Leaf")
+        calibration_page.select_catchment("Baskatong")
+        calibration_page.select_snow_model("cemaneige")
         calibration_page.select_objective("rmse")
-        calibration_page.set_date_range("1978-01-01", "1982-12-31")
+        calibration_page.set_date_range("1999-01-01", "2003-12-31")
 
         # First run with default params
         calibration_page.run_manual_calibration()
@@ -86,19 +71,20 @@ class TestTP2ManualCalibration:
     def test_export_manual_calibration_params(
         self, calibration_page: CalibrationPage
     ) -> None:
-        """TP2 step 4e: Export params after manual calibration on Leaf."""
+        """TP2 step 4e: Export params after manual calibration on Baskatong."""
         calibration_page.select_hydro_model("gr4j")
-        calibration_page.select_catchment("Leaf")
+        calibration_page.select_catchment("Baskatong")
+        calibration_page.select_snow_model("cemaneige")
         calibration_page.select_objective("rmse")
         calibration_page.select_transformation("none")
-        calibration_page.set_date_range("1978-01-01", "1982-12-31")
+        calibration_page.set_date_range("1999-01-01", "2003-12-31")
 
         calibration_page.run_manual_calibration()
         calibration_page.wait_for_simulation_result()
 
         download = calibration_page.export_params(algorithm="manual")
 
-        assert download.suggested_filename == "leaf_gr4j_params.json"
+        assert download.suggested_filename == "baskatong_gr4j_params.json"
 
         # Verify JSON content has hydroParams keys
         path = download.path()
@@ -132,30 +118,11 @@ class TestTP2AutomaticCalibration:
         cal.select_catchment(catchment)
         cal.select_objective("rmse")
         cal.select_transformation(transformation)
-        # Only select snow model when explicitly requested;
-        # Leaf has no temperature data so its dropdown is disabled
         if snow_model is not None:
             cal.select_snow_model(snow_model)
         cal.set_date_range(start, end)
         cal.select_algorithm("sce")
         cal.set_automatic_param("max_evaluations", max_evaluations)
-
-    def test_auto_calibration_leaf_completes(
-        self, calibration_page: CalibrationPage
-    ) -> None:
-        """TP2 step 6-7: Auto calibration on Leaf with SCE completes."""
-        self._configure_auto_calibration(
-            calibration_page,
-            catchment="Leaf",
-            snow_model=None,
-            start="1973-01-01",
-            end="1977-12-31",
-        )
-
-        calibration_page.start_automatic_calibration()
-        calibration_page.wait_for_automatic_complete()
-
-        assert calibration_page.has_simulation_path()
 
     def test_auto_calibration_baskatong_with_snow(
         self, calibration_page: CalibrationPage
@@ -180,10 +147,10 @@ class TestTP2AutomaticCalibration:
         """TP2 step 10: Auto calibration with log transformation."""
         self._configure_auto_calibration(
             calibration_page,
-            catchment="Leaf",
-            snow_model=None,
-            start="1973-01-01",
-            end="1977-12-31",
+            catchment="Baskatong",
+            snow_model="cemaneige",
+            start="1999-01-01",
+            end="2003-12-31",
             transformation="log",
         )
 
@@ -199,17 +166,17 @@ class TestTP2AutomaticCalibration:
         # Period A
         self._configure_auto_calibration(
             calibration_page,
-            catchment="Leaf",
-            snow_model=None,
-            start="1973-01-01",
-            end="1973-12-31",
+            catchment="Baskatong",
+            snow_model="cemaneige",
+            start="1999-01-01",
+            end="1999-12-31",
         )
         calibration_page.start_automatic_calibration()
         calibration_page.wait_for_automatic_complete()
         assert calibration_page.has_simulation_path()
 
         # Period B — reconfigure dates and re-run
-        calibration_page.set_date_range("1974-01-01", "1974-12-31")
+        calibration_page.set_date_range("2000-01-01", "2000-12-31")
         calibration_page.start_automatic_calibration()
         calibration_page.wait_for_automatic_complete()
         assert calibration_page.has_simulation_path()
@@ -220,10 +187,10 @@ class TestTP2AutomaticCalibration:
         """TP2 step 7a: Export params after auto calibration."""
         self._configure_auto_calibration(
             calibration_page,
-            catchment="Leaf",
-            snow_model=None,
-            start="1973-01-01",
-            end="1977-12-31",
+            catchment="Baskatong",
+            snow_model="cemaneige",
+            start="1999-01-01",
+            end="2003-12-31",
         )
 
         calibration_page.start_automatic_calibration()
@@ -231,7 +198,7 @@ class TestTP2AutomaticCalibration:
 
         download = calibration_page.export_params(algorithm="automatic")
 
-        assert download.suggested_filename == "leaf_gr4j_params.json"
+        assert download.suggested_filename == "baskatong_gr4j_params.json"
 
         path = download.path()
         content = json.loads(Path(path).read_text())
@@ -248,10 +215,10 @@ class TestTP2AutomaticCalibration:
         for seed in [0, 1, 2]:
             self._configure_auto_calibration(
                 calibration_page,
-                catchment="Leaf",
-                snow_model=None,
-                start="1973-01-01",
-                end="1977-12-31",
+                catchment="Baskatong",
+                snow_model="cemaneige",
+                start="1999-01-01",
+                end="2003-12-31",
             )
             calibration_page.set_automatic_param("seed", seed)
 
@@ -278,22 +245,6 @@ class TestTP2SimulationValidation:
         page.navigate_to_section()
         return page
 
-    def test_validate_leaf_on_independent_period(
-        self,
-        simulation_page: SimulationPage,
-        leaf_calibration_file: Path,
-    ) -> None:
-        """TP2 step 8: Validate Leaf calibration on independent period."""
-        simulation_page.upload_calibration(leaf_calibration_file)
-        simulation_page.wait_for_config()
-        simulation_page.wait_for_dates_populated()
-
-        simulation_page.set_date_range("1960-01-01", "1969-12-31")
-        simulation_page.run_simulation()
-        simulation_page.wait_for_results()
-
-        assert simulation_page.has_metric_charts()
-
     def test_validate_baskatong_on_independent_period(
         self,
         simulation_page: SimulationPage,
@@ -310,14 +261,14 @@ class TestTP2SimulationValidation:
 
         assert simulation_page.has_metric_charts()
 
-    def test_multimodel_validation_leaf(
+    def test_multimodel_validation_baskatong(
         self,
         simulation_page: SimulationPage,
-        leaf_multiple_calibration_files: list[Path],
+        baskatong_multiple_calibration_files: list[Path],
     ) -> None:
         """TP2 step 8 (multi): Upload 3 calibrations, enable multimodel."""
         # Upload all 3 files one by one
-        for file_path in leaf_multiple_calibration_files:
+        for file_path in baskatong_multiple_calibration_files:
             simulation_page.upload_calibration(file_path)
             simulation_page.page.wait_for_timeout(300)
 
@@ -335,10 +286,10 @@ class TestTP2SimulationValidation:
     def test_simulation_export_results(
         self,
         simulation_page: SimulationPage,
-        leaf_calibration_file: Path,
+        baskatong_calibration_file: Path,
     ) -> None:
         """TP2 step 8: Export simulation results after validation."""
-        simulation_page.upload_calibration(leaf_calibration_file)
+        simulation_page.upload_calibration(baskatong_calibration_file)
         simulation_page.wait_for_config()
         simulation_page.wait_for_dates_populated()
 
@@ -346,5 +297,5 @@ class TestTP2SimulationValidation:
         simulation_page.wait_for_results()
 
         download = simulation_page.export_data()
-        assert "leaf" in download.suggested_filename
+        assert "baskatong" in download.suggested_filename
         assert "simulation" in download.suggested_filename

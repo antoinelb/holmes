@@ -6,17 +6,14 @@ from typing import Any
 
 import numpy as np
 import polars as pl
-from holmes.exceptions import HolmesDataError, HolmesFileNotFoundError
+from holmes.exceptions import HolmesDataError
 from holmes.utils.paths import data_dir
 from holmes.validation import validate_catchment_exists, validate_date_range
 
 logger = logging.getLogger("holmes")
 
-# Required columns in observation CSV files (core functionality)
-OBSERVATION_REQUIRED_COLUMNS = {"Date", "P", "E0", "Qo"}
-
-# Optional columns (needed for snow modeling)
-OBSERVATION_OPTIONAL_COLUMNS = {"T"}
+# Required columns in observation CSV files
+OBSERVATION_REQUIRED_COLUMNS = {"Date", "P", "E0", "Qo", "T"}
 
 # Required keys in CemaNeige info files
 CEMANEIGE_REQUIRED_KEYS = {"AltiBand", "QNBV", "Z50", "Lat"}
@@ -100,20 +97,17 @@ def read_data(
 
 
 @lru_cache(maxsize=1)
-def get_available_catchments() -> tuple[
-    tuple[str, bool, tuple[str, str]], ...
-]:
+def get_available_catchments() -> tuple[tuple[str, tuple[str, str]], ...]:
     """
-    Determines which catchments are available in the data and if snow info is
-    available for each.
+    Determines which catchments are available in the data.
 
     Returns a tuple (for hashability with lru_cache) where each element is:
-    (<catchment name>, <snow info is available>, (<period min>, <period max>))
+    (<catchment name>, (<period min>, <period max>))
 
     Returns
     -------
-    tuple[tuple[str, bool, tuple[str, str]], ...]
-        Available catchments with their metadata
+    tuple[tuple[str, tuple[str, str]], ...]
+        Available catchments with their date range
     """
     catchments = [
         file.stem.replace("_Observations", "")
@@ -122,11 +116,7 @@ def get_available_catchments() -> tuple[
     return tuple(
         sorted(
             [
-                (
-                    catchment,
-                    (data_dir / f"{catchment}_CemaNeigeInfo.csv").exists(),
-                    _get_available_period(catchment),
-                )
+                (catchment, _get_available_period(catchment))
                 for catchment in catchments
             ],
             key=lambda c: c[0],
@@ -186,14 +176,6 @@ def read_catchment_data(catchment: str) -> pl.LazyFrame:
             f"Found columns: {actual_columns}"
         )
 
-    # Warn about missing optional columns (e.g., temperature for snow modeling)
-    missing_optional = OBSERVATION_OPTIONAL_COLUMNS - actual_columns
-    if missing_optional:
-        logger.debug(
-            f"CSV file '{path}' is missing optional columns: {missing_optional}. "
-            f"Snow modeling may not be available for this catchment."
-        )
-
     return df.with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
 
 
@@ -219,15 +201,10 @@ def read_cemaneige_info(catchment: str) -> dict[str, Any]:
     """
     path = data_dir / f"{catchment}_CemaNeigeInfo.csv"
 
-    # P4-DATA-06: Handle file errors explicitly
     try:
         with open(path, "r") as csv_file:
             reader = csv.reader(csv_file)
             info = dict(reader)
-    except FileNotFoundError as exc:
-        raise HolmesDataError(
-            f"CemaNeige info file not found for catchment '{catchment}': {path.name}"
-        ) from exc
     except PermissionError as exc:
         raise HolmesDataError(
             f"Permission denied reading CemaNeige file: {path.name}"
@@ -299,17 +276,13 @@ def read_projection_data(catchment: str) -> pl.LazyFrame:
 
     Raises
     ------
-    HolmesFileNotFoundError
-        If file not found
     HolmesDataError
-        If file malformed
+        If file is missing or malformed
     """
     path = data_dir / f"{catchment}_Projections.csv"
 
     if not path.exists():
-        raise HolmesFileNotFoundError(
-            f"Projection data file not found: {path.name}"
-        )
+        raise HolmesDataError(f"Projection data file not found: {path.name}")
 
     try:
         return (

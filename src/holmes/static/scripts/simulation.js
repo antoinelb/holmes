@@ -238,6 +238,11 @@ export async function update(model, msg, dispatch, createNotification) {
         "holmes--simulation--calibration",
         JSON.stringify(calibration),
       );
+      if (calibration.length === 0) {
+        window.localStorage.removeItem("holmes--simulation--start");
+        window.localStorage.removeItem("holmes--simulation--end");
+        window.localStorage.removeItem("holmes--simulation--multimodel");
+      }
       return {
         ...model,
         calibration: calibration,
