@@ -175,22 +175,31 @@ class TestSimulationWorkflow:
         file2 = tmp_path / "cal2.json"
         file2.write_text(json.dumps(cal2))
 
-        # Upload first calibration
+        # Upload first calibration. Wait for the page to fully settle —
+        # config visible, dates populated, AND observations rendered —
+        # before clicking remove. Otherwise an in-flight observations
+        # response can re-render the calibrations table mid-click and
+        # eat the click event (Firefox-specific flake).
         simulation_page.upload_calibration(file1)
         simulation_page.wait_for_config()
         simulation_page.wait_for_dates_populated()
+        simulation_page.wait_for_observations_loaded()
 
         first_start = simulation_page.get_start_date()
         first_end = simulation_page.get_end_date()
 
-        # Remove first calibration
+        # Remove first calibration; wait for the table to fully unmount
+        # before the next upload, so the new upload can't race with the
+        # tail of the removal render cycle.
         simulation_page.remove_calibration()
-        simulation_page.page.wait_for_timeout(200)
+        simulation_page.wait_for_table_hidden()
 
-        # Upload second calibration (different catchment)
+        # Upload second calibration (different catchment). Wait until the
+        # start date input differs from cal1's value — non-empty alone is
+        # not enough because the form may still hold cal1's stale value.
         simulation_page.upload_calibration(file2)
         simulation_page.wait_for_config()
-        simulation_page.wait_for_dates_populated()
+        simulation_page.wait_for_start_date_value(exclude=first_start)
 
         # Dates should reflect the new catchment's data range
         second_start = simulation_page.get_start_date()

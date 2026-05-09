@@ -1,5 +1,6 @@
 """Page Object for Simulation module."""
 
+import json
 from pathlib import Path
 
 from playwright.sync_api import Download, Page
@@ -46,6 +47,14 @@ class SimulationPage(BasePage):
             f"{self.CALIBRATIONS_TABLE}:not([hidden])", timeout=timeout
         )
 
+    def wait_for_table_hidden(self, timeout: int = 5000) -> None:
+        """Wait for the calibrations table to be hidden (e.g. after removal)."""
+        self.page.wait_for_selector(
+            self.CALIBRATIONS_TABLE,
+            state="hidden",
+            timeout=timeout,
+        )
+
     def wait_for_config(self, timeout: int = 5000) -> None:
         """Wait for the config form to appear."""
         self.page.wait_for_selector(
@@ -58,10 +67,19 @@ class SimulationPage(BasePage):
         return max(0, len(rows) - 1)
 
     def remove_calibration(self, index: int = 0) -> None:
-        """Remove a calibration from the table."""
-        self.page.locator(f"{self.CALIBRATIONS_TABLE} button").nth(
-            index
-        ).click()
+        """Remove a calibration from the table.
+
+        Uses an in-page `.click()` call rather than Playwright's mouse-based
+        click. The calibration table is fully re-rendered on every state
+        update (see `calibrationView` in simulation.js), so a real click can
+        be lost when an in-flight dispatch lands between mousedown and
+        mouseup. Calling `.click()` from page context fires the handler
+        synchronously regardless of DOM stability.
+        """
+        self.page.evaluate(
+            f"document.querySelectorAll("
+            f"'{self.CALIBRATIONS_TABLE} button')[{index}].click()"
+        )
 
     def set_date_range(self, start: str, end: str) -> None:
         """Set simulation date range."""
@@ -123,6 +141,49 @@ class SimulationPage(BasePage):
             f"document.querySelector('{self.START_DATE}').value !== ''",
             timeout=timeout,
         )
+
+    def wait_for_observations_loaded(self, timeout: int = 5000) -> None:
+        """Wait until the streamflow chart has rendered observations.
+
+        Acts as a quiescence signal: after `GotObservations` lands, the view
+        re-renders with the observation line, after which no further dispatches
+        fire until user input. Without this wait, an in-flight observations
+        response can re-render the calibrations table mid-click and lose the
+        click event.
+        """
+        self.page.wait_for_selector(
+            f"{self.STREAMFLOW_CHART} .observation-line",
+            state="attached",
+            timeout=timeout,
+        )
+
+    def wait_for_start_date_value(
+        self,
+        expected: str | None = None,
+        exclude: str | None = None,
+        timeout: int = 5000,
+    ) -> None:
+        """Wait for the start date input to match `expected` or differ from `exclude`.
+
+        Use `exclude` to wait until the value has changed away from a known
+        previous value (e.g. after switching catchments). Exactly one of
+        `expected` or `exclude` must be provided.
+        """
+        if (expected is None) == (exclude is None):
+            raise ValueError("Provide exactly one of `expected` or `exclude`.")
+        selector = self.START_DATE
+        if expected is not None:
+            predicate = (
+                f"document.querySelector('{selector}').value === "
+                f"{json.dumps(expected)}"
+            )
+        else:
+            predicate = (
+                f"document.querySelector('{selector}').value !== '' && "
+                f"document.querySelector('{selector}').value !== "
+                f"{json.dumps(exclude)}"
+            )
+        self.page.wait_for_function(predicate, timeout=timeout)
 
     def export_data(self) -> Download:
         """Click the export button and return the first Download object."""
