@@ -95,7 +95,7 @@ async def calibrate(
     temperature: npt.NDArray[np.float64] | None,
     pet: npt.NDArray[np.float64],
     observations: npt.NDArray[np.float64],
-    day_of_year: npt.NDArray[np.uintp],
+    day_of_year: npt.NDArray[np.uintp] | None,
     elevation_layers: npt.NDArray[np.float64] | None,
     median_elevation: float | None,
     qnbv: float | None,
@@ -126,6 +126,7 @@ async def calibrate(
     if snow_model is not None:
         if (
             temperature is None
+            or day_of_year is None
             or elevation_layers is None
             or median_elevation is None
             or qnbv is None

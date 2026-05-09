@@ -166,13 +166,6 @@ async def _handle_manual_calibration_message(
 
     precipitation = _data["precipitation"].to_numpy()
     pet = _data["pet"].to_numpy()
-    day_of_year = (
-        _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
-            "date"
-        ]
-        .to_numpy()
-        .astype(np.uintp)
-    )
 
     observations = _data["streamflow"].to_numpy()
 
@@ -195,6 +188,13 @@ async def _handle_manual_calibration_message(
                 f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
             )
             return
+        day_of_year = (
+            _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
+                "date"
+            ]
+            .to_numpy()
+            .astype(np.uintp)
+        )
         elevation_layers = np.array(metadata["altitude_layers"])
         median_elevation = metadata["median_altitude"]
         snow_simulate = snow.get_model(snow_model)
@@ -269,13 +269,6 @@ async def _handle_calibration_start_message(
 
     precipitation = _data["precipitation"].to_numpy()
     pet = _data["pet"].to_numpy()
-    day_of_year = (
-        _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
-            "date"
-        ]
-        .to_numpy()
-        .astype(np.uintp)
-    )
 
     observations = _data["streamflow"].to_numpy()
 
@@ -297,11 +290,19 @@ async def _handle_calibration_start_message(
                 f"The {msg_data['catchment']} catchment doesn't have any temperature data.",
             )
             return
+        day_of_year = (
+            _data.select((pl.col("date").dt.ordinal_day() - 1).mod(365) + 1)[
+                "date"
+            ]
+            .to_numpy()
+            .astype(np.uintp)
+        )
         elevation_layers = np.array(metadata["altitude_layers"])
         median_elevation = metadata["median_altitude"]
         qnbv = metadata["qnbv"]
     else:
         temperature = None
+        day_of_year = None
         elevation_layers = None
         median_elevation = None
         qnbv = None

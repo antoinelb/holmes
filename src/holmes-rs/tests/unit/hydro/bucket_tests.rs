@@ -426,7 +426,6 @@ fn test_k_r_and_k_t_extreme() {
 }
 
 #[test]
-#[ignore = "R5-NUM-05: Potential exp() instability with small x1"]
 fn test_bucket_small_x1() {
     // Very small x1 can cause exp() instability in dry conditions
     let params = array![10.0, 0.5, 50.0, 3.0, 0.3, 100.0]; // x1 at minimum
@@ -465,6 +464,32 @@ fn test_bucket_negative_precipitation() {
     assert!(
         matches!(result, Err(HydroError::NegativeInput { .. })),
         "Should reject negative precipitation"
+    );
+}
+
+#[test]
+fn test_bucket_nan_pet() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, f64::NAN, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NonFiniteInput { .. })),
+        "Should reject NaN in PET"
+    );
+}
+
+#[test]
+fn test_bucket_negative_pet() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, -1.0, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NegativeInput { .. })),
+        "Should reject negative PET"
     );
 }
 

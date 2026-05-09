@@ -359,6 +359,19 @@ fn test_gr4j_infinity_in_pet() {
 }
 
 #[test]
+fn test_gr4j_negative_pet() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, -1.0, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NegativeInput { .. })),
+        "Should reject negative PET"
+    );
+}
+
+#[test]
 fn test_gr4j_empty_arrays() {
     let (defaults, _) = init();
     let precip: Array1<f64> = array![];
@@ -505,7 +518,6 @@ fn test_x2_positive_exchange() {
 }
 
 #[test]
-#[ignore = "R5-NUM-05: Potential numerical instability with extreme x1"]
 fn test_gr4j_extreme_x1() {
     // Very small x1 can cause numerical issues
     let params = array![10.0, 0.0, 100.0, 2.0]; // x1 at minimum bound

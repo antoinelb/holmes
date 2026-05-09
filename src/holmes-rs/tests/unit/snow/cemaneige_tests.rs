@@ -1,6 +1,8 @@
 use crate::helpers;
 use approx::assert_relative_eq;
-use holmes_rs::snow::cemaneige::{init, param_names, simulate};
+use holmes_rs::snow::cemaneige::{
+    compute_normalization, init, param_names, simulate,
+};
 use holmes_rs::snow::utils::{
     validate_day_of_year, validate_output, validate_temperature,
 };
@@ -1050,74 +1052,13 @@ fn test_elevation_offset_effect() {
     assert!(effective_high.iter().all(|&p| p.is_finite() && p >= 0.0));
 }
 
-// =============================================================================
-// Anti-Fragility Tests (expected to fail with current implementation)
-// =============================================================================
-
 #[test]
-#[ignore = "R4-DATA-03: Day of year index issue with doy=0"]
-fn test_cemaneige_doy_zero() {
-    // DOY of 0 causes (0-1) % 365 = -1 index, which is invalid
-    let (defaults, _) = init();
-    let precip = array![5.0];
-    let temp = array![0.0];
-    let doy = array![0_usize]; // Invalid DOY (should be 1-365)
-    let elevation_layers = array![1000.0];
-
-    let result = simulate(
-        defaults.view(),
-        precip.view(),
-        temp.view(),
-        doy.view(),
-        elevation_layers.view(),
-        1000.0,
-    );
-
-    // Should either handle gracefully or return an error
-    if let Ok(precip) = result {
-        assert!(
-            precip[0].is_finite(),
-            "DOY=0 should be handled without panic"
-        );
-    }
-}
-
-#[test]
-#[ignore = "R5-NUM-06: Division by zero with qnbv causing g_threshold=0"]
-fn test_cemaneige_zero_qnbv() {
-    // qnbv=0 would cause g_threshold = 0 * 0.9 = 0, causing division by zero
-    // Note: bounds prevent this (qnbv >= 50), but we test edge case
-    let params = array![0.5, 5.0, 0.0]; // qnbv = 0 (outside bounds)
-    let precip = array![5.0, 5.0, 5.0];
-    let temp = array![-5.0, 0.0, 5.0];
-    let doy = array![1_usize, 2, 3];
-    let elevation_layers = array![1000.0];
-
-    let result = simulate(
-        params.view(),
-        precip.view(),
-        temp.view(),
-        doy.view(),
-        elevation_layers.view(),
-        1000.0,
-    );
-
-    if let Ok(precip) = result {
-        assert!(
-            precip.iter().all(|&p| p.is_finite()),
-            "Should handle zero qnbv without NaN/Inf"
-        );
-    }
-}
-
-#[test]
-#[ignore = "R4-DATA-04: Empty elevation layers array"]
-fn test_cemaneige_empty_layers() {
+fn test_cemaneige_empty_elevation_layers() {
     let (defaults, _) = init();
     let precip = array![5.0, 5.0, 5.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
-    let elevation_layers: Array1<f64> = Array1::from_vec(vec![]); // Empty
+    let elevation_layers: Array1<f64> = Array1::from_vec(vec![]);
 
     let result = simulate(
         defaults.view(),
@@ -1127,11 +1068,14 @@ fn test_cemaneige_empty_layers() {
         elevation_layers.view(),
         1000.0,
     );
-
-    // Should return an error or handle gracefully
     assert!(
-        result.is_err() || result.unwrap().iter().all(|&p| p.is_finite()),
-        "Empty elevation layers should be handled"
+        matches!(
+            result,
+            Err(SnowError::EmptyInput {
+                name: "elevation_layers"
+            })
+        ),
+        "Should reject empty elevation_layers array"
     );
 }
 
@@ -1198,4 +1142,49 @@ fn test_validate_temperature_valid() {
     let temp = array![-50.0, 0.0, 50.0];
     let result = validate_temperature(temp.view());
     assert!(result.is_ok(), "Should accept valid temperatures");
+}
+
+// =============================================================================
+// compute_normalization Tests
+// =============================================================================
+
+#[test]
+fn test_compute_normalization_positive_sum() {
+    let weights = [1.0, 2.0, 3.0];
+    let sum = compute_normalization(&weights).unwrap();
+    assert!((sum - 6.0).abs() < 1e-12);
+}
+
+#[test]
+fn test_compute_normalization_single_element() {
+    let weights = [0.5];
+    let sum = compute_normalization(&weights).unwrap();
+    assert!((sum - 0.5).abs() < 1e-12);
+}
+
+#[test]
+fn test_compute_normalization_zero_sum_rejected() {
+    // Guards against a future refactor that makes beta configurable:
+    // extreme negative beta with high elevations could underflow the sum
+    // of exp(beta * dz) to zero, which would crash the downstream divide.
+    // This test pins the explicit NumericalError return path.
+    let weights = [0.0, 0.0, 0.0];
+    let result = compute_normalization(&weights);
+    assert!(matches!(
+        result,
+        Err(SnowError::NumericalError {
+            context: "CemaNeige precipitation normalization",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn test_compute_normalization_below_tolerance_rejected() {
+    // A sum that is technically non-zero but below TOLERANCE (1e-10)
+    // must still be rejected — otherwise downstream division produces
+    // giant / NaN effective precipitation.
+    let weights = [1e-12, 1e-12];
+    let result = compute_normalization(&weights);
+    assert!(matches!(result, Err(SnowError::NumericalError { .. })));
 }

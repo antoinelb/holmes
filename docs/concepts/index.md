@@ -37,10 +37,28 @@ In catchments with significant snowfall, precipitation does not immediately cont
 
 ### 3. Hydrological Transformation
 
-The core of the modeling chain is the rainfall-runoff model that transforms effective precipitation (rainfall plus snowmelt) into streamflow. HOLMES implements two models:
+The core of the modeling chain is the rainfall-runoff model that transforms effective precipitation (rainfall plus snowmelt) into streamflow. HOLMES implements several models:
 
-- **[GR4J](gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
-- **[Bucket model](bucket.md)**: A six-parameter model based on linear reservoir theory with explicit fast and slow flow paths. Offers more flexibility in flow partitioning and often captures recession behavior well.
+- **[Bucket model](hydro/bucket.md)**: A six-parameter model based on linear reservoir theory with explicit fast and slow flow paths. Offers more flexibility in flow partitioning and often captures recession behavior well.
+- **[CEQUEAU](hydro/cequeau.md)**: A nine-parameter two-reservoir model (the "CEQU" simplification of the original CEQUEAU) that produces multiple threshold-based and continuous flow pathways, giving it considerable flexibility in hydrograph shape.
+- **[CREC](hydro/crec.md)**: A six-parameter model featuring a sigmoid rainfall-splitting function that smoothly partitions precipitation between runoff and infiltration based on soil moisture. Uses nonlinear (quadratic) surface routing.
+- **[GARDENIA](hydro/gardenia.md)**: A six-parameter BRGM model originally developed for rainfall → piezometric-level forecasting. Uses three reservoirs in series with a quadratic soil outflow law and a calibratable PET correction coefficient.
+- **[GR4J](hydro/gr4j.md)**: A parsimonious four-parameter model widely used in research and operations. It represents the catchment as two stores (production and routing) connected by unit hydrographs.
+- **[HBV](hydro/hbv.md)**: A nine-parameter model following Bergström's HBV0 formulation from Perrin's thesis. Uses a non-linear soil production with five-sub-step integration, a two-outflow intermediate reservoir, capped percolation, and a triangular unit hydrograph.
+- **[IHACRES](hydro/ihacres.md)**: A seven-parameter model from Jakeman et al. (1990) built around a dimensionless catchment moisture index with PET-modulated drying, midpoint-trapezoidal effective rainfall, and parallel fast/slow linear routing reservoirs sharing a multiplicative time-constant coupling.
+- **[HYMOD](hydro/hymod.md)**: A six-parameter model using a Pareto-distributed soil moisture store (variable-source-area runoff generation) combined with three linear reservoirs in cascade for fast flow and one linear groundwater reservoir for baseflow.
+- **[MARTINE](hydro/martine.md)**: A seven-parameter BRGM model (Mazenc et al. 1984) with overflow-based surface production, a calibratable fast/slow distribution coefficient, quadratic direct routing, a dual-pathway intermediate reservoir (linear drainage + overflow), and linear groundwater recession.
+- **[MOHYSE](hydro/mohyse.md)**: A seven-parameter minimalist model (Fortin & Turcotte 2007) with capacity-limited infiltration, dual soil/groundwater linear reservoirs, three-pathway linear drainage, and a gamma-shaped unit hydrograph for routing.
+- **[MORDOR](hydro/mordor.md)**: A six-parameter EDF model (Garçon 1999) with four cascading reservoirs (surface → intermediate → deep soil → groundwater), proportional rainfall partitioning, nonlinear cubic groundwater discharge, and three-component double-sided UH2 routing with exponent 2.5.
+- **[NAM](hydro/nam.md)**: A ten-parameter port of HOOPLA's HM12 version of the Nielsen & Hansen (1973) Danish operational model. Seven reservoirs (surface, soil, two interflow cascade reservoirs, two overland-flow cascade reservoirs, and a groundwater *deficit* store) with three-branch evapotranspiration, capillary rise from the saturated zone, and a fractional-delay unit hydrograph.
+- **[PDM](hydro/pdm.md)**: An eight-parameter Probability-Distributed Model (Moore & Clarke 1981) with Pareto-distributed soil moisture capacity, threshold-gated drainage to a cubic groundwater store, two-stage linear cascade for fast routing, and a fractional-delay unit hydrograph.
+- **[SACRAMENTO](hydro/sacramento.md)**: A nine-parameter variant of the Burnash et al. (1973) NWSRFS operational model following Perrin's simplification. Uses five reservoirs (interception, tension water, free water, lower-zone routing, direct routing) with a filling-feedback percolation scheme, interflow and hypodermic pathways, and an upward mass-balance correction between the lower-zone store and the free-water store.
+- **[SIMHYD](hydro/simhyd.md)**: An eight-parameter Australian model (Chiew et al. 2002) with exponential infiltration capacity decaying with soil saturation, saturation-proportional interflow and groundwater recharge, and dual linear routing reservoirs (slow ground + fast routing) with fractional-delay routing.
+- **[SMAR](hydro/smar.md)**: An eight-parameter model (O'Connell et al. 1970) with a 16-layer discretised soil column (25 mm per layer, 400 mm total), exponentially decaying ET with depth, moisture-dependent direct runoff, dual linear/quadratic routing reservoirs with calibratable flow partitioning, and a fractional-delay unit hydrograph.
+- **[TANK](hydro/tank.md)**: A seven-parameter Perrin variant of the Sugawara (1979) model (HOOPLA HM17), organising the catchment as a vertical cascade of four linear reservoirs with dual-threshold side outlets on the surface store, geometric scaling of drain time constants, cascading top-down ET satisfaction, a calibratable PET correction, and a fractional-delay unit hydrograph routing the sum of five outflows.
+- **[TOPMODEL](hydro/topmodel.md)**: A seven-parameter variant of the Beven & Kirkby (1979) topographic-index model following Perrin's simplification. An interception store, an unbounded groundwater deficit store with two sigmoid partition functions (recharge and evapotranspiration), a quadratic surface routing reservoir, and a fractional-delay unit hydrograph — pedagogically interesting because it replaces hard saturation thresholds with smooth probabilistic partitions.
+- **[WAGENINGEN](hydro/wageningen.md)**: An eight-parameter conceptual model (Warmerdam et al. 1997, HOOPLA HM19) with a single soil-moisture threshold $X_1$ that switches between percolation and capillary rise, cosine-damped ET below the threshold, flow dissociation via the $T/X_5$ ratio, parallel fast/slow linear reservoirs with multiplicatively coupled time constants, and fractional-delay routing.
+- **[XINANJIANG](hydro/xinanjiang.md)**: An eight-parameter variant of the Zhao et al. (1980) Chinese operational model. Uses two power-distributed saturation-excess reservoirs in series (soil + free-water) feeding a calibratable fast/slow routing split and a two-tap fractional-delay unit hydrograph.
 
 ### 4. Model Calibration
 
@@ -56,16 +74,38 @@ After calibration, we need to assess how well the model performs. HOLMES provide
 
 ## Choosing the Right Model
 
-The choice of model depends on your catchment characteristics and objectives:
+The choice of model depends on your catchment characteristics and objectives. Each row below links to the full concept page for that model:
 
-| Consideration | GR4J | Bucket Model |
-|--------------|------|--------------|
-| Parameters | 4 | 6 |
-| Flow partitioning | Fixed (90%/10%) | Calibratable ($\alpha$, $\beta$) |
-| Routing | Unit hydrographs + nonlinear store | Linear reservoirs |
-| Groundwater exchange | Yes ($X_2$ parameter) | No |
-| Equifinality risk | Lower | Higher |
-| Best for | Humid temperate catchments, benchmarking | Catchments with distinct recession components |
+| Model | Params | Soil store | Flow partitioning | Routing | GW exchange | Equifinality | Best for |
+|-------|:------:|------------|-------------------|---------|:-----------:|:------------:|----------|
+| [Bucket](hydro/bucket.md) | 6 | Single bucket | Calibratable ($\alpha$, $\beta$) | Linear reservoirs | No | Higher | Catchments with distinct recession components |
+| [CEQUEAU](hydro/cequeau.md) | 9 | Two-reservoir (surface + groundwater) | Threshold + continuous pathways | Pure time delay | No | Higher | Flexible hydrograph shapes, threshold-driven response |
+| [CREC](hydro/crec.md) | 6 | Single bucket + sigmoid split | Sigmoid (moisture-dependent) | Quadratic + linear stores | No | Moderate | Catchments with moisture-dependent runoff generation |
+| [GARDENIA](hydro/gardenia.md) | 6 | Surface + soil + groundwater in series | Overflow at surface + quadratic soil outflow | Fractional delay | No | Moderate | Catchments with a strong aquifer component; rainfall → piezometric-level use cases |
+| [GR4J](hydro/gr4j.md) | 4 | Single reservoir | Fixed 90% / 10% | Unit hydrographs + nonlinear store | Yes ($X_2$) | Lower | Humid temperate catchments, benchmarking |
+| [HBV](hydro/hbv.md) | 9 | Non-linear soil (five sub-steps) | Threshold upper + linear lower intermediate reservoir | Triangular unit hydrograph | No | Higher | Nordic / temperate catchments, operational forecasting |
+| [IHACRES](hydro/ihacres.md) | 7 | Dimensionless moisture index (unbounded, PET-modulated decay) | Calibratable fast/slow fraction ($X_2$) | Parallel linear reservoirs ($X_3$ / $X_3 \cdot X_4$) + fractional delay | No | Moderate | Catchments where recession analysis drives calibration; teaching contrast to soil-bucket models |
+| [HYMOD](hydro/hymod.md) | 6 | Pareto-distributed (variable source area) | Saturation excess + calibratable $\alpha$ | Three linear reservoirs cascade + one slow reservoir | No | Moderate | Catchments where saturated-area runoff dominates |
+| [MARTINE](hydro/martine.md) | 7 | Single bucket (overflow) | Calibratable fast/slow fraction ($X_5$) | Quadratic direct store + dual-pathway intermediate + linear GW + fractional delay | No | Moderate | Regionalization studies; catchments with distinct interflow and baseflow components |
+| [MOHYSE](hydro/mohyse.md) | 7 | Capacity-limited single bucket | Linear vadose drainage to river + GW | Gamma unit hydrograph (80-step memory) | No | Moderate | Benchmarking; minimal-complexity baseline; teaching production-routing-convolution chain |
+| [MORDOR](hydro/mordor.md) | 6 | Four cascading reservoirs (U → L → Z → N) | Proportional to U filling + Z-ratio partitioning of L drainage | Three-component double-sided UH2 (exponent 2.5) | No | Moderate | Catchments with significant baseflow; teaching cascading reservoir chains |
+| [NAM](hydro/nam.md) | 10 | Surface store + soil store with capillary rise | Three-branch ET + soil-ratio-driven overland/interflow/percolation split | Two parallel two-reservoir cascades + fractional-delay UH | Yes (deficit-based, threshold $X_1$) | Higher | Catchments where overland flow and interflow must be modelled separately; Scandinavian operational use cases |
+| [PDM](hydro/pdm.md) | 8 | Pareto-distributed (variable source area) | Saturation excess + infiltration excess + threshold drainage | Two linear reservoirs cascade + cubic GW store + fractional delay | No | Moderate | Catchments with variable-source-area runoff and nonlinear baseflow recession; British operational use cases |
+| [SACRAMENTO](hydro/sacramento.md) | 9 | Interception + tension + free water (three-store cascade) | Percolation with filling-feedback + threshold overflow | Direct routing store + fractional-delay register | Yes (via $X_8$ deep percolation) | Higher | Catchments with clear baseflow separation; operational NWS-style use cases |
+| [SIMHYD](hydro/simhyd.md) | 8 | Interception + soil bucket (exponential infiltration) | Saturation-proportional interflow + GW recharge | Ground (slow) + routing (fast) linear reservoirs + fractional delay | No | Moderate | Australian catchments; benchmarking threshold-based infiltration models |
+| [SMAR](hydro/smar.md) | 8 | 16-layer discretised soil column (400 mm) | Moisture-dependent direct runoff + exponential infiltration | Linear GW + quadratic surface reservoirs + fractional delay | No | Moderate | Teaching vertical soil discretisation; catchments where ET depth-profile matters |
+| [TANK](hydro/tank.md) | 7 | Four linear reservoirs in vertical cascade (S → R → T → L) | Dual-threshold side outlets on $S$ + single side outlets on $R$, $T$ | Geometric drain-time scaling ($x_3$, $x_3 x_4$, $x_3 x_4 x_7$, $x_3 x_4 x_7^2$) + fractional delay | No | Moderate | Catchments with emergent multi-timescale recessions; teaching storage-driven flow separation |
+| [TOPMODEL](hydro/topmodel.md) | 7 | Interception + unbounded groundwater deficit | Sigmoid recharge + sigmoid groundwater ET (logistic, no thresholds) | Quadratic surface store + exponential baseflow + fractional delay | No | Moderate | Catchments where smooth saturation-area dynamics matter; pedagogical contrast with threshold-based models |
+| [WAGENINGEN](hydro/wageningen.md) | 8 | Single soil reservoir with threshold $X_1$ and capillary rise from $T$ | Flow dissociation via $\mathrm{DIV} = \min(1, T/X_5)$ | Parallel fast ($X_6$) + slow ($X_6 \cdot X_7$) linear reservoirs + fractional delay | Upward (capillary rise $T \to S$) | Moderate | Humid-temperate catchments with clear wet/dry regime switching; teaching threshold-driven process coupling |
+| [XINANJIANG](hydro/xinanjiang.md) | 8 | Two power-distributed reservoirs (soil + free-water) | Saturation excess (fixed $B = 0.25$, calibratable $X_8$) | Fast/slow linear reservoirs + two-tap unit hydrograph | No | Moderate | Catchments with strong spatial variability of storage capacity; Chinese / monsoon operational use cases |
+
+<!--
+  Adding a new hydro model? Append one row to this table. The column schema
+  is: Model (linked) | Params | Soil store | Flow partitioning | Routing |
+  GW exchange | Equifinality | Best for. Keep rows ordered to match the
+  alphabetical order in docs/concepts/hydro/ (which is the order awesome-nav
+  will show in the sidebar).
+-->
 
 For catchments with significant snow, enable CemaNeige regardless of which hydrological model you choose.
 
@@ -73,8 +113,26 @@ For catchments with significant snow, enable CemaNeige regardless of which hydro
 
 Each concept page provides detailed explanations, mathematical formulations, and practical guidance:
 
-- [GR4J Model](gr4j.md) - Parsimonious four-parameter model
-- [Bucket Model](bucket.md) - Linear reservoir model with flexible flow partitioning
+- [Bucket Model](hydro/bucket.md) - Linear reservoir model with flexible flow partitioning
+- [CEQUEAU Model](hydro/cequeau.md) - Two-reservoir model with threshold-based and continuous flow pathways
+- [CREC Model](hydro/crec.md) - Sigmoid splitting with nonlinear surface routing
+- [GARDENIA Model](hydro/gardenia.md) - BRGM three-reservoir model with quadratic soil outflow and PET correction
+- [GR4J Model](hydro/gr4j.md) - Parsimonious four-parameter model
+- [HBV Model](hydro/hbv.md) - Nine-parameter Bergström formulation with five-sub-step soil production and triangular routing
+- [IHACRES Model](hydro/ihacres.md) - Seven-parameter moisture-index model with PET-modulated drying and parallel fast/slow linear routing
+- [HYMOD Model](hydro/hymod.md) - Pareto-distributed soil store with three-reservoir fast cascade
+- [MARTINE Model](hydro/martine.md) - Seven-parameter BRGM model with quadratic routing and dual-pathway intermediate reservoir
+- [MOHYSE Model](hydro/mohyse.md) - Seven-parameter minimalist model with capacity-limited infiltration and gamma unit hydrograph
+- [MORDOR Model](hydro/mordor.md) - Six-parameter EDF model with four cascading reservoirs and three-component UH2 routing
+- [NAM Model](hydro/nam.md) - Ten-parameter Danish HM12 port with seven reservoirs, groundwater-deficit store, and capillary rise
+- [PDM Model](hydro/pdm.md) - Pareto-distributed soil store with cubic groundwater and threshold drainage
+- [SACRAMENTO Model](hydro/sacramento.md) - Five-reservoir Burnash/NWSRFS cascade with filling-feedback percolation and deep-percolation damping
+- [SIMHYD Model](hydro/simhyd.md) - Eight-parameter Australian model with exponential infiltration, dual linear routing reservoirs, and fractional delay
+- [SMAR Model](hydro/smar.md) - Eight-parameter Irish model with 16-layer soil column, depth-decaying ET, and dual linear/quadratic routing
+- [TANK Model](hydro/tank.md) - Seven-parameter Sugawara cascade of four linear reservoirs with dual-threshold side outlets and geometric drain-time scaling
+- [TOPMODEL](hydro/topmodel.md) - Seven-parameter Beven & Kirkby model with sigmoid recharge/ET partitioning and exponential baseflow
+- [WAGENINGEN Model](hydro/wageningen.md) - Eight-parameter Warmerdam et al. model with threshold-driven percolation/capillary-rise switching and flow dissociation
+- [XINANJIANG Model](hydro/xinanjiang.md) - Two power-distributed saturation-excess reservoirs with fast/slow routing split
 - [Snow Models (CemaNeige)](snow-models.md) - Snow accumulation and melt
 - [PET Models (Oudin)](pet-models.md) - Potential evapotranspiration calculation
 - [Calibration Algorithms (SCE-UA)](calibration-algorithms.md) - Automatic parameter optimization

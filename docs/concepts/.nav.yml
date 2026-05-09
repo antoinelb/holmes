@@ -1,0 +1,9 @@
+title: Concepts
+
+nav:
+  - index.md
+  - hydro
+  - Snow models: snow-models.md
+  - Potential evapotranspiration models: pet-models.md
+  - Calibration: calibration-algorithms.md
+  - Metrics: metrics.md

@@ -119,6 +119,72 @@ fn test_hydro_get_model_bucket() {
 }
 
 #[test]
+fn test_hydro_get_model_cequeau() {
+    let result = hydro::get_model("cequeau");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 9);
+    assert_eq!(bounds.shape(), &[9, 2]);
+}
+
+#[test]
+fn test_hydro_get_model_crec() {
+    let result = hydro::get_model("crec");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 6);
+    assert_eq!(bounds.shape(), &[6, 2]);
+}
+
+#[test]
+fn test_hydro_get_model_gardenia() {
+    let result = hydro::get_model("gardenia");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 6);
+    assert_eq!(bounds.shape(), &[6, 2]);
+}
+
+#[test]
+fn test_hydro_get_model_hymod() {
+    let result = hydro::get_model("hymod");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 6);
+    assert_eq!(bounds.shape(), &[6, 2]);
+}
+
+#[test]
+fn test_hydro_get_model_hbv() {
+    let result = hydro::get_model("hbv");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 9);
+    assert_eq!(bounds.shape(), &[9, 2]);
+}
+
+#[test]
+fn test_hydro_get_model_xinanjiang() {
+    let result = hydro::get_model("xinanjiang");
+    assert!(result.is_ok());
+
+    let (init_fn, _) = result.unwrap();
+    let (defaults, bounds) = init_fn();
+    assert_eq!(defaults.len(), 8);
+    assert_eq!(bounds.shape(), &[8, 2]);
+}
+
+#[test]
 fn test_hydro_get_model_invalid() {
     let result = hydro::get_model("invalid_model");
     assert!(matches!(result, Err(HydroError::WrongModel(_))));
@@ -157,15 +223,14 @@ fn test_compose_simulate_hydro_only() {
     let params = array![300.0, 0.5, 100.0, 2.0]; // GR4J params
     let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(50, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, 50);
 
-    // No snow model, so snow params are None
+    // No snow model, so snow params (including day_of_year) are None
     let result = simulate(
         params.view(),
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
     );
@@ -194,13 +259,13 @@ fn test_compose_simulate_with_snow() {
     let elevation_layers = array![1000.0];
     let median_elevation = 1000.0;
 
-    // Snow model requires temperature, elevation_bands, and median_elevation
+    // Snow model requires temperature, day_of_year, elevation_bands, and median_elevation
     let result = simulate(
         params.view(),
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
         Some(elevation_layers.view()),
         Some(median_elevation),
     );
@@ -209,6 +274,69 @@ fn test_compose_simulate_with_snow() {
     let streamflow = result.unwrap();
     assert_eq!(streamflow.len(), 50);
     assert!(streamflow.iter().all(|&q| q.is_finite() && q >= 0.0));
+}
+
+#[test]
+fn test_compose_simulate_length_mismatch_propagates() {
+    use holmes_rs::calibration::utils::compose_simulate;
+    use ndarray::array;
+
+    let (_, hydro_simulate) = hydro::get_model("gr4j").unwrap();
+    let simulate = compose_simulate(None, hydro_simulate, 0);
+
+    // precip length 50 but pet length 40 — check_lengths must fail inside
+    // the composed closure and propagate via `?`.
+    let params = array![300.0, 0.5, 100.0, 2.0];
+    let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
+    let pet = helpers::generate_pet(40, 3.0, 1.0, 44);
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+    );
+
+    assert!(matches!(
+        result,
+        Err(CalibrationError::LengthMismatch(_, _, _, _))
+    ));
+}
+
+#[test]
+fn test_compose_simulate_snow_simulate_error_propagates() {
+    use holmes_rs::calibration::utils::compose_simulate;
+    use ndarray::array;
+
+    let (_, snow_simulate) = snow::get_model("cemaneige").unwrap();
+    let (_, hydro_simulate) = hydro::get_model("gr4j").unwrap();
+    let simulate = compose_simulate(Some(snow_simulate), hydro_simulate, 3);
+
+    // Snow params (ctg, kf, qnbv) are out of bounds — the snow simulate
+    // call inside the closure must fail and be wrapped in
+    // CalibrationError::Snow via the `.map_err(...)?` path.
+    let params = array![-1.0, 5.0, 350.0, 300.0, 0.5, 100.0, 2.0];
+    let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
+    let temp = helpers::generate_temperature(50, 5.0, 15.0, 2.0, 43);
+    let pet = helpers::generate_pet(50, 3.0, 1.0, 44);
+    let doy = helpers::generate_doy(1, 50);
+    let elevation_layers = array![1000.0];
+    let median_elevation = 1000.0;
+
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        Some(temp.view()),
+        pet.view(),
+        Some(doy.view()),
+        Some(elevation_layers.view()),
+        Some(median_elevation),
+    );
+
+    assert!(matches!(result, Err(CalibrationError::Snow(_))));
 }
 
 // =============================================================================
@@ -229,7 +357,7 @@ fn test_check_lengths_matching() {
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
     );
     assert!(result.is_ok());
 }
@@ -244,7 +372,21 @@ fn test_check_lengths_matching_no_temp() {
     let doy = Array1::from_elem(100, 180_usize);
 
     // When temperature is None, lengths should still match
-    let result = check_lengths(precip.view(), None, pet.view(), doy.view());
+    let result =
+        check_lengths(precip.view(), None, pet.view(), Some(doy.view()));
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_check_lengths_no_doy() {
+    use holmes_rs::calibration::utils::check_lengths;
+    use ndarray::Array1;
+
+    let precip = Array1::from_elem(100, 5.0);
+    let pet = Array1::from_elem(100, 3.0);
+
+    // When day_of_year is None, lengths should still match
+    let result = check_lengths(precip.view(), None, pet.view(), None);
     assert!(result.is_ok());
 }
 
@@ -262,7 +404,7 @@ fn test_check_lengths_mismatch() {
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
     );
     assert!(matches!(
         result,
@@ -296,7 +438,37 @@ fn test_compose_simulate_snow_missing_temperature() {
         precip.view(),
         None, // Missing temperature
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
+        Some(elevation_layers.view()),
+        Some(median_elevation),
+    );
+
+    assert!(matches!(result, Err(CalibrationError::MissingSnowParams)));
+}
+
+#[test]
+fn test_compose_simulate_snow_missing_day_of_year() {
+    use holmes_rs::calibration::utils::compose_simulate;
+    use ndarray::array;
+
+    let (_, snow_simulate) = snow::get_model("cemaneige").unwrap();
+    let (_, hydro_simulate) = hydro::get_model("gr4j").unwrap();
+    let simulate = compose_simulate(Some(snow_simulate), hydro_simulate, 3);
+
+    let params = array![0.5, 5.0, 350.0, 300.0, 0.5, 100.0, 2.0];
+    let precip = helpers::generate_precipitation(50, 5.0, 0.3, 42);
+    let temp = helpers::generate_temperature(50, 5.0, 15.0, 2.0, 43);
+    let pet = helpers::generate_pet(50, 3.0, 1.0, 44);
+    let elevation_layers = array![1000.0];
+    let median_elevation = 1000.0;
+
+    // Snow model configured but day_of_year is None - should fail
+    let result = simulate(
+        params.view(),
+        precip.view(),
+        Some(temp.view()),
+        pet.view(),
+        None, // Missing day_of_year
         Some(elevation_layers.view()),
         Some(median_elevation),
     );
@@ -326,7 +498,7 @@ fn test_compose_simulate_snow_missing_elevation_bands() {
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
         None, // Missing elevation_bands
         Some(median_elevation),
     );
@@ -356,7 +528,7 @@ fn test_compose_simulate_snow_missing_median_elevation() {
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
         Some(elevation_layers.view()),
         None, // Missing median_elevation
     );

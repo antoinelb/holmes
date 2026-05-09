@@ -16,7 +16,9 @@ use crate::calibration::utils::{
     Simulate, Transformation,
 };
 use crate::hydro;
-use crate::metrics::{calculate_kge, calculate_nse, calculate_rmse};
+use crate::metrics::{
+    calculate_kge, calculate_nse, calculate_rmse, MetricsError,
+};
 use crate::snow;
 
 struct SceParams {
@@ -154,7 +156,7 @@ impl Sce {
         precipitation: ArrayView1<f64>,
         temperature: Option<ArrayView1<f64>>,
         pet: ArrayView1<f64>,
-        day_of_year: ArrayView1<usize>,
+        day_of_year: Option<ArrayView1<usize>>,
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
@@ -202,7 +204,7 @@ impl Sce {
         precipitation: ArrayView1<f64>,
         temperature: Option<ArrayView1<f64>>,
         pet: ArrayView1<f64>,
-        day_of_year: ArrayView1<usize>,
+        day_of_year: Option<ArrayView1<usize>>,
         elevation_bands: Option<ArrayView1<f64>>,
         median_elevation: Option<f64>,
         observations: ArrayView1<f64>,
@@ -285,39 +287,10 @@ impl Sce {
             .append(Axis(0), Array1::from_elem(1, best_objective).view())
             .unwrap();
 
-        let criteria_change = if self.sce_params.criteria.len()
-            >= self.sce_params.k_stop
-        {
-            let recent = self
-                .sce_params
-                .criteria
-                .slice(s![-(self.sce_params.k_stop as isize)..]);
-
-            let has_non_finite = recent.iter().any(|x| !x.is_finite());
-            if has_non_finite {
-                // if NaN/inf in criteria, don't consider converged
-                f64::INFINITY
-            } else {
-                let mean_recent = recent.iter().map(|x| x.abs()).sum::<f64>()
-                    / self.sce_params.k_stop as f64;
-                if mean_recent > 1e-10 {
-                    let diff = (self.sce_params.criteria
-                        [self.sce_params.criteria.len() - 1]
-                        - self.sce_params.criteria[self
-                            .sce_params
-                            .criteria
-                            .len()
-                            - self.sce_params.k_stop])
-                        .abs();
-                    diff * 100.0 / mean_recent
-                } else {
-                    // if mean is effectively zero, criteria are constant -> converged
-                    0.0
-                }
-            }
-        } else {
-            f64::INFINITY
-        };
+        let criteria_change = compute_criteria_change(
+            self.sce_params.criteria.view(),
+            self.sce_params.k_stop,
+        );
 
         self.calibration_params.done = n_calls
             > self.sce_params.max_evaluations
@@ -390,7 +363,7 @@ impl Sce {
         precipitation: PyReadonlyArray1<f64>,
         temperature: Option<PyReadonlyArray1<f64>>,
         pet: PyReadonlyArray1<f64>,
-        day_of_year: PyReadonlyArray1<usize>,
+        day_of_year: Option<PyReadonlyArray1<usize>>,
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
@@ -400,7 +373,7 @@ impl Sce {
             precipitation.as_array(),
             temperature.as_ref().map(|t| t.as_array()),
             pet.as_array(),
-            day_of_year.as_array(),
+            day_of_year.as_ref().map(|d| d.as_array()),
             elevation_bands.as_ref().map(|e| e.as_array()),
             median_elevation,
             observations.as_array(),
@@ -416,7 +389,7 @@ impl Sce {
         precipitation: PyReadonlyArray1<f64>,
         temperature: Option<PyReadonlyArray1<f64>>,
         pet: PyReadonlyArray1<f64>,
-        day_of_year: PyReadonlyArray1<usize>,
+        day_of_year: Option<PyReadonlyArray1<usize>>,
         elevation_bands: Option<PyReadonlyArray1<f64>>,
         median_elevation: Option<f64>,
         observations: PyReadonlyArray1<'_, f64>,
@@ -432,7 +405,7 @@ impl Sce {
                 precipitation.as_array(),
                 temperature.as_ref().map(|t| t.as_array()),
                 pet.as_array(),
-                day_of_year.as_array(),
+                day_of_year.as_ref().map(|d| d.as_array()),
                 elevation_bands.as_ref().map(|e| e.as_array()),
                 median_elevation,
                 observations.as_array(),
@@ -484,7 +457,7 @@ fn evaluate_initial_population(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
@@ -538,7 +511,9 @@ fn evaluate_initial_population(
     Ok((population, objectives))
 }
 
-fn evaluate_simulation(
+/// Compute all three objectives (rmse, nse, kge) from a simulation.
+/// Exposed for integration tests; use `Sce::step` from calling code.
+pub fn evaluate_simulation(
     observations: ArrayView1<f64>,
     simulations: ArrayView1<f64>,
     transformation: Transformation,
@@ -559,11 +534,97 @@ fn evaluate_simulation(
             (observations.to_owned(), simulations.to_owned())
         }
     };
-    Ok(Array1::from_vec(vec![
-        calculate_rmse(observations.view(), simulations.view())?,
-        calculate_nse(observations.view(), simulations.view())?,
-        calculate_kge(observations.view(), simulations.view())?,
-    ]))
+
+    // Degenerate parameter sets can produce NaN/Infinity in simulations
+    // (or after transformation, e.g. sqrt of negative values).
+    // Assign worst-case objectives rather than crashing the optimizer.
+    if simulations.iter().any(|x| !x.is_finite()) {
+        return Ok(worst_case_objectives());
+    }
+
+    // RMSE acts as the validation gate: if its inputs are malformed
+    // (length mismatch, NaN, infinity), penalize_degenerate propagates a
+    // non-degenerate metrics error here. NSE and KGE share the same
+    // validate_inputs gate, so once RMSE succeeds their own validation
+    // cannot fail non-degenerately — any remaining error variant is in
+    // penalize_degenerate's allow-list and becomes Ok(penalty).
+    let rmse = penalize_degenerate(
+        calculate_rmse(observations.view(), simulations.view()),
+        f64::INFINITY,
+    )?;
+    let nse = penalize_degenerate(
+        calculate_nse(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("NSE cannot return a non-degenerate error once RMSE has validated inputs");
+    let kge = penalize_degenerate(
+        calculate_kge(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("KGE cannot return a non-degenerate error once RMSE has validated inputs");
+
+    Ok(Array1::from_vec(vec![rmse, nse, kge]))
+}
+
+/// Returns worst-case objective values for each metric during optimization.
+/// RMSE is minimized (worst = INFINITY), NSE and KGE are maximized
+/// (worst = NEG_INFINITY).
+fn worst_case_objectives() -> Array1<f64> {
+    Array1::from_vec(vec![f64::INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY])
+}
+
+/// During optimization, degenerate parameter sets can produce simulations with
+/// zero variance or other numerical issues that make metrics undefined.
+/// Returns a penalty value instead of propagating the error. Data validation
+/// errors (length mismatch, empty arrays) still propagate since they indicate
+/// bugs rather than bad parameter sets.
+fn penalize_degenerate(
+    result: Result<f64, MetricsError>,
+    penalty: f64,
+) -> Result<f64, CalibrationError> {
+    match result {
+        Ok(v) => Ok(v),
+        Err(
+            MetricsError::ZeroVarianceNSE
+            | MetricsError::ZeroVarianceKGE { .. }
+            | MetricsError::ZeroMeanKGE
+            | MetricsError::NumericalError { .. },
+        ) => Ok(penalty),
+        Err(e) => Err(CalibrationError::Metrics(e)),
+    }
+}
+
+/// Compute the SCE-UA convergence criterion: the relative change in the
+/// best objective over the last `k_stop` iterations, as a percentage of its
+/// recent mean magnitude.
+///
+/// Returns `f64::INFINITY` when there is not yet enough history, or when any
+/// value in the recent window is non-finite — both conditions prevent early
+/// convergence. Returns `0.0` when the recent mean is effectively zero, which
+/// means the criteria have been flat and the optimizer has converged.
+pub fn compute_criteria_change(
+    criteria: ArrayView1<f64>,
+    k_stop: usize,
+) -> f64 {
+    if criteria.len() < k_stop {
+        return f64::INFINITY;
+    }
+
+    let recent = criteria.slice(s![-(k_stop as isize)..]);
+    if recent.iter().any(|x| !x.is_finite()) {
+        return f64::INFINITY;
+    }
+
+    let mean_recent =
+        recent.iter().map(|x| x.abs()).sum::<f64>() / k_stop as f64;
+    if mean_recent <= 1e-10 {
+        return 0.0;
+    }
+
+    let diff = (criteria[criteria.len() - 1]
+        - criteria[criteria.len() - k_stop])
+        .abs();
+    diff * 100.0 / mean_recent
 }
 
 pub fn sort_population(
@@ -649,7 +710,7 @@ fn evolve_complexes(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,
@@ -713,7 +774,9 @@ fn evolve_complexes(
     Ok(n_calls)
 }
 
-fn evolve_complex_step(
+/// Perform one reflect / contract / random-fallback step on a simplex.
+/// Exposed for integration tests; use `Sce::step` from calling code.
+pub fn evolve_complex_step(
     simplex: ArrayView2<f64>,
     simplex_objectives: ArrayView2<f64>,
     lower_bounds: ArrayView1<f64>,
@@ -722,7 +785,7 @@ fn evolve_complex_step(
     precipitation: ArrayView1<f64>,
     temperature: Option<ArrayView1<f64>>,
     pet: ArrayView1<f64>,
-    day_of_year: ArrayView1<usize>,
+    day_of_year: Option<ArrayView1<usize>>,
     elevation_bands: Option<ArrayView1<f64>>,
     median_elevation: Option<f64>,
     observations: ArrayView1<f64>,

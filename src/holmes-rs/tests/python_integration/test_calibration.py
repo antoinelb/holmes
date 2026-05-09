@@ -173,7 +173,6 @@ class TestSceInit:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -196,7 +195,7 @@ class TestSceInit:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -212,7 +211,6 @@ class TestSceStep:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -234,7 +232,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -245,7 +243,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -260,7 +258,6 @@ class TestSceStep:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -282,7 +279,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -293,7 +290,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -310,7 +307,6 @@ class TestSceStep:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -332,7 +328,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -343,7 +339,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -362,7 +358,6 @@ class TestSceStep:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -384,7 +379,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -395,7 +390,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -411,7 +406,6 @@ class TestSceStep:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -433,7 +427,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -444,7 +438,7 @@ class TestSceStep:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -464,7 +458,6 @@ class TestSceConvergence:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
     ):
         """Calibration should eventually return done=True."""
@@ -489,7 +482,7 @@ class TestSceConvergence:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             obs,
@@ -505,7 +498,7 @@ class TestSceConvergence:
                 sample_precipitation,
                 sample_temperature,
                 sample_pet,
-                sample_doy,
+                None,
                 sample_elevation_layers,
                 1000.0,
                 obs,
@@ -520,7 +513,6 @@ class TestSceConvergence:
         sample_precipitation,
         sample_pet,
         sample_temperature,
-        sample_doy,
         sample_elevation_layers,
         sample_observations,
     ):
@@ -542,7 +534,7 @@ class TestSceConvergence:
             sample_precipitation,
             sample_temperature,
             sample_pet,
-            sample_doy,
+            None,
             sample_elevation_layers,
             1000.0,
             sample_observations,
@@ -557,7 +549,7 @@ class TestSceConvergence:
                 sample_precipitation,
                 sample_temperature,
                 sample_pet,
-                sample_doy,
+                None,
                 sample_elevation_layers,
                 1000.0,
                 sample_observations,
@@ -634,6 +626,51 @@ class TestSceWithSnow:
         assert len(sim) == len(sample_precipitation)
         assert np.all(np.isfinite(params))
         assert np.all(np.isfinite(sim))
+
+    def test_snow_missing_day_of_year(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+    ):
+        """Should raise error when snow model set but day_of_year is None."""
+        snow_defaults, _ = cemaneige.init()
+        effective_precip = cemaneige.simulate(
+            snow_defaults,
+            sample_precipitation,
+            sample_temperature,
+            np.arange(1, 101, dtype=np.uint64),
+            sample_elevation_layers,
+            1000.0,
+        )
+        hydro_defaults, _ = gr4j.init()
+        obs = gr4j.simulate(hydro_defaults, effective_precip, sample_pet)
+
+        sce = Sce(
+            hydro_model="gr4j",
+            snow_model="cemaneige",
+            objective="kge",
+            transformation="none",
+            n_complexes=2,
+            k_stop=5,
+            p_convergence_threshold=0.1,
+            geometric_range_threshold=0.001,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        with pytest.raises(ValueError, match="snow model requires"):
+            sce.init(
+                sample_precipitation,
+                sample_temperature,
+                sample_pet,
+                None,  # Missing day_of_year
+                sample_elevation_layers,
+                1000.0,
+                obs,
+                0,
+            )
 
 
 class TestCalibrationModuleIntegration:

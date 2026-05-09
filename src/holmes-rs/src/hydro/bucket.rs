@@ -63,7 +63,7 @@ pub fn simulate(
 
     let mut streamflow: Vec<f64> = vec![0.0; precipitation.len()];
 
-    let (mut s, mut r, mut t, mut dl, mut hy) = initialize_state(x1, x4);
+    let (mut s, mut r, mut t, mut dl, mut hy) = init_state(x1, x4);
 
     Zip::indexed(&precipitation)
         .and(&pet)
@@ -81,10 +81,7 @@ pub fn simulate(
     Ok(result)
 }
 
-fn initialize_state(
-    x1: f64,
-    x4: f64,
-) -> (f64, f64, f64, Array1<f64>, Array1<f64>) {
+fn init_state(x1: f64, x4: f64) -> (f64, f64, f64, Array1<f64>, Array1<f64>) {
     // initialization of the reservoir state
     let s = x1 * 0.5;
     let r = 10.0;

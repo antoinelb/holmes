@@ -327,6 +327,19 @@ fn test_cequeau_infinity_in_pet() {
 }
 
 #[test]
+fn test_cequeau_negative_pet() {
+    let (defaults, _) = init();
+    let precip = array![10.0, 5.0, 0.0];
+    let pet = array![2.0, -1.0, 2.0];
+
+    let result = simulate(defaults.view(), precip.view(), pet.view());
+    assert!(
+        matches!(result, Err(HydroError::NegativeInput { .. })),
+        "Should reject negative PET"
+    );
+}
+
+#[test]
 fn test_cequeau_empty_arrays() {
     let (defaults, _) = init();
     let precip: Array1<f64> = array![];

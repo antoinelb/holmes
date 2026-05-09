@@ -15,6 +15,22 @@ const BOUNDS: [(&str, f64, f64); 3] =
 
 const TOLERANCE: f64 = 1e-10;
 
+/// Sum the per-layer precipitation weights, rejecting a degenerate sum
+/// that would divide by zero downstream. Currently unreachable from
+/// `simulate` because `beta` is hardcoded to 0 (every weight = 1), but
+/// exposed and exercised in tests so that a future change to `beta` cannot
+/// silently regress the safety guard.
+pub fn compute_normalization(weights: &[f64]) -> Result<f64, SnowError> {
+    let sum: f64 = weights.iter().sum();
+    if sum.abs() < TOLERANCE {
+        return Err(SnowError::NumericalError {
+            context: "CemaNeige precipitation normalization",
+            detail: "sum of precipitation weights is zero".to_string(),
+        });
+    }
+    Ok(sum)
+}
+
 pub fn init() -> (Array1<f64>, Array2<f64>) {
     // corresponds to ctg, kf, qnbv
     let default_values = array![0.25, 3.74, 350.0];
@@ -67,14 +83,7 @@ pub fn simulate(
         .iter()
         .map(|&z| (beta * (z - median_elevation)).exp())
         .collect();
-    let normalization: f64 = precip_weights.iter().sum();
-
-    if normalization.abs() < TOLERANCE {
-        return Err(SnowError::NumericalError {
-            context: "CemaNeige precipitation normalization",
-            detail: "sum of precipitation weights is zero".to_string(),
-        });
-    }
+    let normalization = compute_normalization(&precip_weights)?;
 
     let mut effective_precipitation: Vec<f64> = vec![0.0; n_timesteps];
 

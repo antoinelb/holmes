@@ -18,7 +18,6 @@ fn test_sce_synthetic_convergence() {
 
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     // Generate observations from known parameters
     let obs = gr4j::simulate(known_params.view(), precip.view(), pet.view())
@@ -44,7 +43,7 @@ fn test_sce_synthetic_convergence() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -64,7 +63,7 @@ fn test_sce_synthetic_convergence() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -105,7 +104,6 @@ fn test_sce_rmse_objective() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     // Generate observations with some noise
     let (defaults, _) = gr4j::init();
@@ -131,7 +129,7 @@ fn test_sce_rmse_objective() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -149,7 +147,7 @@ fn test_sce_rmse_objective() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -174,7 +172,6 @@ fn test_sce_kge_objective() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     let (defaults, _) = gr4j::init();
     let obs = gr4j::simulate(defaults.view(), precip.view(), pet.view())
@@ -199,7 +196,7 @@ fn test_sce_kge_objective() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -217,7 +214,7 @@ fn test_sce_kge_objective() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -245,7 +242,6 @@ fn test_sce_log_transformation() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     // Ensure positive observations for log transform
     let (defaults, _) = gr4j::init();
@@ -271,7 +267,7 @@ fn test_sce_log_transformation() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -284,7 +280,7 @@ fn test_sce_log_transformation() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -308,7 +304,6 @@ fn test_sce_sqrt_transformation() {
     let n = 50;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     // Positive observations for sqrt transform
     let (defaults, _) = gr4j::init();
@@ -334,7 +329,7 @@ fn test_sce_sqrt_transformation() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -347,7 +342,7 @@ fn test_sce_sqrt_transformation() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -371,7 +366,6 @@ fn test_sce_max_evaluations() {
 
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
     let obs = helpers::generate_precipitation(n, 3.0, 0.5, 99);
 
     let mut sce = Sce::new(
@@ -392,7 +386,7 @@ fn test_sce_max_evaluations() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -409,7 +403,7 @@ fn test_sce_max_evaluations() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -477,12 +471,12 @@ fn test_sce_snow_hydro_calibration() {
     )
     .unwrap();
 
-    // Snow model requires temperature, elevation_bands, and median_elevation
+    // Snow model requires temperature, day_of_year, elevation_bands, and median_elevation
     sce.init(
         precip.view(),
         Some(temp.view()),
         pet.view(),
-        doy.view(),
+        Some(doy.view()),
         Some(elevation_layers.view()),
         Some(median_elevation),
         obs.view(),
@@ -501,7 +495,7 @@ fn test_sce_snow_hydro_calibration() {
                 precip.view(),
                 Some(temp.view()),
                 pet.view(),
-                doy.view(),
+                Some(doy.view()),
                 Some(elevation_layers.view()),
                 Some(median_elevation),
                 obs.view(),
@@ -539,7 +533,6 @@ fn test_sce_reproducibility() {
     let n = 30;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
-    let doy = helpers::generate_doy(1, n);
 
     let (defaults, _) = gr4j::init();
     let obs = gr4j::simulate(defaults.view(), precip.view(), pet.view())
@@ -568,7 +561,7 @@ fn test_sce_reproducibility() {
             precip.view(),
             None,
             pet.view(),
-            doy.view(),
+            None,
             None,
             None,
             obs.view(),
@@ -581,7 +574,7 @@ fn test_sce_reproducibility() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
@@ -613,7 +606,6 @@ fn test_full_calibration_workflow() {
     let n = 100;
     let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
     let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
-    let doy = helpers::generate_doy(1, n);
 
     // 2. Generate "observed" data (with known parameters for testing)
     let true_params = array![250.0, 0.3, 80.0, 2.0];
@@ -640,7 +632,7 @@ fn test_full_calibration_workflow() {
         precip.view(),
         None,
         pet.view(),
-        doy.view(),
+        None,
         None,
         None,
         obs.view(),
@@ -660,7 +652,7 @@ fn test_full_calibration_workflow() {
                 precip.view(),
                 None,
                 pet.view(),
-                doy.view(),
+                None,
                 None,
                 None,
                 obs.view(),
