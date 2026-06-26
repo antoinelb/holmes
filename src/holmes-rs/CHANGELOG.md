@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-26
+
 ### Changed
 - Widened CemaNeige `qnbv` calibration bounds from `[50, 800]` to `[0, 2000]`
+
+### Fixed
+- CemaNeige snowmelt no longer divides by zero when `qnbv` is 0 (now reachable with the widened lower bound); the melt fraction saturates to 1.0 instead of producing NaN/Inf
 
 ## [0.4.0] - 2026-04-29
 
