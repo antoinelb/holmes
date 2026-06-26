@@ -53,9 +53,9 @@ fn test_init_specific_bounds() {
     assert_relative_eq!(bounds[[1, 0]], 0.0);
     assert_relative_eq!(bounds[[1, 1]], 20.0);
 
-    // qnbv: [50, 800]
-    assert_relative_eq!(bounds[[2, 0]], 50.0);
-    assert_relative_eq!(bounds[[2, 1]], 800.0);
+    // qnbv: [0, 2000]
+    assert_relative_eq!(bounds[[2, 0]], 0.0);
+    assert_relative_eq!(bounds[[2, 1]], 2000.0);
 }
 
 #[test]
@@ -524,7 +524,9 @@ fn test_cemaneige_invalid_day_of_year_367() {
 
 #[test]
 fn test_cemaneige_param_ctg_out_of_bounds() {
-    let params = array![1.5, 5.0, 350.0]; // ctg = 1.5 > 1.0
+    let (_, bounds) = init();
+    let ctg = bounds[[0, 1]] + 1.0; // just above ctg's upper bound
+    let params = array![ctg, 5.0, 350.0];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -543,13 +545,15 @@ fn test_cemaneige_param_ctg_out_of_bounds() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "ctg", .. })
         ),
-        "Should reject ctg > 1.0"
+        "Should reject ctg above its upper bound"
     );
 }
 
 #[test]
 fn test_cemaneige_param_kf_out_of_bounds() {
-    let params = array![0.5, 25.0, 350.0]; // kf = 25.0 > 20.0
+    let (_, bounds) = init();
+    let kf = bounds[[1, 1]] + 1.0; // just above kf's upper bound
+    let params = array![0.5, kf, 350.0];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -568,13 +572,15 @@ fn test_cemaneige_param_kf_out_of_bounds() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "kf", .. })
         ),
-        "Should reject kf > 20.0"
+        "Should reject kf above its upper bound"
     );
 }
 
 #[test]
 fn test_cemaneige_param_qnbv_out_of_bounds() {
-    let params = array![0.5, 5.0, 900.0]; // qnbv = 900.0 > 800.0
+    let (_, bounds) = init();
+    let qnbv = bounds[[2, 1]] + 1.0; // just above qnbv's upper bound
+    let params = array![0.5, 5.0, qnbv];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -593,13 +599,15 @@ fn test_cemaneige_param_qnbv_out_of_bounds() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "qnbv", .. })
         ),
-        "Should reject qnbv > 800.0"
+        "Should reject qnbv above its upper bound"
     );
 }
 
 #[test]
 fn test_cemaneige_param_ctg_negative() {
-    let params = array![-0.1, 5.0, 350.0]; // ctg = -0.1 < 0.0
+    let (_, bounds) = init();
+    let ctg = bounds[[0, 0]] - 1.0; // just below ctg's lower bound
+    let params = array![ctg, 5.0, 350.0];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -618,13 +626,15 @@ fn test_cemaneige_param_ctg_negative() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "ctg", .. })
         ),
-        "Should reject ctg < 0.0"
+        "Should reject ctg below its lower bound"
     );
 }
 
 #[test]
 fn test_cemaneige_param_kf_negative() {
-    let params = array![0.5, -1.0, 350.0]; // kf = -1.0 < 0.0
+    let (_, bounds) = init();
+    let kf = bounds[[1, 0]] - 1.0; // just below kf's lower bound
+    let params = array![0.5, kf, 350.0];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -643,13 +653,15 @@ fn test_cemaneige_param_kf_negative() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "kf", .. })
         ),
-        "Should reject kf < 0.0"
+        "Should reject kf below its lower bound"
     );
 }
 
 #[test]
 fn test_cemaneige_param_qnbv_too_low() {
-    let params = array![0.5, 5.0, 40.0]; // qnbv = 40.0 < 50.0
+    let (_, bounds) = init();
+    let qnbv = bounds[[2, 0]] - 1.0; // just below qnbv's lower bound
+    let params = array![0.5, 5.0, qnbv];
     let precip = array![10.0, 5.0, 0.0];
     let temp = array![0.0, 0.0, 0.0];
     let doy = array![1_usize, 2, 3];
@@ -668,7 +680,7 @@ fn test_cemaneige_param_qnbv_too_low() {
             result,
             Err(SnowError::ParameterOutOfBounds { name: "qnbv", .. })
         ),
-        "Should reject qnbv < 50.0"
+        "Should reject qnbv below its lower bound"
     );
 }
 
@@ -681,7 +693,7 @@ proptest! {
     fn prop_nonnegative_effective_precip(
         ctg in 0.0f64..1.0,
         kf in 0.0f64..20.0,
-        qnbv in 50.0f64..800.0
+        qnbv in init().1[[2, 0]]..init().1[[2, 1]]
     ) {
         let params = array![ctg, kf, qnbv];
         let precip = helpers::generate_precipitation(30, 5.0, 0.3, 42);
@@ -705,7 +717,7 @@ proptest! {
     fn prop_finite_output(
         ctg in 0.1f64..0.9,
         kf in 1.0f64..15.0,
-        qnbv in 100.0f64..600.0
+        qnbv in init().1[[2, 0]]..init().1[[2, 1]]
     ) {
         let params = array![ctg, kf, qnbv];
         let precip = helpers::generate_precipitation(30, 5.0, 0.3, 42);
@@ -1013,6 +1025,44 @@ fn test_qnbv_parameter_sensitivity() {
 
     assert!(effective_low.iter().all(|&p| p.is_finite() && p >= 0.0));
     assert!(effective_high.iter().all(|&p| p.is_finite() && p >= 0.0));
+}
+
+#[test]
+fn test_cemaneige_qnbv_zero_lower_bound() {
+    // qnbv = 0 is the lower bound, making g_threshold = 0. Without the guard
+    // this divides by zero in the melt-factor ratio. The guard must keep the
+    // melt factor saturated (fnts = 1) and the output finite and non-negative.
+    let n = 60;
+    let mut precip = Array1::from_elem(n, 5.0);
+    let mut temp = Array1::from_elem(n, -5.0);
+    for i in 30..60 {
+        temp[i] = 5.0;
+        precip[i] = 0.0;
+    }
+    let doy = helpers::generate_doy(1, n);
+    let elevation_layers = array![1000.0];
+
+    let (defaults, bounds) = init();
+    let params = array![defaults[0], defaults[1], bounds[[2, 0]]]; // qnbv at lower bound
+    let effective = simulate(
+        params.view(),
+        precip.view(),
+        temp.view(),
+        doy.view(),
+        elevation_layers.view(),
+        1000.0,
+    )
+    .unwrap();
+
+    assert!(
+        effective.iter().all(|&p| p.is_finite() && p >= 0.0),
+        "qnbv at its lower bound must keep effective precipitation finite and non-negative"
+    );
+    // Snow accumulated in the cold half must still melt in the warm half.
+    assert!(
+        effective.iter().skip(30).any(|&p| p > 0.0),
+        "saturated melt factor should still melt the snowpack"
+    );
 }
 
 #[test]

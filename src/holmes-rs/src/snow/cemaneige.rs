@@ -11,7 +11,7 @@ use crate::snow::utils::{
 pub const param_names: &[&str] = &["ctg", "kf", "qnbv"];
 
 const BOUNDS: [(&str, f64, f64); 3] =
-    [("ctg", 0.0, 1.0), ("kf", 0.0, 20.0), ("qnbv", 50.0, 800.0)];
+    [("ctg", 0.0, 1.0), ("kf", 0.0, 20.0), ("qnbv", 0.0, 2000.0)];
 
 const TOLERANCE: f64 = 1e-10;
 
@@ -138,7 +138,11 @@ pub fn simulate(
                         0.0
                     };
 
-                let fnts = (snowpack[i] / g_threshold).min(1.0);
+                let fnts = if g_threshold > 0.0 {
+                    (snowpack[i] / g_threshold).min(1.0)
+                } else {
+                    1.0
+                };
                 let melt_factor = fnts * (1.0 - vmin) + vmin;
 
                 let snow_melt = potential * melt_factor;
