@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-05
+
+### Added
+- `NoObservations` calibration error, raised when every timestep in the calibration window (after warmup) is missing a streamflow observation
+
+### Changed
+- Calibration objective functions now score only timesteps that have a streamflow observation: missing (NaN) gaps are dropped before the log/sqrt transformation and metric computation, so gaps no longer distort the score (previously a gap under the log transform was silently scored as `ln(1e-5)`)
+
 ## [0.4.1] - 2026-06-26
 
 ### Changed
