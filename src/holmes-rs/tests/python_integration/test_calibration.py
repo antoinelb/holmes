@@ -202,6 +202,58 @@ class TestSceInit:
             0,
         )
 
+    def test_init_partial_gaps_reports_finite_objectives(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """Gappy observations (some NaN, as Polars nulls arrive) must
+        calibrate end-to-end: missing timesteps are dropped and the survivors
+        yield finite objectives instead of raising."""
+        observations = sample_observations.copy()
+        observations[10:20] = np.nan
+
+        sce = Sce(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            n_complexes=2,
+            k_stop=5,
+            p_convergence_threshold=0.1,
+            geometric_range_threshold=0.0001,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        # Init must not raise despite the gap.
+        sce.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            observations,
+            0,
+        )
+
+        _, _, _, objectives = sce.step(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            observations,
+            0,
+        )
+
+        assert np.all(np.isfinite(objectives))
+
 
 class TestSceStep:
     """Tests for Sce.step method."""

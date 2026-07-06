@@ -102,6 +102,34 @@ class TestEvaluate:
         result = evaluate(observations, simulations, "deviation_bias", "none")
         assert np.isinf(result)
 
+    def test_evaluate_skips_nan_observations(self):
+        """Gaps (NaN) in observations are dropped before scoring, so the
+        result matches scoring the gap-free survivors."""
+        with_gap = evaluate(
+            np.array([1.0, 2.0, np.nan, 4.0, 5.0]),
+            np.array([1.1, 2.1, 9.9, 3.9, 4.8]),
+            "nse",
+            "none",
+        )
+        clean = evaluate(
+            np.array([1.0, 2.0, 4.0, 5.0]),
+            np.array([1.1, 2.1, 3.9, 4.8]),
+            "nse",
+            "none",
+        )
+        assert with_gap == pytest.approx(clean)
+
+    def test_evaluate_all_missing_raises(self):
+        """An all-gap observation window fails loudly rather than returning
+        NaN."""
+        with pytest.raises(ValueError, match="no observations"):
+            evaluate(
+                np.array([np.nan, np.nan]),
+                np.array([1.0, 2.0]),
+                "nse",
+                "none",
+            )
+
 
 class TestHypothesis:
     """Property-based tests for evaluate function."""

@@ -19,6 +19,15 @@ def evaluate(
     ),
     transformation: calibration.Transformation,
 ) -> float:
+    # Score only where a streamflow observation exists. Gaps arrive as NaN
+    # (Polars null -> NaN via .to_numpy()); drop them before any transform,
+    # since np.clip/np.sqrt propagate NaN into the metric and raise.
+    mask = np.isfinite(observations)
+    if not mask.any():
+        raise ValueError("no observations available to evaluate against")
+    observations = observations[mask]
+    simulation = simulation[mask]
+
     if transformation == "log":
         # Clipped to prevent -inf values. The minimum value currently in the
         # data is 0.006617296, so this is still much smaller

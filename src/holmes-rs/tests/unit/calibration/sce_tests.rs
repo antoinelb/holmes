@@ -1,4 +1,5 @@
 use crate::helpers;
+use approx::assert_relative_eq;
 use holmes_rs::calibration::sce::{
     compute_criteria_change, evaluate_simulation, evolve_complex_step,
     sort_population, Sce,
@@ -174,6 +175,46 @@ fn test_sce_init_basic() {
     );
 
     assert!(result.is_ok(), "Init should succeed: {:?}", result.err());
+}
+
+#[test]
+fn test_init_all_missing_observations_errors() {
+    // Every timestep after warmup is a gap (NaN). Init must fail loudly with
+    // NoObservations rather than aborting later with a generic EmptyArrays
+    // message from evaluate_simulation.
+    use holmes_rs::calibration::utils::CalibrationError;
+
+    let mut sce = Sce::new(
+        "gr4j",
+        None,
+        Objective::Nse,
+        Transformation::None,
+        2,
+        5,
+        0.1,
+        0.0001,
+        100,
+        42,
+    )
+    .unwrap();
+
+    let n = 50;
+    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
+    let pet = helpers::generate_pet(n, 3.0, 1.0, 44);
+    let obs = Array1::from_elem(n, f64::NAN);
+
+    let result = sce.init(
+        precip.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        obs.view(),
+        0,
+    );
+
+    assert!(matches!(result, Err(CalibrationError::NoObservations)));
 }
 
 // =============================================================================
@@ -1401,6 +1442,105 @@ fn test_evaluate_simulation_zero_variance_observations_returns_penalty() {
     // NSE and KGE hit the zero-variance penalty.
     assert_eq!(result[1], f64::NEG_INFINITY);
     assert_eq!(result[2], f64::NEG_INFINITY);
+}
+
+#[test]
+fn test_evaluate_simulation_skips_nan_observations() {
+    // A gap in the observations (NaN) must be dropped before scoring: the
+    // gap's simulated value (9.9) must not influence any metric. Scoring the
+    // survivors must match scoring a gap-free series of the same survivors.
+    let observations = array![1.0, 2.0, f64::NAN, 4.0, 5.0];
+    let simulations = array![1.1, 2.1, 9.9, 3.9, 4.8];
+    let with_gap = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    )
+    .unwrap();
+
+    let clean = evaluate_simulation(
+        array![1.0, 2.0, 4.0, 5.0].view(),
+        array![1.1, 2.1, 3.9, 4.8].view(),
+        Transformation::None,
+        0,
+    )
+    .unwrap();
+
+    assert_relative_eq!(with_gap[0], clean[0], epsilon = 1e-12); // rmse
+    assert_relative_eq!(with_gap[1], clean[1], epsilon = 1e-12); // nse
+    assert_relative_eq!(with_gap[2], clean[2], epsilon = 1e-12); // kge
+}
+
+#[test]
+fn test_evaluate_simulation_length_mismatch_errors() {
+    // A length mismatch between observations and simulations is a programmer
+    // error, not a data gap: it must surface loudly as LengthMismatch rather
+    // than being masked (or panicking) inside the gap-drop.
+    use holmes_rs::calibration::utils::CalibrationError;
+    use holmes_rs::metrics::MetricsError;
+
+    let observations = array![1.0, 2.0, 3.0];
+    let simulations = array![1.0, 2.0];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    );
+
+    assert!(matches!(
+        result,
+        Err(CalibrationError::Metrics(MetricsError::LengthMismatch(3, 2)))
+    ));
+}
+
+#[test]
+fn test_evaluate_simulation_sqrt_of_negative_returns_worst_case() {
+    // A negative simulated value is finite, so it passes the pre-transform
+    // finiteness check, but `sqrt` turns it into NaN. The post-transform
+    // finiteness check must catch that and return worst-case rather than
+    // feeding NaN into the metrics.
+    let observations = array![1.0, 2.0, 3.0, 4.0];
+    let simulations = array![1.0, -2.0, 3.0, 4.0];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::Sqrt,
+        0,
+    )
+    .unwrap();
+
+    assert_eq!(result[0], f64::INFINITY);
+    assert_eq!(result[1], f64::NEG_INFINITY);
+    assert_eq!(result[2], f64::NEG_INFINITY);
+}
+
+#[test]
+fn test_evaluate_simulation_all_gaps_errors() {
+    // Every observation is a gap: after dropping them `kept` is empty, so the
+    // RMSE validation gate returns EmptyArrays and evaluate_simulation
+    // propagates it as a hard error. (In practice Sce::init guards against this
+    // up front; here we pin the lower-level behavior directly.)
+    use holmes_rs::calibration::utils::CalibrationError;
+    use holmes_rs::metrics::MetricsError;
+
+    let observations = array![f64::NAN, f64::NAN, f64::NAN];
+    let simulations = array![1.0, 2.0, 3.0];
+
+    let result = evaluate_simulation(
+        observations.view(),
+        simulations.view(),
+        Transformation::None,
+        0,
+    );
+
+    assert!(matches!(
+        result,
+        Err(CalibrationError::Metrics(MetricsError::EmptyArrays))
+    ));
 }
 
 // =============================================================================

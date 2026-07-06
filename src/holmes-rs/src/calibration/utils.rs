@@ -90,6 +90,11 @@ pub enum CalibrationError {
     ParamsMismatch(usize, usize),
     #[error("snow model requires temperature, day_of_year, elevation_bands, and median_elevation")]
     MissingSnowParams,
+    #[error(
+        "no streamflow observations available in the calibration window \
+         (every timestep after warmup is missing)"
+    )]
+    NoObservations,
     #[error(transparent)]
     Metrics(#[from] MetricsError),
     #[error(transparent)]

@@ -162,6 +162,18 @@ impl Sce {
         observations: ArrayView1<f64>,
         warmup_steps: usize,
     ) -> Result<(), CalibrationError> {
+        // Fail fast and clearly if the whole window is empty. Without this the
+        // run still aborts (RMSE -> EmptyArrays in evaluate_simulation), but with
+        // a generic "Empty input arrays" message and only after building the
+        // initial population.
+        if !observations
+            .slice(s![warmup_steps..])
+            .iter()
+            .any(|o| o.is_finite())
+        {
+            return Err(CalibrationError::NoObservations);
+        }
+
         let objective_idx = match self.calibration_params.objective {
             Objective::Rmse => 0,
             Objective::Nse => 1,
@@ -521,6 +533,40 @@ pub fn evaluate_simulation(
 ) -> Result<Array1<f64>, CalibrationError> {
     let observations = observations.slice(s![warmup_steps..]);
     let simulations = simulations.slice(s![warmup_steps..]);
+
+    // A non-finite value anywhere in the simulated trajectory signals a
+    // degenerate parameter set. Check the FULL window before dropping gaps so
+    // the "NaN simulation -> worst case" invariant can't be masked by a gap
+    // that happens to coincide with the NaN.
+    if simulations.iter().any(|x| !x.is_finite()) {
+        return Ok(worst_case_objectives());
+    }
+
+    // A length mismatch is a programmer error, not a data gap. Reject it
+    // explicitly and up front: the gap-drop below aligns by observation index,
+    // so an unequal `simulations` would panic in `select` (obs longer) or have
+    // the mismatch silently masked (obs shorter). This raises the same
+    // LengthMismatch the RMSE gate would, just loudly and before any work.
+    if observations.len() != simulations.len() {
+        return Err(CalibrationError::Metrics(MetricsError::LengthMismatch(
+            observations.len(),
+            simulations.len(),
+        )));
+    }
+
+    // Drop timesteps with no streamflow observation (NaN gaps): the metric is
+    // scored only where a measurement exists. MUST run before the transform --
+    // `f64::NAN.max(1e-5)` returns 1e-5, so a gap would otherwise be silently
+    // turned into ln(1e-5) under the log transform.
+    let kept: Vec<usize> = observations
+        .iter()
+        .enumerate()
+        .filter(|(_, o)| o.is_finite())
+        .map(|(i, _)| i)
+        .collect();
+    let observations = observations.select(Axis(0), &kept);
+    let simulations = simulations.select(Axis(0), &kept);
+
     let (observations, simulations) = match transformation {
         Transformation::Log => (
             observations.mapv(|x| x.max(1e-5).ln()),
@@ -530,24 +576,18 @@ pub fn evaluate_simulation(
             observations.mapv(|x| x.sqrt()),
             simulations.mapv(|x| x.sqrt()),
         ),
-        Transformation::None => {
-            (observations.to_owned(), simulations.to_owned())
-        }
+        Transformation::None => (observations, simulations),
     };
 
-    // Degenerate parameter sets can produce NaN/Infinity in simulations
-    // (or after transformation, e.g. sqrt of negative values).
-    // Assign worst-case objectives rather than crashing the optimizer.
+    // The sqrt transform can introduce NaN from a negative simulated value at a
+    // scored timestep; penalize rather than crash.
     if simulations.iter().any(|x| !x.is_finite()) {
         return Ok(worst_case_objectives());
     }
 
-    // RMSE acts as the validation gate: if its inputs are malformed
-    // (length mismatch, NaN, infinity), penalize_degenerate propagates a
-    // non-degenerate metrics error here. NSE and KGE share the same
-    // validate_inputs gate, so once RMSE succeeds their own validation
-    // cannot fail non-degenerately — any remaining error variant is in
-    // penalize_degenerate's allow-list and becomes Ok(penalty).
+    // RMSE is the validation gate. If `kept` is empty (all-observations
+    // missing), RMSE returns EmptyArrays here and `?` propagates it as a hard
+    // error -- see Change 2 for the clearer up-front guard.
     let rmse = penalize_degenerate(
         calculate_rmse(observations.view(), simulations.view()),
         f64::INFINITY,
