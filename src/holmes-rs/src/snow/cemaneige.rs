@@ -182,14 +182,21 @@ pub fn py_simulate<'py>(
     elevation_layers: PyReadonlyArray1<f64>,
     median_elevation: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let simulation = simulate(
-        params.as_array(),
-        precipitation.as_array(),
-        temperature.as_array(),
-        day_of_year.as_array(),
-        elevation_layers.as_array(),
-        median_elevation,
-    )?;
+    let params = params.as_array().to_owned();
+    let precipitation = precipitation.as_array().to_owned();
+    let temperature = temperature.as_array().to_owned();
+    let day_of_year = day_of_year.as_array().to_owned();
+    let elevation_layers = elevation_layers.as_array().to_owned();
+    let simulation = py.detach(|| {
+        simulate(
+            params.view(),
+            precipitation.view(),
+            temperature.view(),
+            day_of_year.view(),
+            elevation_layers.view(),
+            median_elevation,
+        )
+    })?;
     Ok(simulation.to_pyarray(py))
 }
 

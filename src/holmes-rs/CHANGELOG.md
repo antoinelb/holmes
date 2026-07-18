@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-18
+
+### Changed
+- All compute entry points (`hydro.<model>.simulate` for every model, `snow.cemaneige.simulate`, `pet.oudin.simulate`, the `metrics` functions, and `Sce.init`/`Sce.step`) now release the Python GIL while computing, so multi-threaded callers (e.g. `asyncio.to_thread`) get real parallel speedup instead of serialized execution; results are unchanged
+
 ## [0.5.0] - 2026-07-05
 
 ### Added

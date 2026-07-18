@@ -188,8 +188,12 @@ pub fn py_simulate<'py>(
     precipitation: PyReadonlyArray1<f64>,
     pet: PyReadonlyArray1<f64>,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let simulation =
-        simulate(params.as_array(), precipitation.as_array(), pet.as_array())?;
+    let params = params.as_array().to_owned();
+    let precipitation = precipitation.as_array().to_owned();
+    let pet = pet.as_array().to_owned();
+    let simulation = py.detach(|| {
+        simulate(params.view(), precipitation.view(), pet.view())
+    })?;
     Ok(simulation.to_pyarray(py))
 }
 

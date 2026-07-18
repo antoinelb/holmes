@@ -247,39 +247,39 @@ fn check_lengths(
 #[pyfunction]
 #[pyo3(name = "calculate_rmse")]
 pub fn py_calculate_rmse<'py>(
+    py: Python<'py>,
     observations: PyReadonlyArray1<'py, f64>,
     simulations: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<f64> {
-    Ok(calculate_rmse(
-        observations.as_array(),
-        simulations.as_array(),
-    )?)
+    let observations = observations.as_array().to_owned();
+    let simulations = simulations.as_array().to_owned();
+    Ok(py.detach(|| calculate_rmse(observations.view(), simulations.view()))?)
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "calculate_nse")]
 pub fn py_calculate_nse<'py>(
+    py: Python<'py>,
     observations: PyReadonlyArray1<'py, f64>,
     simulations: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<f64> {
-    Ok(calculate_nse(
-        observations.as_array(),
-        simulations.as_array(),
-    )?)
+    let observations = observations.as_array().to_owned();
+    let simulations = simulations.as_array().to_owned();
+    Ok(py.detach(|| calculate_nse(observations.view(), simulations.view()))?)
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]
 #[pyfunction]
 #[pyo3(name = "calculate_kge")]
 pub fn py_calculate_kge<'py>(
+    py: Python<'py>,
     observations: PyReadonlyArray1<'py, f64>,
     simulations: PyReadonlyArray1<'py, f64>,
 ) -> PyResult<f64> {
-    Ok(calculate_kge(
-        observations.as_array(),
-        simulations.as_array(),
-    )?)
+    let observations = observations.as_array().to_owned();
+    let simulations = simulations.as_array().to_owned();
+    Ok(py.detach(|| calculate_kge(observations.view(), simulations.view()))?)
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]

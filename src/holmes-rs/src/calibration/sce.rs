@@ -372,6 +372,7 @@ impl Sce {
     #[pyo3(name = "init")]
     pub fn py_init(
         &mut self,
+        py: Python<'_>,
         precipitation: PyReadonlyArray1<f64>,
         temperature: Option<PyReadonlyArray1<f64>>,
         pet: PyReadonlyArray1<f64>,
@@ -381,16 +382,24 @@ impl Sce {
         observations: PyReadonlyArray1<'_, f64>,
         warmup_steps: usize,
     ) -> PyResult<()> {
-        self.init(
-            precipitation.as_array(),
-            temperature.as_ref().map(|t| t.as_array()),
-            pet.as_array(),
-            day_of_year.as_ref().map(|d| d.as_array()),
-            elevation_bands.as_ref().map(|e| e.as_array()),
-            median_elevation,
-            observations.as_array(),
-            warmup_steps,
-        )
+        let precipitation = precipitation.as_array().to_owned();
+        let temperature = temperature.map(|t| t.as_array().to_owned());
+        let pet = pet.as_array().to_owned();
+        let day_of_year = day_of_year.map(|d| d.as_array().to_owned());
+        let elevation_bands = elevation_bands.map(|e| e.as_array().to_owned());
+        let observations = observations.as_array().to_owned();
+        py.detach(|| {
+            self.init(
+                precipitation.view(),
+                temperature.as_ref().map(|t| t.view()),
+                pet.view(),
+                day_of_year.as_ref().map(|d| d.view()),
+                elevation_bands.as_ref().map(|e| e.view()),
+                median_elevation,
+                observations.view(),
+                warmup_steps,
+            )
+        })
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
     }
 
@@ -412,17 +421,25 @@ impl Sce {
         Bound<'py, PyArray1<f64>>,
         Bound<'py, PyArray1<f64>>,
     )> {
-        let (done, best_params, simulation, objectives) = self
-            .step(
-                precipitation.as_array(),
-                temperature.as_ref().map(|t| t.as_array()),
-                pet.as_array(),
-                day_of_year.as_ref().map(|d| d.as_array()),
-                elevation_bands.as_ref().map(|e| e.as_array()),
-                median_elevation,
-                observations.as_array(),
-                warmup_steps,
-            )
+        let precipitation = precipitation.as_array().to_owned();
+        let temperature = temperature.map(|t| t.as_array().to_owned());
+        let pet = pet.as_array().to_owned();
+        let day_of_year = day_of_year.map(|d| d.as_array().to_owned());
+        let elevation_bands = elevation_bands.map(|e| e.as_array().to_owned());
+        let observations = observations.as_array().to_owned();
+        let (done, best_params, simulation, objectives) = py
+            .detach(|| {
+                self.step(
+                    precipitation.view(),
+                    temperature.as_ref().map(|t| t.view()),
+                    pet.view(),
+                    day_of_year.as_ref().map(|d| d.view()),
+                    elevation_bands.as_ref().map(|e| e.view()),
+                    median_elevation,
+                    observations.view(),
+                    warmup_steps,
+                )
+            })
             .map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(e.to_string())
             })?;

@@ -55,8 +55,11 @@ pub fn py_simulate<'py>(
     day_of_year: PyReadonlyArray1<usize>,
     latitude: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let simulation =
-        simulate(temperature.as_array(), day_of_year.as_array(), latitude)?;
+    let temperature = temperature.as_array().to_owned();
+    let day_of_year = day_of_year.as_array().to_owned();
+    let simulation = py.detach(|| {
+        simulate(temperature.view(), day_of_year.view(), latitude)
+    })?;
     Ok(simulation.to_pyarray(py))
 }
 
