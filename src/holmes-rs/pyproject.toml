@@ -32,3 +32,9 @@ features = ["pyo3/extension-module"]
 python-source = "python"
 module-name = "holmes_rs"
 
+# Pins pytest's rootdir here; without it, pytest climbs to the app's
+# pyproject.toml, whose pytest-asyncio options are unknown in the
+# holmes-rs CI venv and fatal under its filterwarnings = ["error"]
+[tool.pytest.ini_options]
+testpaths = ["tests/python_integration"]
+
