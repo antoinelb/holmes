@@ -603,7 +603,7 @@ dev = [
 
 [[package]]
 name = "holmes-rs"
-version = "0.5.0"
+version = "0.5.1"
 source = { editable = "src/holmes-rs" }
 
 [[package]]

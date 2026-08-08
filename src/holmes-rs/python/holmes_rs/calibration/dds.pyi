@@ -1,0 +1,44 @@
+from typing import final
+
+import numpy as np
+import numpy.typing as npt
+
+@final
+class Dds:
+    def __new__(
+        cls,
+        hydro_model: str,
+        snow_model: str | None,
+        objective: str,
+        transformation: str,
+        r: float,
+        max_evaluations: int,
+        seed: int,
+    ) -> Dds: ...
+    def init(
+        self,
+        precipitation: npt.NDArray[np.float64],
+        temperature: npt.NDArray[np.float64] | None,
+        pet: npt.NDArray[np.float64],
+        day_of_year: npt.NDArray[np.uintp] | None,
+        elevation_layers: npt.NDArray[np.float64] | None,
+        median_elevation: float | None,
+        observations: npt.NDArray[np.float64],
+        warmup_steps: int,
+    ) -> None: ...
+    def step(
+        self,
+        precipitation: npt.NDArray[np.float64],
+        temperature: npt.NDArray[np.float64] | None,
+        pet: npt.NDArray[np.float64],
+        day_of_year: npt.NDArray[np.uintp] | None,
+        elevation_layers: npt.NDArray[np.float64] | None,
+        median_elevation: float | None,
+        observations: npt.NDArray[np.float64],
+        warmup_steps: int,
+    ) -> tuple[
+        bool,
+        npt.NDArray[np.float64],
+        npt.NDArray[np.float64],
+        npt.NDArray[np.float64],
+    ]: ...

@@ -7,6 +7,7 @@ These tests verify that SCE-UA calibration works correctly from Python.
 import numpy as np
 import pytest
 
+from holmes_rs.calibration.dds import Dds
 from holmes_rs.calibration.sce import Sce
 from holmes_rs.hydro import gr4j
 from holmes_rs.snow import cemaneige
@@ -725,6 +726,436 @@ class TestSceWithSnow:
             )
 
 
+class TestDdsConstructor:
+    """Tests for Dds class constructor."""
+
+    def test_create_gr4j_only(self):
+        """Should create Dds with GR4J model only."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=100,
+            seed=42,
+        )
+
+        assert dds is not None
+
+    def test_create_gr4j_cemaneige(self):
+        """Should create Dds with GR4J + CemaNeige."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model="cemaneige",
+            objective="kge",
+            transformation="log",
+            r=0.2,
+            max_evaluations=100,
+            seed=42,
+        )
+
+        assert dds is not None
+
+    def test_invalid_hydro_model(self):
+        """Should raise error for invalid hydro model."""
+        with pytest.raises(ValueError):
+            Dds(
+                hydro_model="invalid",
+                snow_model=None,
+                objective="nse",
+                transformation="none",
+                r=0.2,
+                max_evaluations=100,
+                seed=42,
+            )
+
+    def test_invalid_objective(self):
+        """Should raise error for invalid objective."""
+        with pytest.raises(ValueError):
+            Dds(
+                hydro_model="gr4j",
+                snow_model=None,
+                objective="invalid",
+                transformation="none",
+                r=0.2,
+                max_evaluations=100,
+                seed=42,
+            )
+
+    def test_invalid_transformation(self):
+        """Should raise error for invalid transformation."""
+        with pytest.raises(ValueError):
+            Dds(
+                hydro_model="gr4j",
+                snow_model=None,
+                objective="nse",
+                transformation="invalid",
+                r=0.2,
+                max_evaluations=100,
+                seed=42,
+            )
+
+    def test_invalid_r(self):
+        """Should raise error when r is outside (0, 1]."""
+        for r in [0.0, -0.5, 1.5]:
+            with pytest.raises(ValueError, match="neighborhood size r"):
+                Dds(
+                    hydro_model="gr4j",
+                    snow_model=None,
+                    objective="nse",
+                    transformation="none",
+                    r=r,
+                    max_evaluations=100,
+                    seed=42,
+                )
+
+    def test_invalid_max_evaluations(self):
+        """Should raise error when max_evaluations is below 2."""
+        with pytest.raises(ValueError, match="max_evaluations"):
+            Dds(
+                hydro_model="gr4j",
+                snow_model=None,
+                objective="nse",
+                transformation="none",
+                r=0.2,
+                max_evaluations=1,
+                seed=42,
+            )
+
+
+class TestDdsInit:
+    """Tests for Dds.init method."""
+
+    def test_init_basic(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """Should initialize calibration successfully."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=100,
+            seed=42,
+        )
+
+        # This should not raise
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+    def test_init_all_missing_observations(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+    ):
+        """Should raise when every observation is missing."""
+        observations = np.full(len(sample_precipitation), np.nan)
+
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=100,
+            seed=42,
+        )
+
+        with pytest.raises(ValueError, match="no streamflow observations"):
+            dds.init(
+                sample_precipitation,
+                sample_temperature,
+                sample_pet,
+                None,
+                sample_elevation_layers,
+                1000.0,
+                observations,
+                0,
+            )
+
+
+class TestDdsStep:
+    """Tests for Dds.step method."""
+
+    def test_step_output_types_and_shapes(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """step should return (done, params, sim, objectives) with correct
+        types and shapes."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        done, params, sim, objectives = dds.step(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        assert isinstance(done, bool)
+        assert isinstance(params, np.ndarray)
+        assert isinstance(sim, np.ndarray)
+        assert isinstance(objectives, np.ndarray)
+        # GR4J has 4 parameters
+        assert len(params) == 4
+        assert len(sim) == len(sample_precipitation)
+        # 3 objectives: RMSE, NSE, KGE
+        assert len(objectives) == 3
+
+    def test_step_params_within_bounds(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """Returned parameters should be within bounds."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        _, params, _, _ = dds.step(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        _, bounds = gr4j.init()
+        for i in range(4):
+            assert bounds[i, 0] <= params[i] <= bounds[i, 1]
+
+    def test_step_error_on_mismatched_observations(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """step should raise when observations length changes after init."""
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        wrong_obs = np.full(len(sample_observations) + 10, 5.0)
+
+        with pytest.raises(ValueError):
+            dds.step(
+                sample_precipitation,
+                sample_temperature,
+                sample_pet,
+                None,
+                sample_elevation_layers,
+                1000.0,
+                wrong_obs,
+                0,
+            )
+
+
+class TestDdsConvergence:
+    """Tests for DDS budget-driven termination."""
+
+    def test_respects_exact_evaluation_budget(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_elevation_layers,
+        sample_observations,
+    ):
+        """DDS stops on the budget alone: init consumes 1 evaluation, each
+        step exactly 1 more, so done flips on step max_evaluations - 1."""
+        max_evaluations = 20
+
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model=None,
+            objective="nse",
+            transformation="none",
+            r=0.2,
+            max_evaluations=max_evaluations,
+            seed=42,
+        )
+
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            None,
+            sample_elevation_layers,
+            1000.0,
+            sample_observations,
+            0,
+        )
+
+        done = False
+        iterations = 0
+
+        while not done and iterations < 100:
+            done, _, _, _ = dds.step(
+                sample_precipitation,
+                sample_temperature,
+                sample_pet,
+                None,
+                sample_elevation_layers,
+                1000.0,
+                sample_observations,
+                0,
+            )
+            iterations += 1
+
+        assert done
+        assert iterations == max_evaluations - 1
+
+
+class TestDdsWithSnow:
+    """Tests for DDS with snow model."""
+
+    def test_snow_hydro_calibration(
+        self,
+        sample_precipitation,
+        sample_pet,
+        sample_temperature,
+        sample_doy,
+        sample_elevation_layers,
+    ):
+        """Should calibrate snow + hydro model together."""
+        snow_defaults, _ = cemaneige.init()
+        effective_precip = cemaneige.simulate(
+            snow_defaults,
+            sample_precipitation,
+            sample_temperature,
+            sample_doy,
+            sample_elevation_layers,
+            1000.0,
+        )
+
+        hydro_defaults, _ = gr4j.init()
+        obs = gr4j.simulate(hydro_defaults, effective_precip, sample_pet)
+
+        dds = Dds(
+            hydro_model="gr4j",
+            snow_model="cemaneige",
+            objective="kge",
+            transformation="none",
+            r=0.2,
+            max_evaluations=50,
+            seed=42,
+        )
+
+        dds.init(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            sample_doy,
+            sample_elevation_layers,
+            1000.0,
+            obs,
+            0,
+        )
+
+        _, params, sim, objectives = dds.step(
+            sample_precipitation,
+            sample_temperature,
+            sample_pet,
+            sample_doy,
+            sample_elevation_layers,
+            1000.0,
+            obs,
+            0,
+        )
+
+        # Should have 7 parameters (3 snow + 4 hydro)
+        assert len(params) == 7
+        assert len(sim) == len(sample_precipitation)
+        assert np.all(np.isfinite(params))
+        assert np.all(np.isfinite(sim))
+
+
 class TestCalibrationModuleIntegration:
     """Integration tests for calibration module."""
 
@@ -732,6 +1163,7 @@ class TestCalibrationModuleIntegration:
         """Calibration module should have correct submodules."""
         from holmes_rs import calibration
 
+        assert hasattr(calibration, "dds")
         assert hasattr(calibration, "sce")
 
     def test_sce_class_accessible(self):
@@ -739,3 +1171,9 @@ class TestCalibrationModuleIntegration:
         from holmes_rs.calibration.sce import Sce
 
         assert Sce is not None
+
+    def test_dds_class_accessible(self):
+        """Dds class should be accessible."""
+        from holmes_rs.calibration.dds import Dds
+
+        assert Dds is not None

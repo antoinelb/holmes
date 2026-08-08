@@ -1,4 +1,4 @@
-use ndarray::{s, Array1, ArrayView1};
+use ndarray::{s, Array1, Array2, ArrayView1, Axis};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -6,7 +6,9 @@ use std::str::FromStr;
 use thiserror::Error;
 
 use crate::hydro::{HydroError, HydroSimulate};
-use crate::metrics::MetricsError;
+use crate::metrics::{
+    calculate_kge, calculate_nse, calculate_rmse, MetricsError,
+};
 use crate::snow::{SnowError, SnowSimulate};
 
 pub type Simulate = Box<
@@ -95,6 +97,8 @@ pub enum CalibrationError {
          (every timestep after warmup is missing)"
     )]
     NoObservations,
+    #[error("invalid algorithm parameter: {0}")]
+    InvalidParameter(String),
     #[error(transparent)]
     Metrics(#[from] MetricsError),
     #[error(transparent)]
@@ -135,6 +139,161 @@ pub fn check_lengths(
         ))
     } else {
         Ok(())
+    }
+}
+
+/// Build the simulate closure, default parameters, and bounds for a hydro
+/// model with an optional snow model (snow parameters are prepended).
+/// Shared by all calibration algorithms.
+pub fn build_simulate(
+    hydro_model: &str,
+    snow_model: Option<&str>,
+) -> Result<(Simulate, Array1<f64>, Array2<f64>), CalibrationError> {
+    if let Some(snow_model) = snow_model {
+        let (snow_init, snow_simulate) = crate::snow::get_model(snow_model)?;
+        let (hydro_init, hydro_simulate) =
+            crate::hydro::get_model(hydro_model)?;
+
+        let (snow_defaults, snow_bounds) = snow_init();
+        let (hydro_defaults, hydro_bounds) = hydro_init();
+        let n_snow_params = snow_defaults.len();
+        let simulate = compose_simulate(
+            Some(snow_simulate),
+            hydro_simulate,
+            n_snow_params,
+        );
+        Ok((
+            simulate,
+            ndarray::concatenate(
+                Axis(0),
+                &[snow_defaults.view(), hydro_defaults.view()],
+            )
+            .expect("concatenating 1-D parameter arrays cannot fail"),
+            ndarray::concatenate(
+                Axis(0),
+                &[snow_bounds.view(), hydro_bounds.view()],
+            )
+            .expect(
+                "concatenating bounds with identical column count cannot fail",
+            ),
+        ))
+    } else {
+        let (hydro_init, hydro_simulate) =
+            crate::hydro::get_model(hydro_model)?;
+        let (defaults, bounds) = hydro_init();
+        let simulate = compose_simulate(None, hydro_simulate, 0);
+        Ok((simulate, defaults, bounds))
+    }
+}
+
+/// Compute all three objectives (rmse, nse, kge) from a simulation.
+/// Shared by all calibration algorithms; exposed for integration tests.
+pub fn evaluate_simulation(
+    observations: ArrayView1<f64>,
+    simulations: ArrayView1<f64>,
+    transformation: Transformation,
+    warmup_steps: usize,
+) -> Result<Array1<f64>, CalibrationError> {
+    let observations = observations.slice(s![warmup_steps..]);
+    let simulations = simulations.slice(s![warmup_steps..]);
+
+    // A non-finite value anywhere in the simulated trajectory signals a
+    // degenerate parameter set. Check the FULL window before dropping gaps so
+    // the "NaN simulation -> worst case" invariant can't be masked by a gap
+    // that happens to coincide with the NaN.
+    if simulations.iter().any(|x| !x.is_finite()) {
+        return Ok(worst_case_objectives());
+    }
+
+    // A length mismatch is a programmer error, not a data gap. Reject it
+    // explicitly and up front: the gap-drop below aligns by observation index,
+    // so an unequal `simulations` would panic in `select` (obs longer) or have
+    // the mismatch silently masked (obs shorter). This raises the same
+    // LengthMismatch the RMSE gate would, just loudly and before any work.
+    if observations.len() != simulations.len() {
+        return Err(CalibrationError::Metrics(MetricsError::LengthMismatch(
+            observations.len(),
+            simulations.len(),
+        )));
+    }
+
+    // Drop timesteps with no streamflow observation (NaN gaps): the metric is
+    // scored only where a measurement exists. MUST run before the transform --
+    // `f64::NAN.max(1e-5)` returns 1e-5, so a gap would otherwise be silently
+    // turned into ln(1e-5) under the log transform.
+    let kept: Vec<usize> = observations
+        .iter()
+        .enumerate()
+        .filter(|(_, o)| o.is_finite())
+        .map(|(i, _)| i)
+        .collect();
+    let observations = observations.select(Axis(0), &kept);
+    let simulations = simulations.select(Axis(0), &kept);
+
+    let (observations, simulations) = match transformation {
+        Transformation::Log => (
+            observations.mapv(|x| x.max(1e-5).ln()),
+            simulations.mapv(|x| x.max(1e-5).ln()),
+        ),
+        Transformation::Sqrt => (
+            observations.mapv(|x| x.sqrt()),
+            simulations.mapv(|x| x.sqrt()),
+        ),
+        Transformation::None => (observations, simulations),
+    };
+
+    // The sqrt transform can introduce NaN from a negative simulated value at a
+    // scored timestep; penalize rather than crash.
+    if simulations.iter().any(|x| !x.is_finite()) {
+        return Ok(worst_case_objectives());
+    }
+
+    // RMSE is the validation gate. If `kept` is empty (all-observations
+    // missing), RMSE returns EmptyArrays here and `?` propagates it as a hard
+    // error -- callers guard against this up front with NoObservations.
+    let rmse = penalize_degenerate(
+        calculate_rmse(observations.view(), simulations.view()),
+        f64::INFINITY,
+    )?;
+    let nse = penalize_degenerate(
+        calculate_nse(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("NSE cannot return a non-degenerate error once RMSE has validated inputs");
+    let kge = penalize_degenerate(
+        calculate_kge(observations.view(), simulations.view()),
+        f64::NEG_INFINITY,
+    )
+    .expect("KGE cannot return a non-degenerate error once RMSE has validated inputs");
+
+    Ok(Array1::from_vec(vec![rmse, nse, kge]))
+}
+
+/// Returns worst-case objective values for each metric during optimization.
+/// RMSE is minimized (worst = INFINITY), NSE and KGE are maximized
+/// (worst = NEG_INFINITY).
+pub fn worst_case_objectives() -> Array1<f64> {
+    Array1::from_vec(vec![f64::INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY])
+}
+
+/// During optimization, degenerate parameter sets can produce simulations with
+/// zero variance or other numerical issues that make metrics undefined.
+/// Returns a penalty value instead of propagating the error. Data validation
+/// errors (length mismatch, empty arrays) still propagate since they indicate
+/// bugs rather than bad parameter sets.
+fn penalize_degenerate(
+    result: Result<f64, MetricsError>,
+    penalty: f64,
+) -> Result<f64, CalibrationError> {
+    match result {
+        Ok(v) => Ok(v),
+        Err(
+            MetricsError::ZeroVarianceNSE
+            | MetricsError::ZeroVarianceKGE { .. }
+            | MetricsError::ZeroMeanKGE
+            | MetricsError::NumericalError { .. },
+        ) => Ok(penalty),
+        Err(e) => Err(CalibrationError::Metrics(e)),
     }
 }
 

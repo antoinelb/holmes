@@ -1,10 +1,11 @@
 use crate::helpers;
 use approx::assert_relative_eq;
 use holmes_rs::calibration::sce::{
-    compute_criteria_change, evaluate_simulation, evolve_complex_step,
-    sort_population, Sce,
+    compute_criteria_change, evolve_complex_step, sort_population, Sce,
 };
-use holmes_rs::calibration::utils::{Objective, Simulate, Transformation};
+use holmes_rs::calibration::utils::{
+    evaluate_simulation, Objective, Simulate, Transformation,
+};
 use ndarray::{array, Array1, Array2};
 use proptest::prelude::*;
 use std::str::FromStr;

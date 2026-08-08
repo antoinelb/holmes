@@ -1,3 +1,4 @@
+pub mod dds;
 pub mod sce;
 pub mod utils;
 
@@ -7,6 +8,12 @@ use pyo3::prelude::*;
 #[cfg_attr(coverage_nightly, coverage(off))]
 pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "calibration")?;
+    register_submodule(
+        py,
+        &m,
+        &dds::make_module(py)?,
+        "holmes_rs.calibration",
+    )?;
     register_submodule(
         py,
         &m,

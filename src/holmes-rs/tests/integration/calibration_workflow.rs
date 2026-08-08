@@ -1,5 +1,6 @@
 use crate::helpers;
 use approx::assert_relative_eq;
+use holmes_rs::calibration::dds::Dds;
 use holmes_rs::calibration::sce::Sce;
 use holmes_rs::calibration::utils::{Objective, Transformation};
 use holmes_rs::hydro::gr4j;
@@ -78,6 +79,82 @@ fn test_sce_synthetic_convergence() {
     }
 
     // Should achieve good NSE (observations are exact model output)
+    assert!(
+        best_nse > 0.95,
+        "Should achieve NSE > 0.95 for synthetic data, got {}",
+        best_nse
+    );
+
+    // Verify simulation with recovered params
+    let sim =
+        gr4j::simulate(best_params.view(), precip.view(), pet.view()).unwrap();
+    let final_nse = calculate_nse(obs.view(), sim.view()).unwrap();
+    assert!(
+        final_nse > 0.95,
+        "Final NSE should be > 0.95, got {}",
+        final_nse
+    );
+}
+
+#[test]
+fn test_dds_synthetic_convergence() {
+    // Same synthetic parameter-recovery setup as the SCE test above: DDS must
+    // reach a good NSE within its evaluation budget on exact model output.
+    let known_params = array![300.0, 0.5, 100.0, 2.5];
+    let n = 100;
+
+    let precip = helpers::generate_precipitation(n, 5.0, 0.3, 42);
+    let pet = helpers::generate_pet(n, 3.0, 1.0, 43);
+
+    let obs = gr4j::simulate(known_params.view(), precip.view(), pet.view())
+        .unwrap();
+
+    let mut dds = Dds::new(
+        "gr4j",
+        None,
+        Objective::Nse,
+        Transformation::None,
+        0.2, // r
+        500, // max_evaluations
+        42,  // seed
+    )
+    .unwrap();
+
+    dds.init(
+        precip.view(),
+        None,
+        pet.view(),
+        None,
+        None,
+        None,
+        obs.view(),
+        0,
+    )
+    .unwrap();
+
+    let mut done = false;
+    let mut best_params = Array1::zeros(4);
+    let mut best_nse = f64::NEG_INFINITY;
+
+    while !done {
+        let (d, params, _, objectives) = dds
+            .step(
+                precip.view(),
+                None,
+                pet.view(),
+                None,
+                None,
+                None,
+                obs.view(),
+                0,
+            )
+            .unwrap();
+
+        done = d;
+        best_params = params;
+        best_nse = objectives[1]; // NSE is index 1
+    }
+
     assert!(
         best_nse > 0.95,
         "Should achieve NSE > 0.95 for synthetic data, got {}",
