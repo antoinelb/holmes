@@ -108,6 +108,12 @@ jobs:
           command: develop
           working-directory: src/holmes-rs
 
+      - name: Restore data caches
+        # e2e boots the real server; a cold data/ would rebuild station and
+        # weather products from source (minutes of downloads). The prebuilt
+        # caches live on the repo's rolling `data` release (make upload-assets)
+        run: curl -sL https://github.com/antoinelb/holmes/releases/download/data/data-cache.tar.gz | tar xz
+
       - name: Install Playwright browsers
         run: uv run playwright install ${{ matrix.browser }} --with-deps
 

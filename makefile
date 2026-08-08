@@ -26,3 +26,19 @@ upload-assets:
 		--notes "Prebuilt projection products for fresh installs."
 	gh release upload data data/raw/projection/*.ipc \
 		data/raw/weather/era5.ipc --clobber
+	tar czf data-cache.tar.gz \
+		data/map \
+		data/raw/data_era5.ipc \
+		data/raw/data_ministry_grid.ipc \
+		data/raw/data_nearest_stations_3.ipc \
+		data/raw/hydro/station_data.ipc \
+		data/raw/hydro/stations.ipc \
+		data/raw/hydro/streamflow_data.ipc \
+		data/raw/hydro/streamflow \
+		data/raw/hydro/watersheds/watersheds.ipc \
+		data/raw/weather/ministry_grid.ipc \
+		data/raw/weather/nearest_stations_2.ipc \
+		data/raw/weather/nearest_stations_3.ipc \
+		data/raw/weather/nearest_stations_4.ipc
+	gh release upload data data-cache.tar.gz --clobber
+	rm data-cache.tar.gz
