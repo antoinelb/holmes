@@ -9,7 +9,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [4.0.0] - 2026-08-08
 
 ### Changed
 - **Breaking**: complete rewrite of the application.
