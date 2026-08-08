@@ -1,5 +1,6 @@
 nav:
   - Home: index.md
+  - guide
   - concepts
   - Reference:
       - Changelog: reference/changelog.md

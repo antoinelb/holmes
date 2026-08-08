@@ -1,0 +1,11 @@
+title: User guide
+
+nav:
+  - index.md
+  - Stations: stations.md
+  - Weather: weather.md
+  - Model: model.md
+  - Calibration: calibration.md
+  - Simulation: simulation.md
+  - Projection: projection.md
+  - Common workflows: workflows.md

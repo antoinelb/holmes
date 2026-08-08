@@ -8,7 +8,7 @@ HOLMES is a web-based hydrological modeling tool designed for teaching operation
 
 ## Features
 
-- **Guided Modeling Pipeline**: stations → weather → model → calibration → simulation → projection, with an interactive station map
+- **Guided Modeling Pipeline**: stations → weather → model → calibration → simulation → projection, with an interactive station map — every step documented in the [user guide](guide/index.md)
 - **Twenty Hydrological Models**: from GR4J to SACRAMENTO, all documented in the [concepts](concepts/index.md) section
 - **Snow Modeling**: CemaNeige degree-day model with multi-elevation band support
 - **Automatic Calibration**: SCE-UA and DDS optimization algorithms
@@ -35,7 +35,8 @@ Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 The CLI also provides `holmes download` to rebuild the published datasets from their true sources and `holmes experiment` to run batch calibration experiments.
 
-[:material-water: Concepts](concepts/index.md){ .md-button .md-button--primary }
+[:material-compass: User guide](guide/index.md){ .md-button .md-button--primary }
+[:material-water: Concepts](concepts/index.md){ .md-button }
 [:material-file-document: Changelog](reference/changelog.md){ .md-button }
 
 ---

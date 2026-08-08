@@ -9,6 +9,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Added
+- User guide in the documentation covering every step and feature of the application, with screenshots in both themes (regenerated with `make screenshots`)
+
 ## [4.0.0] - 2026-08-08
 
 ### Changed
