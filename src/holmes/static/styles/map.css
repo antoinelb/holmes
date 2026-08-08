@@ -9,6 +9,14 @@
     visibility: hidden;
   }
 
+  /* the basemap is always CartoDB dark_all; in light theme it is flipped in
+     CSS (invert keeps water/land contrast, hue-rotate restores hues) rather
+     than fetching light_all tiles, which would need a style-keyed tile cache.
+     Scoped to the tile pane so the SVG overlays keep their true colours. */
+  body.light & .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) saturate(0.8) brightness(1.05);
+  }
+
   /* centre the legend along the top edge */
   & .leaflet-top.leaflet-left {
     left: 50%;
