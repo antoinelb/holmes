@@ -102,6 +102,18 @@ main {
   }
 }
 
+/* cap the slider near the widest method label, so #controls (fit-content)
+   barely changes width when the field appears */
+#controls__n-stations-field {
+  max-width: 9em;
+
+  /* a range input's intrinsic ~129px would keep the 1fr track from
+     shrinking under the cap */
+  & input[type="range"] {
+    min-width: 0;
+  }
+}
+
 .controls__field-header {
   align-items: center;
   display: flex;
