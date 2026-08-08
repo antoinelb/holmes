@@ -11,6 +11,10 @@ HOLMES (HydrOLogical Modeling Educational Software) is a software developed to t
 
 📖 **[Documentation](https://antoinelb.github.io/holmes/)** · 📦 **[PyPI](https://pypi.org/project/holmes-hydro/)**
 
+The dashboard guides students through a modeling pipeline — stations → weather → model → calibration → simulation → projection — starting from an interactive map of hydrometric stations.
+The backend is Starlette, the frontend is vanilla JavaScript with an Elm architecture (d3 and Leaflet), and communication is mostly over WebSocket.
+All numerical computation runs in [holmes-rs](src/holmes-rs), a Rust extension.
+
 ## Usage
 
 ### Installation
@@ -21,13 +25,22 @@ pip install holmes-hydro
 
 ### Running HOLMES
 
-After installation, start the server with:
+After installation, start the dashboard with:
 
 ```bash
-holmes
+holmes run
 ```
 
 The web interface will be available at http://127.0.0.1:8000.
+
+Other commands:
+
+```bash
+holmes download     # rebuild the published datasets from their true sources
+holmes experiment   # run batch calibration experiments
+```
+
+Station, weather, and projection data are fetched from their true sources at runtime and cached under `data/`; prebuilt products are served from the repo so a fresh install works without any credentials.
 
 ### Configuration
 
@@ -59,24 +72,29 @@ PORT=8000           # Server port (default: 8000)
 ### Running
 
 ```bash
-uv run holmes
+uv run holmes run
 ```
 
 Or activate the virtual environment and run directly:
 
 ```bash
 source .venv/bin/activate
-holmes
+holmes run
 ```
 
 ### Code Quality
 
 ```bash
-ruff format src/ tests/
-ruff check src/ tests/
-ty check src/ tests/
+make static-analysis
+```
+
+### Tests
+
+```bash
+make test       # unit + integration (100% coverage) and the Rust suites
+make test-e2e   # Playwright end-to-end tests
 ```
 
 ## References
 
-- [Bucket Model](https://github.com/ulaval-rs/HOOPLApy/tree/main/hoopla/models/hydro)
+- [HOOPLA](https://github.com/ulaval-rs/HOOPLApy/tree/main/hoopla/models/hydro)

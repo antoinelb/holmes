@@ -45,19 +45,6 @@ theme:
 plugins:
   - search
   - awesome-nav
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          options:
-            show_source: true
-            show_root_heading: true
-            docstring_style: numpy
-            members_order: source
-            show_signature_annotations: true
-            separate_signature: true
-            line_length: 80
-            signature_crossrefs: true
   - include-markdown
   - git-revision-date-localized:
       enable_creation_date: true

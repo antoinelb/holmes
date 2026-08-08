@@ -8,7 +8,7 @@
     align-items: center;
     background: oklch(var(--bg));
     border-radius: 0;
-    box-shadow: 0 0.1em 1em 0.1em oklch(var(--theme) / 0.25);
+    box-shadow: 0 0.1em 0.5em 0.1em oklch(var(--theme) / 0.25);
     color: oklch(var(--fg));
     display: flex;
     height: 2.5em;

@@ -8,73 +8,35 @@ HOLMES is a web-based hydrological modeling tool designed for teaching operation
 
 ## Features
 
-- **Multiple Hydrological Models**: GR4J (4 parameters) and Bucket (6 parameters) rainfall-runoff models
+- **Guided Modeling Pipeline**: stations → weather → model → calibration → simulation → projection, with an interactive station map
+- **Twenty Hydrological Models**: from GR4J to SACRAMENTO, all documented in the [concepts](concepts/index.md) section
 - **Snow Modeling**: CemaNeige degree-day model with multi-elevation band support
-- **Automatic Calibration**: SCE-UA (Shuffled Complex Evolution) optimization algorithm
-- **Climate Projections**: Run future scenarios with calibrated model parameters
-- **Interactive Interface**: Real-time parameter adjustment and streamflow visualization
+- **Automatic Calibration**: SCE-UA and DDS optimization algorithms
+- **Climate Projections**: ClimEx and ESPO-G6-R2 scenarios fetched per station
 - **High Performance**: Rust-powered computational engine with Python integration
 
 ---
 
 ## Quick Start
 
-Install HOLMES:
+Install HOLMES (Python ≥ 3.12):
 
 ```bash
 pip install holmes-hydro
 ```
 
-Start the server:
+Start the dashboard:
 
 ```bash
-holmes
+holmes run
 ```
 
 Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-[:material-rocket-launch: Get Started](getting-started/index.md){ .md-button .md-button--primary }
-[:material-book-open-variant: User Guide](user-guide/index.md){ .md-button }
+The CLI also provides `holmes download` to rebuild the published datasets from their true sources and `holmes experiment` to run batch calibration experiments.
 
----
-
-## Documentation Sections
-
-<div class="grid cards" markdown>
-
--   :material-download:{ .lg .middle } **Getting Started**
-
-    ---
-
-    Install HOLMES and run your first simulation in minutes.
-
-    [:octicons-arrow-right-24: Installation](getting-started/installation.md)
-
--   :material-account-school:{ .lg .middle } **User Guide**
-
-    ---
-
-    Learn how to use the web interface for calibration, simulation, and projection.
-
-    [:octicons-arrow-right-24: User Guide](user-guide/index.md)
-
--   :material-water:{ .lg .middle } **Concepts**
-
-    ---
-
-    Understand the hydrological models, calibration algorithms, and metrics.
-
-    [:octicons-arrow-right-24: Concepts](concepts/index.md)
-
--   :material-code-tags:{ .lg .middle } **API Reference**
-
-    ---
-
-    Backend modules, REST/WebSocket routes, and the Rust extension.
-
-    [:octicons-arrow-right-24: API Reference](api-reference/index.md)
-
-</div>
+[:material-water: Concepts](concepts/index.md){ .md-button .md-button--primary }
+[:material-file-document: Changelog](reference/changelog.md){ .md-button }
 
 ---
 
@@ -84,7 +46,7 @@ HOLMES uses a three-tier architecture:
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Frontend** | Vanilla JavaScript, D3.js | Interactive web interface |
+| **Frontend** | Vanilla JavaScript, D3.js, Leaflet | Interactive web interface |
 | **Backend** | Python, Starlette, Uvicorn | API routing, data loading, orchestration |
 | **Compute** | Rust (holmes-rs), PyO3 | High-performance numerical models |
 

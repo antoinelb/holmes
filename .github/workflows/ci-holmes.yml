@@ -31,13 +31,14 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install uv
         run: pip install uv
 
       - name: Install dependencies
-        run: uv sync --group dev
+        # --python overrides the repo's .python-version (3.14)
+        run: uv sync --group dev --python 3.12
 
       - name: Check formatting (ruff)
         run: uv run ruff format --check src/holmes tests
@@ -46,10 +47,16 @@ jobs:
         run: uv run ruff check src/holmes tests
 
       - name: Type check (ty)
-        run: uv run ty check src/holmes
+        run: uv run ty check src/holmes tests
 
-  unit-tests:
+  # unit and integration run as one job: the 100% coverage requirement holds
+  # over both suites combined
+  tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.14"]
     steps:
       - uses: actions/checkout@v4
 
@@ -57,13 +64,13 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: Install uv
         run: pip install uv
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --python ${{ matrix.python }}
 
       - name: Build Rust extension
         uses: PyO3/maturin-action@v1
@@ -71,34 +78,8 @@ jobs:
           command: develop
           working-directory: src/holmes-rs
 
-      - name: Run unit tests with coverage
-        run: uv run pytest tests/unit -v --cov --cov-report=term-missing --cov-fail-under=$MINIMUM_COVERAGE
-
-  integration-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install uv
-        run: pip install uv
-
-      - name: Install dependencies
-        run: uv sync --group dev
-
-      - name: Build Rust extension
-        uses: PyO3/maturin-action@v1
-        with:
-          command: develop
-          working-directory: src/holmes-rs
-
-      - name: Run integration tests
-        run: uv run pytest tests/integration -v
+      - name: Run unit and integration tests with coverage
+        run: uv run pytest tests/unit tests/integration -v --cov --cov-report=term-missing --cov-fail-under=$MINIMUM_COVERAGE
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -113,19 +94,25 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
 
       - name: Install uv
         run: pip install uv
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --python 3.14
 
       - name: Build Rust extension
         uses: PyO3/maturin-action@v1
         with:
           command: develop
           working-directory: src/holmes-rs
+
+      - name: Restore data caches
+        # e2e boots the real server; a cold data/ would rebuild station and
+        # weather products from source (minutes of downloads). The prebuilt
+        # caches live on the repo's rolling `data` release (make upload-assets)
+        run: curl -sL https://github.com/antoinelb/holmes/releases/download/data/data-cache.tar.gz | tar xz
 
       - name: Install Playwright browsers
         run: uv run playwright install ${{ matrix.browser }} --with-deps
@@ -147,7 +134,7 @@ jobs:
 
   publish:
     if: startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/holmes-rs-')
-    needs: [static-analysis, unit-tests, integration-tests, e2e-tests]
+    needs: [static-analysis, tests, e2e-tests]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -157,7 +144,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install build tools
         run: pip install build

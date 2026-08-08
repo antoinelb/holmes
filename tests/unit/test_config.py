@@ -1,67 +1,35 @@
-"""Unit tests for holmes.config module."""
-
 import importlib
-import sys
-from unittest.mock import patch
 
-import pytest
-
-from holmes.exceptions import HolmesConfigError
+import holmes.config
 
 
-class TestConfigValidation:
-    """Tests for config validation error handling."""
+class TestConfig:
+    def test_defaults_without_env_file(self, tmp_path, monkeypatch):
+        # config reads .env relative to cwd at import time, so reload from an
+        # empty directory to see the defaults
+        monkeypatch.chdir(tmp_path)
+        try:
+            module = importlib.reload(holmes.config)
+            assert module.DEBUG is False
+            assert module.RELOAD is False
+            assert module.PORT == 8000
+            assert module.HOST == "127.0.0.1"
+        finally:
+            monkeypatch.undo()
+            importlib.reload(holmes.config)
 
-    def test_invalid_port_raises_config_error(self):
-        """Invalid PORT should raise HolmesConfigError on module load."""
-        # Remove the module from cache so it can be reimported
-        if "holmes.config" in sys.modules:
-            del sys.modules["holmes.config"]
-
-        # Mock validate_port to raise ValueError
-        with patch(
-            "holmes.validation.validate_port",
-            side_effect=ValueError("Port must be between 1-65535"),
-        ):
-            with pytest.raises(HolmesConfigError) as exc_info:
-                importlib.import_module("holmes.config")
-
-            assert "Port must be between 1-65535" in str(exc_info.value)
-
-        # Cleanup: reimport with normal validation
-        if "holmes.config" in sys.modules:
-            del sys.modules["holmes.config"]
-        importlib.import_module("holmes.config")
-
-    def test_invalid_host_raises_config_error(self):
-        """Invalid HOST should raise HolmesConfigError on module load."""
-        # Remove the module from cache so it can be reimported
-        if "holmes.config" in sys.modules:
-            del sys.modules["holmes.config"]
-
-        # Mock validate_host to raise ValueError (but validate_port should work)
-        with patch("holmes.validation.validate_port", return_value=8000):
-            with patch(
-                "holmes.validation.validate_host",
-                side_effect=ValueError("Invalid host format"),
-            ):
-                with pytest.raises(HolmesConfigError) as exc_info:
-                    importlib.import_module("holmes.config")
-
-                assert "Invalid host format" in str(exc_info.value)
-
-        # Cleanup: reimport with normal validation
-        if "holmes.config" in sys.modules:
-            del sys.modules["holmes.config"]
-        importlib.import_module("holmes.config")
-
-    def test_config_loads_with_valid_defaults(self):
-        """Config should load successfully with valid defaults."""
-        from holmes import config
-
-        assert hasattr(config, "DEBUG")
-        assert hasattr(config, "RELOAD")
-        assert hasattr(config, "PORT")
-        assert hasattr(config, "HOST")
-        assert isinstance(config.PORT, int)
-        assert isinstance(config.HOST, str)
+    def test_environment_overrides(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("DEBUG", "true")
+        monkeypatch.setenv("RELOAD", "true")
+        monkeypatch.setenv("PORT", "1234")
+        monkeypatch.setenv("HOST", "0.0.0.0")
+        try:
+            module = importlib.reload(holmes.config)
+            assert module.DEBUG is True
+            assert module.RELOAD is True
+            assert module.PORT == 1234
+            assert module.HOST == "0.0.0.0"
+        finally:
+            monkeypatch.undo()
+            importlib.reload(holmes.config)

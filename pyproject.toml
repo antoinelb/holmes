@@ -1,6 +1,6 @@
 [project]
 name = "holmes-hydro"
-version = "3.5.0"
+version = "4.0.0"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
 authors = [
@@ -11,47 +11,53 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Education",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering :: Hydrology",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "cf-xarray>=0.10.11",
-    "geopandas>=1.1.2",
+    "altair>=6.2.2",
+    "cdsapi>=0.7.7",
+    "exactextract>=0.3.0",
+    "gcsfs>=2026.7.0",
+    "geopandas>=1.1.3",
+    "geopolars>=0.1.0a4",
     "holmes-rs>=0.6.0",
+    "httpx>=0.28.1",
     "netcdf4>=1.7.4",
-    "numpy>=2.4.0",
-    "polars>=1.36.0",
-    "rasterio>=1.4.4",
-    "starlette>=0.50.0",
-    "tqdm>=4.67.3",
-    "uvicorn>=0.36.0",
-    "websockets>=15.0.1",
-    "xarray>=2026.2.0",
+    "numpy>=2.4.6",
+    "polars>=1.41.0",
+    "pystac-client>=0.9.0",
+    "rioxarray>=0.22.0",
+    "starlette>=1.0.0",
+    "tqdm>=4.68.2",
+    "typer>=0.26.3",
+    "uvicorn>=0.47.0",
+    "vl-convert-python>=1.9.0.post1",
+    "websockets>=16.0",
+    "xarray>=2026.4.0",
+    "zarr>=3.2.1",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.0",
-    "hypothesis>=6.0.0",
-    "isort>=6.0.1",
     "maturin>=1.10.2",
     "mkdocs>=1.6.1",
     "mkdocs-awesome-nav>=3.1",
     "mkdocs-git-revision-date-localized-plugin>=1.2",
     "mkdocs-include-markdown-plugin>=6.0",
     "mkdocs-material>=9.7.1",
-    "mkdocstrings[python]>=1.0.1",
-    "pytest>=9.0.2",
+    "playwright>=1.62.0",
+    "pytest>=9.1.1",
     "pytest-asyncio>=1.3.0",
     "pytest-cov>=7.0.0",
-    "pytest-playwright>=0.6.2",
-    "ruff>=0.13.1",
-    "scipy>=1.17.0",
-    "ty>=0.0.1a21",
+    "pytest-playwright>=0.8.0",
+    "ruff>=0.15.15",
+    "ty>=0.0.40",
+    "watchdog>=6.0.0",
 ]
 
 [project.urls]
@@ -72,38 +78,49 @@ packages = ["src/holmes"]
 include = ["src/", "tests/", "docs/", "pyproject.toml", "README.md"]
 
 [project.scripts]
-holmes = "holmes.app:run_server"
+holmes = "holmes.cli:run_cli"
 
 [tool.ruff]
 line-length = 79
-target-version = "py311"
+target-version = "py312"
 
-[tool.isort]
-profile = "black"
-src_paths = ["holmes", "holmes_rs", "tests"]
+[tool.ruff.lint]
+# the pre-0.16 default rules the codebase was written against; ruff 0.16
+# widened its defaults, which would flag hundreds of stylistic findings here
+select = ["E4", "E7", "E9", "F"]
+
+# ty ≥ 0.0.41 can no longer infer altair's generic mark_*/encode fluent
+# chains (false unresolved-attribute); scoped to the two plotting modules
+[[tool.ty.overrides]]
+include = ["src/holmes/experiment.py", "src/holmes/preprocessing.py"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
 
 [tool.pytest.ini_options]
-minversion = "8.0"
 # Order matters: unit tests must run before e2e to avoid event loop pollution from Playwright
 testpaths = ["tests/unit", "tests/integration", "tests/e2e"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-markers = [
-    "timeout: set test timeout in seconds (via pytest-timeout)",
+filterwarnings = [
+    "error",
+    # xarray's netCDF4 writer still sets .shape on numpy arrays, deprecated
+    # in NumPy 2.5; only their internals can fix it
+    "ignore:Setting the shape on a NumPy array:DeprecationWarning",
+    # starlette's TestClient prefers the httpx2 package, which this project
+    # does not depend on; plain httpx keeps working
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+    # the netCDF4 wheel's Cython extension was built against an older NumPy;
+    # the size-changed notice is harmless binary-compat chatter
+    "ignore:numpy.ndarray size changed:RuntimeWarning",
 ]
 
 [tool.coverage.run]
 source = ["src/holmes"]
-omit = [
-    "*/__pycache__/*",
-    "*/__main__.py",
-]
+omit = ["*/__pycache__/*"]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__ == .__main__.:",
-]
-precision = 2
+fail_under = 100
 show_missing = true
-
+precision = 2
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:"]

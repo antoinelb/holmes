@@ -12,7 +12,6 @@ wheels/
 .env
 /screenshots/
 v2
-/data/
 
 target/
 
@@ -21,6 +20,25 @@ CLAUDE.md
 site/
 .playwright-mcp/
 perrin
-/data/
 HOOPLA_MODELS.md
 i18n.md
+tp2.pdf
+changements_tp2.md
+/notebooks/
+
+# data is fetched from its true source at runtime, except era5 (needs a
+# Copernicus account) and the MELCC station csvs (hand-delivered files with no
+# public source). They are committed and served from the repo (see `holmes
+# download` and `scripts/convert_stations.py`); the wheel itself ships no
+# data.
+# Git only re-includes a nested path if every parent is re-included too.
+/data/*
+!/data/raw/
+/data/raw/*
+!/data/raw/weather/
+/data/raw/weather/*
+!/data/raw/weather/era5.ipc
+!/data/raw/weather/stations_backfill.ipc
+!/data/raw/weather/stations/
+/data/raw/weather/stations/*
+!/data/raw/weather/stations/*.csv

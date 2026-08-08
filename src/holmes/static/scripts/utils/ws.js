@@ -1,4 +1,3 @@
-// WebSocket reconnection configuration
 export const WS_CONFIG = {
   initialDelay: 1000, // Start with 1 second
   maxDelay: 30000, // Cap at 30 seconds
@@ -7,12 +6,8 @@ export const WS_CONFIG = {
   connectionTimeout: 10000, // 10 second connection timeout
 };
 
-// Track reconnection state per URL
 const reconnectState = new Map();
 
-/**
- * Get current reconnection state for a URL
- */
 export function getReconnectState(url) {
   return (
     reconnectState.get(url) || {
@@ -22,9 +17,6 @@ export function getReconnectState(url) {
   );
 }
 
-/**
- * Increment reconnection attempt counter and calculate next delay
- */
 export function incrementReconnectAttempt(url) {
   const state = getReconnectState(url);
   state.attempts++;
@@ -36,16 +28,10 @@ export function incrementReconnectAttempt(url) {
   return state;
 }
 
-/**
- * Reset reconnection state (call on successful connection)
- */
 export function resetReconnectState(url) {
   reconnectState.delete(url);
 }
 
-/**
- * Check if circuit breaker is open (max retries exceeded)
- */
 export function isCircuitBreakerOpen(url) {
   const state = getReconnectState(url);
   return state.attempts >= WS_CONFIG.maxRetries;
@@ -57,7 +43,6 @@ export function connect(url, handleMessage, dispatch, globalDispatch) {
 
   const ws = new WebSocket(fullUrl);
 
-  // Connection timeout
   const connectionTimeout = setTimeout(() => {
     if (ws.readyState !== WebSocket.OPEN) {
       console.error(`WebSocket connection timeout: ${fullUrl}`);
@@ -82,9 +67,5 @@ export function connect(url, handleMessage, dispatch, globalDispatch) {
 
   ws.onerror = (error) => {
     console.error(`WebSocket error: ${fullUrl}`, error);
-    globalDispatch({
-      type: "AddNotification",
-      data: { text: `WebSocket error : ${error}`, isError: true },
-    });
   };
 }
