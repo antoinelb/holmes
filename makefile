@@ -7,7 +7,8 @@ static-analysis:
 
 test:
 	cd src/holmes-rs && pytest --cov
-	cargo +nightly llvm-cov --manifest-path src/holmes-rs/Cargo.toml --ignore-filename-regex '(lib\.rs|/mod\.rs|utils\.rs)$$'
+	cargo +nightly llvm-cov --manifest-path src/holmes-rs/Cargo.toml --test unit --test integration --ignore-filename-regex '(lib\.rs|/mod\.rs|utils\.rs)$$'
+	cargo test --manifest-path src/holmes-rs/Cargo.toml --test performance
 	pytest tests/unit --cov
 	pytest tests/integration
 	pytest tests/e2e
@@ -16,4 +17,4 @@ build-rs:
 	uv run maturin develop --manifest-path src/holmes-rs/Cargo.toml --release
 
 cov-rs:
-	cargo +nightly llvm-cov --manifest-path src/holmes-rs/Cargo.toml --ignore-filename-regex '(lib\.rs|/mod\.rs|utils\.rs)$$'
+	cargo +nightly llvm-cov --manifest-path src/holmes-rs/Cargo.toml --test unit --test integration --ignore-filename-regex '(lib\.rs|/mod\.rs|utils\.rs)$$'
