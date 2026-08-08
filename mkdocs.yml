@@ -25,7 +25,8 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   features:
-    - navigation.instant
+    # navigation.instant is deliberately absent: it breaks the language
+    # switcher's contextual links (mkdocs-static-i18n)
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky
@@ -44,6 +45,33 @@ theme:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: fr
+          name: Français
+          build: true
+          site_description: >-
+            HydrOLogical Modeling Educational Software - Documentation
+          nav_translations:
+            Home: Accueil
+            User guide: Guide d'utilisation
+            Weather: Météo
+            Model: Modèle
+            Calibration: Calage
+            Common workflows: Flux de travail courants
+            Hydrological models: Modèles hydrologiques
+            Snow models: Modèles de neige
+            Potential evapotranspiration models: >-
+              Modèles d'évapotranspiration potentielle
+            Metrics: Métriques
+            Reference: Référence
+            Changelog: Journal des modifications
+            License: Licence
   - awesome-nav
   - include-markdown
   - git-revision-date-localized:

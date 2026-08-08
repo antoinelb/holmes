@@ -56,7 +56,7 @@ The CREC model has six calibratable parameters:
 
 | Parameter | Description | Range | Units | Physical Interpretation |
 |-----------|-------------|-------|-------|------------------------|
-| $X_1$ | Ground reservoir emptying constant | 1–1000 | days | Controls how quickly the surface store empties via nonlinear drainage. Larger values produce slower, more subdued flood peaks. |
+| $X_1$ | Surface reservoir emptying constant | 1–1000 | days | Controls how quickly the surface store empties via nonlinear drainage. Larger values produce slower, more subdued flood peaks. |
 | $X_2$ | Linear percolation parameter | 1–1000 | - | Time constant for groundwater drainage. Larger values produce slower, more sustained baseflow. |
 | $X_3$ | Splitting parameter for raw rainfall | 0–1000 | mm | Soil moisture threshold for the sigmoid split. When $S = X_3$, precipitation is split equally between runoff and infiltration. |
 | $X_4$ | Splitting parameter for PET production | 1–500 | mm | Controls the sharpness of the sigmoid transition. Smaller values produce a sharper switch between infiltration and runoff. |

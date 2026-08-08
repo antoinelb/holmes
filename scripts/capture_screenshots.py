@@ -1,8 +1,10 @@
 """Regenerate the documentation screenshots in docs/assets/images/.
 
-Walks the pipeline once in a single browser session against a local
-server (warm data/ assumed) and shoots every scene twice, dark then
-light theme, as <scene>-{dark,light}.png. Run via `make screenshots`.
+Walks the pipeline once per language (English then French, the latter
+set through localStorage before the app loads) against a local server
+(warm data/ assumed) and shoots every scene twice, dark then light
+theme, as <scene>-{dark,light}.png and <scene>-fr-{dark,light}.png.
+Run via `make screenshots`.
 
 Manual slider moves pick deterministic targets and SCE runs on its
 default seed, so regenerated images should only churn where the UI
@@ -31,31 +33,46 @@ sce_max_evaluations = 500
 
 light_re = re.compile(r"light")
 
+# file-name suffix of the current language pass ("" or "-fr"), read by shoot
+lang_suffix = ""
+
 
 def main() -> None:
+    global lang_suffix
     shots_dir.mkdir(parents=True, exist_ok=True)
     with drivers.run_server() as url, sync_playwright() as playwright:
         browser = playwright.chromium.launch()
-        context = browser.new_context(
-            base_url=url,
-            viewport={"width": 1440, "height": 900},
-            device_scale_factor=2,
-            reduced_motion="reduce",
-        )
-        page = context.new_page()
-        page.set_default_timeout(30_000)
-        drivers.goto_app(page)
-        shoot(page, "app-start")
-        scene_map_dialog(page)
-        scene_stations(page)
-        scene_weather(page)
-        scene_model_single(page)
-        scene_calibration_manual(page)
-        scene_ensemble_sce(page)
-        scene_simulation(page)
-        scene_projection(page)
-        scene_settings(page)
-        scene_import_dialog(page)
+        for language in ("en", "fr"):
+            lang_suffix = "" if language == "en" else "-fr"
+            # a fresh context per language: the walk assumes a clean
+            # pipeline state, and the language is read from localStorage
+            # before the app boots
+            context = browser.new_context(
+                base_url=url,
+                viewport={"width": 1440, "height": 900},
+                device_scale_factor=2,
+                reduced_motion="reduce",
+            )
+            if language == "fr":
+                context.add_init_script(
+                    "window.localStorage.setItem("
+                    "'holmes--settings--language', 'fr')"
+                )
+            page = context.new_page()
+            page.set_default_timeout(30_000)
+            drivers.goto_app(page)
+            shoot(page, "app-start")
+            scene_map_dialog(page)
+            scene_stations(page)
+            scene_weather(page)
+            scene_model_single(page)
+            scene_calibration_manual(page)
+            scene_ensemble_sce(page)
+            scene_simulation(page)
+            scene_projection(page)
+            scene_settings(page)
+            scene_import_dialog(page)
+            context.close()
         browser.close()
 
 
@@ -220,7 +237,7 @@ def scene_import_dialog(page: Page) -> None:
     dialog = page.locator("#calibration__import-dialog")
     expect(dialog).to_be_visible()
     shoot(page, "calibration-import-dialog")
-    dialog.get_by_role("button", name="Cancel").click()
+    dialog.get_by_role("button", name=re.compile(r"Cancel|Annuler")).click()
     expect(dialog).to_be_hidden()
 
 
@@ -240,16 +257,16 @@ def shoot(
         page.locator(hover).first.hover()
         page.wait_for_timeout(300)
     target = page.locator(clip) if clip else page
-    target.screenshot(path=shots_dir / f"{name}-dark.png")
+    target.screenshot(path=shots_dir / f"{name}{lang_suffix}-dark.png")
     page.keyboard.press("T")
     expect(page.locator("body")).to_have_class(light_re)
     # the light basemap is the dark tiles behind a CSS inversion filter;
     # give the repaint a beat before capturing
     page.wait_for_timeout(200)
-    target.screenshot(path=shots_dir / f"{name}-light.png")
+    target.screenshot(path=shots_dir / f"{name}{lang_suffix}-light.png")
     page.keyboard.press("T")
     expect(page.locator("body")).not_to_have_class(light_re)
-    print(f"shot {name}")
+    print(f"shot {name}{lang_suffix}")
 
 
 def settle(page: Page) -> None:

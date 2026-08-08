@@ -52,7 +52,7 @@ CemaNeige has three parameters:
 
 - **$K_f$** varies by climate and terrain. Values around 3–5 mm/°C/day are typical for mid-latitude mountain catchments. Forested areas tend to have lower values due to shading.
 
-- **$Q_{NBV}$ controls the transition from patchy to continuous snow cover. A small snowpack melts efficiently (high surface area relative to volume), while a deep snowpack melts at the full rate.
+- **$Q_{NBV}$** controls the transition from patchy to continuous snow cover. A small snowpack melts at reduced efficiency (patchy cover leaves only part of the ground contributing melt), while a deep snowpack melts at the full rate.
 
 ### Mathematical Formulation
 
