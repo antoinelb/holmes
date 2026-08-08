@@ -14,6 +14,13 @@ test:
 test-e2e:
 	pytest tests/e2e --browser chromium
 
+screenshots:
+	playwright install chromium
+	python scripts/capture_screenshots.py
+	command -v optipng > /dev/null \
+		&& optipng -o2 -quiet docs/assets/images/screenshots/*.png \
+		|| true
+
 build-rs:
 	uv run maturin develop --manifest-path src/holmes-rs/Cargo.toml --release
 
