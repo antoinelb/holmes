@@ -1,6 +1,6 @@
 [project]
 name = "holmes-hydro"
-version = "4.0.0"
+version = "4.1.0"
 description = "HOLMES (HydrOLogical Modeling Educationnal Software) is a software developped to teach operational hydrology. It is developed at the university Laval, Québec, Canada."
 readme = "README.md"
 authors = [
@@ -25,7 +25,7 @@ dependencies = [
     "gcsfs>=2026.7.0",
     "geopandas>=1.1.3",
     "geopolars>=0.1.0a4",
-    "holmes-rs>=0.6.0",
+    "holmes-rs>=0.7.0",
     "httpx>=0.28.1",
     "netcdf4>=1.7.4",
     "numpy>=2.4.6",
@@ -50,6 +50,7 @@ dev = [
     "mkdocs-git-revision-date-localized-plugin>=1.2",
     "mkdocs-include-markdown-plugin>=6.0",
     "mkdocs-material>=9.7.1",
+    "mkdocs-static-i18n>=1.2",
     "playwright>=1.62.0",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.3.0",

@@ -9,10 +9,17 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [4.1.0] - 2026-08-08
 
 ### Added
 - User guide in the documentation covering every step and feature of the application, with screenshots in both themes (regenerated with `make screenshots`)
+- The application is now bilingual (English/French): a language button in the settings menu (hotkey L) switches every label, chart legend, dialog and model description; the choice persists in localStorage and defaults to English
+- Model and parameter descriptions are served in both languages (`model_info`/`calibration_info` payloads carry `{en, fr}` texts backed by `param_descriptions_fr` in holmes-rs 0.7.0)
+- The documentation is bilingual too (`mkdocs-static-i18n`): every page has a French sibling, a language switcher on every page, and French-UI screenshot pairs (`<scene>-fr-{dark,light}.png`) captured by the same `make screenshots` walk
+
+### Changed
+- Chart time axes use French month names when the language is French
+- Documentation no longer uses Material's `navigation.instant`, which is incompatible with the language switcher's contextual links
 
 ## [4.0.0] - 2026-08-08
 
