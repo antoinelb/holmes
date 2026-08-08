@@ -11,21 +11,17 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ## [Unreleased]
 
-### Added
-- `_run_simulation` validates `hydroModel` and `snowModel` from JSON with runtime `assert` before the `Literal` cast, replacing a silent `typing.cast` on user input
-
 ### Changed
-- Catchment data contract is now uniform: every catchment must ship `<name>_Observations.csv` (including the `T` temperature column), `<name>_CemaNeigeInfo.csv`, and projection files; `data.py` enforces this once at load time and consumers no longer carry per-feature fallbacks
-- `get_available_catchments` returns `(name, period)` 2-tuples — the `has_snow` flag is gone since every remaining catchment supports snow
-- Tightened typing across `api/`, `data.py`, `logging.py`, and `models/`: removed 14 stale `# type: ignore` comments, narrowed `LazyFrame.collect()` returns with `assert isinstance(..., pl.DataFrame)`, and replaced a `typing.cast` in `projection.py`
+- **Breaking**: complete rewrite of the application.
+  The UI is now a guided pipeline (stations → weather → model → calibration → simulation → projection) built on an Elm-architecture vanilla-JS frontend with an interactive Leaflet station map, replacing the tabbed catchment interface
+- **Breaking**: the data model is station-based — hydrometric stations (DEH) with weather built from ERA5, nearest MELCC stations, or the ministry grid, replacing the shipped per-catchment CSV bundles; data is fetched from its true source at runtime and cached under `data/`
+- **Breaking**: the CLI is now a Typer app with subcommands: `holmes run` (dashboard), `holmes download` (rebuild the published datasets), and `holmes experiment` (run batch experiments); the entry point moved from `holmes.app:run_server` to `holmes.cli:run_cli`
+- **Breaking**: minimum supported Python is now 3.12
+- Climate projections are fetched per station from PAVICS (ClimEx and ESPO-G6-R2), with prebuilt products served from the repo's `data` release instead of shipped projection CSV files
 
 ### Removed
-- Leaf catchment dataset (`src/holmes/data/Leaf_Observations.csv`) and all the scaffolding it required (snow-model auto-reset, `snowConfigView` greying-out path in the frontend, and per-handler `ColumnNotFoundError` fallbacks for the missing `T` column)
-- `HolmesFileNotFoundError` exception and the WebSocket `not_found_error` branch — missing catchment data now flows through the regular error channel
-- `read_cemaneige_info` and `read_projection_data` no longer special-case missing files
-
-### Fixed
-- `RemoveCalibration` in `simulation.js` now clears `holmes--simulation--start`, `holmes--simulation--end`, and `holmes--simulation--multimodel` from `localStorage` when all calibrations are removed, so the persisted state matches the in-memory reset
+- **Breaking**: shipped catchment datasets and the observations / CemaNeige-info / projections CSV input formats
+- `scripts/download_hydro_data.py`, `scripts/run_experiments.py`, and `scripts/convert_projections_format.py`, superseded by `holmes download` and `holmes experiment`
 
 ## [3.5.0] - 2026-04-29
 
