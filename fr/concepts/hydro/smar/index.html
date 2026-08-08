@@ -1,0 +1,2483 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="HydrOLogical Modeling Educational Software - Documentation">
+      
+      
+        <meta name="author" content="Université Laval">
+      
+      
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/fr/concepts/hydro/smar/">
+      
+      
+        <link rel="prev" href="../simhyd/">
+      
+      
+        <link rel="next" href="../tank/">
+      
+      
+        
+          <link rel="alternate" href="../../../../concepts/hydro/smar/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="fr">
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Modèle SMAR - HOLMES Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#modele-smar" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../../" title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HOLMES Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Modèle SMAR
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../../concepts/hydro/smar/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinelb/holmes" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guide d'utilisation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Référence
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HOLMES Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinelb/holmes" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'utilisation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide d'utilisation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/stations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/weather/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Météo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/projection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flux de travail courants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles hydrologiques
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modèles hydrologiques
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bucket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle bucket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cequeau/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle CEQUEAU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle CREC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gardenia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle GARDENIA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gr4j/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle GR4J
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hbv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle HBV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hymod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle HYMOD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ihacres/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle IHACRES
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../martine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MARTINE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mohyse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MOHYSE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mordor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MORDOR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nam/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle NAM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle PDM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sacramento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SACRAMENTO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../simhyd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SIMHYD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SMAR
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SMAR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#apercu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aperçu
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concepts-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepts clés
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fonctionnement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fonctionnement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parametres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paramètres
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formulation-mathematique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formulation mathématique
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formulation mathématique">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correction-de-letp-et-entrees-nettes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correction de l'ETP et entrées nettes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ruissellement-direct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ruissellement direct
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infiltration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#suivi-de-lhumidite-du-sol-sur-16-couches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suivi de l'humidité du sol sur 16 couches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-souterrain-lineaire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage souterrain linéaire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-de-surface-quadratique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage de surface quadratique
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-par-delai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage par délai
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Références
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle TANK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../topmodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle TOPMODEL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wageningen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle WAGENINGEN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xinanjiang/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle XINANJIANG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../snow-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles de neige
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pet-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles d'évapotranspiration potentielle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../calibration-algorithms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Métriques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Référence
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Référence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Journal des modifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#apercu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aperçu
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concepts-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepts clés
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fonctionnement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fonctionnement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parametres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paramètres
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formulation-mathematique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formulation mathématique
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formulation mathématique">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correction-de-letp-et-entrees-nettes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correction de l'ETP et entrées nettes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ruissellement-direct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ruissellement direct
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infiltration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#suivi-de-lhumidite-du-sol-sur-16-couches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suivi de l'humidité du sol sur 16 couches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-souterrain-lineaire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage souterrain linéaire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-de-surface-quadratique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage de surface quadratique
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routage-par-delai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage par délai
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Références
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="modele-smar">Modèle SMAR<a class="headerlink" href="#modele-smar" title="Permanent link">&para;</a></h1>
+<h2 id="apercu">Aperçu<a class="headerlink" href="#apercu" title="Permanent link">&para;</a></h2>
+<p>SMAR (Soil Moisture Accounting and Routing) est un modèle pluie-débit global journalier à huit paramètres développé à l'origine par O'Connell, Nash et Farrell au University College Galway, en Irlande (O'Connell et al., 1970).
+Il a été conçu comme un modèle conceptuel généraliste pour la prévision opérationnelle des débits et a été largement appliqué à des bassins versants irlandais, tropicaux et semi-arides.</p>
+<p>La variante implémentée dans HOLMES est la <strong>version retenue</strong> décrite dans l'Annexe 1 de Perrin (2000), correspondant à HOOPLA HM16.
+Elle représente le bassin versant comme une <strong>colonne de sol discrétisée en 16 couches</strong> (chaque couche de 25 mm d'épaisseur, profondeur totale <span class="arithmatex">\(Z = 400\)</span> mm) alimentant deux réservoirs de routage parallèles — un linéaire (eau souterraine) et un quadratique (surface) — avec un hydrogramme unitaire de délai fractionnaire à l'exutoire.</p>
+<p>Ce qui distingue SMAR parmi les modèles de HOLMES est sa <strong>discrétisation verticale explicite du sol</strong>.
+Alors que la plupart des modèles représentent l'humidité du sol comme un seul réservoir global (GR4J, HYMOD, Bucket) ou comme quelques réservoirs discrets (SACRAMENTO, NAM), SMAR divise le sol en 16 couches physiques et applique l'évapotranspiration à chaque couche avec une <strong>intensité décroissant exponentiellement</strong> (<span class="arithmatex">\(C^i\)</span>, où <span class="arithmatex">\(C &lt; 1\)</span> et <span class="arithmatex">\(i\)</span> est l'indice de la couche).
+Cela signifie que les couches supérieures s'assèchent en premier et plus intensément, tandis que les couches plus profondes retiennent l'humidité plus longtemps — une représentation réaliste de la façon dont les racines des plantes extraient l'eau préférentiellement près de la surface.
+Le modèle est un bon choix pédagogique quand les étudiants doivent comprendre comment la structure verticale du sol affecte la génération du ruissellement et le comportement en récession.</p>
+<h2 id="concepts-cles">Concepts clés<a class="headerlink" href="#concepts-cles" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>Colonne de sol à 16 couches</strong> : le sol est discrétisé en 16 couches de 25 mm chacune (total <span class="arithmatex">\(Z = 400\)</span> mm).
+L'eau s'infiltre de la couche supérieure vers le bas; chaque couche se remplit jusqu'à sa capacité avant de déborder vers la suivante.
+Le drainage de la couche inférieure constitue l'écoulement hypodermique.</p>
+</li>
+<li>
+<p><strong>Évapotranspiration décroissant exponentiellement</strong> : chaque couche de sol <span class="arithmatex">\(i\)</span> est soumise à une évapotranspiration au taux <span class="arithmatex">\(C^i \cdot E_n\)</span>, où <span class="arithmatex">\(C = X_3 &lt; 1\)</span> est un coefficient à caler et <span class="arithmatex">\(E_n\)</span> la demande atmosphérique restante.
+La couche supérieure reçoit l'ET la plus forte, et chaque couche suivante en reçoit exponentiellement moins — imitant la diminution avec la profondeur du prélèvement d'eau par la zone racinaire.</p>
+</li>
+<li>
+<p><strong>Ruissellement direct dépendant de l'humidité</strong> : une fraction <span class="arithmatex">\(H' = X_1 \cdot S / S_{\max}\)</span> de la précipitation nette ruisselle directement sans entrer dans le sol, où <span class="arithmatex">\(S\)</span> est le contenu en eau des cinq couches supérieures.
+À mesure que le sol s'humidifie, le ruissellement direct augmente — un mécanisme simple d'excès de saturation.</p>
+</li>
+<li>
+<p><strong>Capacité d'infiltration exponentielle</strong> : le taux d'infiltration maximal décroît exponentiellement avec l'humidité du sol : <span class="arithmatex">\(F_r = Y_m \cdot \exp(-X_2 \cdot S / S_{\max})\)</span>, où <span class="arithmatex">\(Y_m = 200\)</span> mm/j est un maximum fixe.
+Un sol sec absorbe la pluie facilement; un sol proche de la saturation limite sévèrement l'infiltration.</p>
+</li>
+<li>
+<p><strong>Deux réservoirs de routage</strong> : l'écoulement hypodermique issu de la colonne de sol est réparti entre un réservoir souterrain linéaire (fraction <span class="arithmatex">\(1 - X_8\)</span>) et un réservoir de surface quadratique (fraction <span class="arithmatex">\(X_8\)</span>).
+Le réservoir linéaire produit un débit de base lisse et soutenu; le réservoir quadratique génère un écoulement plus pointu, à décroissance rapide, qui domine pendant les tempêtes.</p>
+</li>
+<li>
+<p><strong>Routage quadratique</strong> : le réservoir de routage de surface se vide selon <span class="arithmatex">\(Q_t = T^2 / (T + X_4)\)</span>, la même loi non linéaire que celle utilisée par GARDENIA.
+Cela produit une récession rapide à fort stockage et une récession lente à faible stockage.</p>
+</li>
+<li>
+<p><strong>Coefficient de correction de l'ETP</strong> : l'ETP en entrée est mise à l'échelle par un facteur à caler <span class="arithmatex">\(X_7\)</span> avant utilisation, ce qui permet au modèle de compenser des biais systématiques dans l'estimation de l'ETP (semblable au <span class="arithmatex">\(X_5\)</span> de GARDENIA).</p>
+</li>
+<li>
+<p><strong>Routage par délai fractionnaire</strong> : un court délai pur <span class="arithmatex">\(X_6\)</span> (typiquement 0.5 à 5 jours) décale l'hydrogramme pour tenir compte du temps de parcours en chenal, par une interpolation fractionnaire à deux éléments entre les délais entiers adjacents.</p>
+</li>
+</ul>
+<h2 id="fonctionnement">Fonctionnement<a class="headerlink" href="#fonctionnement" title="Permanent link">&para;</a></h2>
+<p>Le modèle SMAR traite les précipitations et l'évapotranspiration chaque jour selon les étapes suivantes :</p>
+<p><strong>Étape 1 : correction de l'ETP et entrées nettes</strong>.
+L'ETP en entrée est mise à l'échelle par le coefficient de correction : <span class="arithmatex">\(E_{\text{corr}} = X_7 \cdot E\)</span>.
+La précipitation nette et l'évapotranspiration nette sont calculées comme des résidus complémentaires : <span class="arithmatex">\(P_n = \max(0, P - E_{\text{corr}})\)</span> et <span class="arithmatex">\(E_n = \max(0, E_{\text{corr}} - P)\)</span>.
+Une seule des deux est non nulle un jour donné — les jours humides <span class="arithmatex">\(P_n &gt; 0\)</span> et <span class="arithmatex">\(E_n = 0\)</span>; les jours secs <span class="arithmatex">\(E_n &gt; 0\)</span> et <span class="arithmatex">\(P_n = 0\)</span>.</p>
+<p><strong>Étape 2 : ruissellement direct</strong>.
+Une fraction de la précipitation nette, dépendant de l'humidité, ruisselle directement : <span class="arithmatex">\(P_{r1} = H' \cdot P_n\)</span>, où <span class="arithmatex">\(H' = X_1 \cdot S / S_{\max}\)</span>.
+Ici <span class="arithmatex">\(S\)</span> est la somme d'humidité des cinq couches supérieures (capacité <span class="arithmatex">\(S_{\max} = 125\)</span> mm).
+Quand le sol est humide (<span class="arithmatex">\(S \approx S_{\max}\)</span>), <span class="arithmatex">\(H'\)</span> approche <span class="arithmatex">\(X_1\)</span> et une part substantielle de la pluie contourne entièrement la colonne de sol; quand le sol est sec, presque toute la pluie s'infiltre.</p>
+<p><strong>Étape 3 : infiltration et excès de surface</strong>.
+La capacité d'infiltration <span class="arithmatex">\(F_r = 200 \cdot \exp(-X_2 \cdot S / S_{\max})\)</span> limite la part de la pluie restante (<span class="arithmatex">\(P_n - P_{r1}\)</span>) qui peut entrer dans le sol.
+L'infiltration réelle est <span class="arithmatex">\(P_s = \min(F_r, P_n - P_{r1})\)</span>, et tout surplus au-delà de la capacité d'infiltration devient l'excès de surface <span class="arithmatex">\(P_{r2}\)</span>.</p>
+<p><strong>Étape 4 : suivi de l'humidité du sol sur 16 couches</strong>.
+L'eau infiltrée <span class="arithmatex">\(P_s\)</span> descend en cascade les 16 couches séquentiellement : chaque couche absorbe l'eau jusqu'à sa capacité de 25 mm, et tout débordement passe à la couche suivante.
+À chaque couche, l'évapotranspiration retire de l'eau à un taux décroissant exponentiellement <span class="arithmatex">\(C^{i+1} \cdot E_n\)</span> (où <span class="arithmatex">\(i\)</span> est l'indice de couche à partir de zéro), réduisant d'autant la demande atmosphérique restante <span class="arithmatex">\(E_n\)</span>.
+L'eau qui déborde de la couche inférieure (couche 16) constitue l'<strong>écoulement hypodermique</strong>.</p>
+<p><strong>Étape 5 : routage souterrain linéaire</strong>.
+Une fraction <span class="arithmatex">\(1 - X_8\)</span> de l'écoulement hypodermique entre dans le réservoir souterrain linéaire : <span class="arithmatex">\(L \leftarrow L + (1 - X_8) \cdot I\)</span>.
+Le réservoir se vide linéairement : <span class="arithmatex">\(Q_l = L / X_5\)</span>, produisant un débit de base lisse.</p>
+<p><strong>Étape 6 : routage de surface quadratique</strong>.
+La fraction restante <span class="arithmatex">\(X_8\)</span> de l'écoulement hypodermique, plus l'éventuel excès de surface <span class="arithmatex">\(P_{r2}\)</span> de l'Étape 3, entre dans le réservoir de routage quadratique : <span class="arithmatex">\(T \leftarrow T + X_8 \cdot I + P_{r2}\)</span>.
+Le réservoir se vide selon la loi quadratique : <span class="arithmatex">\(Q_t = T^2 / (T + X_4)\)</span>, produisant un écoulement pointu à décroissance rapide.</p>
+<p><strong>Étape 7 : débit total et délai</strong>.
+Le débit total <span class="arithmatex">\(Q = Q_l + Q_t + P_{r1}\)</span> (débit de base + routage de surface + ruissellement direct) est injecté dans le registre de délai fractionnaire de taille <span class="arithmatex">\(\lceil X_6 \rceil + 1\)</span>.
+Le registre se décale d'un pas chaque jour, et le premier élément — borné à zéro — est retourné comme débit simulé.</p>
+<h2 id="parametres">Paramètres<a class="headerlink" href="#parametres" title="Permanent link">&para;</a></h2>
+<p>Le modèle SMAR possède huit paramètres à caler :</p>
+<table>
+<thead>
+<tr>
+<th>Paramètre</th>
+<th>Description</th>
+<th style="text-align: center;">Plage</th>
+<th>Unités</th>
+<th>Interprétation physique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(X_1\)</span></td>
+<td>Coefficient d'écoulement direct (<span class="arithmatex">\(H\)</span>)</td>
+<td style="text-align: center;">0.01–1.0</td>
+<td>-</td>
+<td>Fraction maximale de la précipitation nette qui ruisselle directement quand le sol superficiel est complètement saturé. Des valeurs plus élevées augmentent la nervosité des pics de crue.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_2\)</span></td>
+<td>Paramètre d'infiltration (<span class="arithmatex">\(Y_c\)</span>)</td>
+<td style="text-align: center;">0.01–10.0</td>
+<td>-</td>
+<td>Contrôle la vitesse à laquelle la capacité d'infiltration décroît quand l'humidité du sol augmente. Des valeurs plus élevées signifient que le sol se « scelle » plus vite en s'humidifiant.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_3\)</span></td>
+<td>Coefficient de réduction de l'ETP (<span class="arithmatex">\(C\)</span>)</td>
+<td style="text-align: center;">0.01–0.99</td>
+<td>-</td>
+<td>Base de la décroissance exponentielle de l'ET avec la profondeur : la couche <span class="arithmatex">\(i\)</span> reçoit <span class="arithmatex">\(C^{i+1}\)</span> de la demande atmosphérique restante. Des valeurs faibles concentrent l'ET dans les couches de surface; des valeurs proches de 1 répartissent l'ET uniformément dans la colonne de sol.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_4\)</span></td>
+<td>Capacité du réservoir de routage quadratique</td>
+<td style="text-align: center;">1–500</td>
+<td>mm</td>
+<td>Stockage caractéristique du réservoir de routage de surface quadratique. Des valeurs plus grandes ralentissent la récession de surface et étalent les pics de crue; des valeurs plus petites produisent des pics plus aigus.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_5\)</span></td>
+<td>Constante de vidange du réservoir de routage linéaire</td>
+<td style="text-align: center;">1–200</td>
+<td>jours</td>
+<td>Temps de résidence du réservoir souterrain linéaire (<span class="arithmatex">\(Q_l = L / X_5\)</span>). Des valeurs grandes produisent des récessions de débit de base longues et soutenues; des valeurs petites donnent une réponse souterraine plus nerveuse.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_6\)</span></td>
+<td>Délai</td>
+<td style="text-align: center;">0.5–5.0</td>
+<td>jours</td>
+<td>Délai pur de routage en chenal appliqué à l'exutoire. Décale l'hydrogramme dans le temps sans changer sa forme.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_7\)</span></td>
+<td>Coefficient de correction de l'ETP</td>
+<td style="text-align: center;">0.1–2.0</td>
+<td>-</td>
+<td>Facteur multiplicatif appliqué à la série d'ETP en entrée. Des valeurs au-dessus de 1 augmentent l'évapotranspiration (utile quand l'ETP d'Oudin sous-estime pour un climat donné); en dessous de 1, elles la réduisent.</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(X_8\)</span></td>
+<td>Coefficient de répartition des écoulements (<span class="arithmatex">\(G\)</span>)</td>
+<td style="text-align: center;">0.01–0.99</td>
+<td>-</td>
+<td>Fraction de l'écoulement hypodermique routée vers le réservoir de surface quadratique. Le complément <span class="arithmatex">\((1 - X_8)\)</span> va au réservoir souterrain linéaire. Contrôle l'équilibre entre écoulement rapide pointu et débit de base lent et soutenu.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Comprendre les paramètres :</strong></p>
+<ul>
+<li><strong><span class="arithmatex">\(X_1\)</span></strong> est le coefficient de ruissellement par excès de saturation.
+À <span class="arithmatex">\(X_1 = 1.0\)</span>, un sol complètement saturé envoie toute la précipitation nette directement au cours d'eau; à <span class="arithmatex">\(X_1 = 0.01\)</span>, presque rien.
+Attendez-vous à des valeurs calées entre 0.1 et 0.6 pour la plupart des bassins humides.</li>
+<li><strong><span class="arithmatex">\(X_2\)</span> et <span class="arithmatex">\(X_3\)</span> ensemble</strong> contrôlent la façon dont le sol traite l'eau.
+<span class="arithmatex">\(X_2\)</span> gouverne la capacité d'infiltration (la vitesse à laquelle la pluie peut entrer dans la colonne de sol), tandis que <span class="arithmatex">\(X_3\)</span> gouverne le profil d'extraction de l'ET (la vitesse à laquelle le sol s'assèche depuis la surface).
+Un <span class="arithmatex">\(X_3\)</span> faible (0.1–0.3) crée un sol s'asséchant nettement en surface; un <span class="arithmatex">\(X_3\)</span> élevé (0.7–0.9) distribue l'ET uniformément.</li>
+<li><strong><span class="arithmatex">\(X_4\)</span> et <span class="arithmatex">\(X_5\)</span></strong> sont les paramètres de routage.
+<span class="arithmatex">\(X_4\)</span> contrôle la réponse rapide (quadratique), tandis que <span class="arithmatex">\(X_5\)</span> contrôle le débit de base lent (linéaire).
+Quand <span class="arithmatex">\(X_5 \gg X_4\)</span>, l'hydrogramme montre des pics rapides distincts sur une base lente — typique des bassins à aquifères profonds.</li>
+<li><strong><span class="arithmatex">\(X_8\)</span></strong> est un bouton de répartition des écoulements semblable au <span class="arithmatex">\(X_5\)</span> de MARTINE ou à la répartition fixe 90/10 de GR4J.
+Des valeurs proches de 1 envoient la majeure partie de l'écoulement hypodermique par la voie quadratique rapide; des valeurs proches de 0 l'envoient vers l'eau souterraine.
+Pour des bassins à fort débit de base, attendez-vous à <span class="arithmatex">\(X_8 &lt; 0.5\)</span>.</li>
+</ul>
+<h2 id="formulation-mathematique">Formulation mathématique<a class="headerlink" href="#formulation-mathematique" title="Permanent link">&para;</a></h2>
+<h3 id="initialisation">Initialisation<a class="headerlink" href="#initialisation" title="Permanent link">&para;</a></h3>
+<p>États fixes des réservoirs à <span class="arithmatex">\(t = 0\)</span> :</p>
+<div class="arithmatex">\[W_i = 2 \text{ mm for } i = 1, \ldots, 16\]</div>
+<div class="arithmatex">\[S_0 = 100 \text{ mm}, \quad L_0 = 50 \text{ mm}, \quad T_0 = 20 \text{ mm}\]</div>
+<p>où <span class="arithmatex">\(W_i\)</span> sont les stockages des couches de sol individuelles, <span class="arithmatex">\(S\)</span> est la somme d'humidité des cinq couches supérieures (recalculée à chaque pas), <span class="arithmatex">\(L\)</span> est le réservoir de routage linéaire et <span class="arithmatex">\(T\)</span> le réservoir de routage quadratique.</p>
+<p>Le registre de délai fractionnaire <span class="arithmatex">\(\{H_k\}\)</span> a <span class="arithmatex">\(n = \lceil X_6 \rceil + 1\)</span> éléments, initialisés à zéro, avec les poids :</p>
+<div class="arithmatex">\[d_{n-2} = \frac{1}{X_6 - n + 3}, \quad d_{n-1} = 1 - d_{n-2}\]</div>
+<h3 id="correction-de-letp-et-entrees-nettes">Correction de l'ETP et entrées nettes<a class="headerlink" href="#correction-de-letp-et-entrees-nettes" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[E_{\text{corr}} = X_7 \cdot E\]</div>
+<div class="arithmatex">\[P_n = \max(0, P - E_{\text{corr}})\]</div>
+<div class="arithmatex">\[E_n = \max(0, E_{\text{corr}} - P)\]</div>
+<h3 id="ruissellement-direct">Ruissellement direct<a class="headerlink" href="#ruissellement-direct" title="Permanent link">&para;</a></h3>
+<p>La somme d'humidité des cinq couches supérieures est :</p>
+<div class="arithmatex">\[S = \sum_{i=1}^{5} W_i, \quad S_{\max} = 125 \text{ mm}\]</div>
+<p>La fraction de ruissellement direct dépendant de l'humidité :</p>
+<div class="arithmatex">\[H' = X_1 \cdot \frac{S}{S_{\max}}\]</div>
+<div class="arithmatex">\[P_{r1} = H' \cdot P_n\]</div>
+<h3 id="infiltration">Infiltration<a class="headerlink" href="#infiltration" title="Permanent link">&para;</a></h3>
+<p>La capacité d'infiltration décroît exponentiellement avec la saturation du sol :</p>
+<div class="arithmatex">\[F_r = Y_m \cdot \exp\!\left(-X_2 \cdot \frac{S}{S_{\max}}\right), \quad Y_m = 200 \text{ mm/d}\]</div>
+<p>Infiltration réelle et excès de surface :</p>
+<div class="arithmatex">\[P_s = \min\!\bigl(F_r,\; \max(0, P_n - P_{r1})\bigr)\]</div>
+<div class="arithmatex">\[P_{r2} = \max\!\bigl(0,\; P_n - P_{r1} - P_s\bigr)\]</div>
+<h3 id="suivi-de-lhumidite-du-sol-sur-16-couches">Suivi de l'humidité du sol sur 16 couches<a class="headerlink" href="#suivi-de-lhumidite-du-sol-sur-16-couches" title="Permanent link">&para;</a></h3>
+<p>Pour chaque couche <span class="arithmatex">\(i = 1, 2, \ldots, 16\)</span> :</p>
+<div class="arithmatex">\[W_i \leftarrow W_i + P_s\]</div>
+<div class="arithmatex">\[P_s \leftarrow \max(0, W_i - 25)\]</div>
+<div class="arithmatex">\[W_i \leftarrow W_i - P_s\]</div>
+<div class="arithmatex">\[E_i = \min\!\bigl(W_i,\; X_3^{\,i} \cdot E_n\bigr)\]</div>
+<div class="arithmatex">\[W_i \leftarrow W_i - E_i\]</div>
+<div class="arithmatex">\[E_n \leftarrow E_n - E_i\]</div>
+<p>Le <span class="arithmatex">\(P_s\)</span> restant après la couche inférieure est l'<strong>écoulement hypodermique</strong> :</p>
+<div class="arithmatex">\[I = P_s \big|_{i=16}\]</div>
+<p>La somme d'humidité des cinq couches supérieures <span class="arithmatex">\(S\)</span> est ensuite recalculée pour le pas de temps suivant :</p>
+<div class="arithmatex">\[S \leftarrow \sum_{i=1}^{5} W_i\]</div>
+<h3 id="routage-souterrain-lineaire">Routage souterrain linéaire<a class="headerlink" href="#routage-souterrain-lineaire" title="Permanent link">&para;</a></h3>
+<p>Le réservoir linéaire reçoit une fraction <span class="arithmatex">\((1 - X_8)\)</span> de l'écoulement hypodermique :</p>
+<div class="arithmatex">\[L \leftarrow L + (1 - X_8) \cdot I\]</div>
+<div class="arithmatex">\[Q_l = \frac{L}{X_5}\]</div>
+<div class="arithmatex">\[L \leftarrow L - Q_l\]</div>
+<h3 id="routage-de-surface-quadratique">Routage de surface quadratique<a class="headerlink" href="#routage-de-surface-quadratique" title="Permanent link">&para;</a></h3>
+<p>Le réservoir quadratique reçoit le reste de l'écoulement hypodermique plus l'excès de surface :</p>
+<div class="arithmatex">\[T \leftarrow T + X_8 \cdot I + P_{r2}\]</div>
+<div class="arithmatex">\[Q_t = \frac{T^2}{T + X_4}\]</div>
+<div class="arithmatex">\[T \leftarrow T - Q_t\]</div>
+<h3 id="routage-par-delai">Routage par délai<a class="headerlink" href="#routage-par-delai" title="Permanent link">&para;</a></h3>
+<p>Le débit total avant routage :</p>
+<div class="arithmatex">\[Q = Q_l + Q_t + P_{r1}\]</div>
+<p>Le registre <span class="arithmatex">\(\{H_k\}\)</span> est mis à jour avec la règle décalage-et-addition :</p>
+<div class="arithmatex">\[H_k \leftarrow H_{k+1} + d_k \cdot Q \quad \text{for } k = 0, 1, \ldots, n - 2\]</div>
+<div class="arithmatex">\[H_{n-1} \leftarrow d_{n-1} \cdot Q\]</div>
+<p>Le débit simulé est :</p>
+<div class="arithmatex">\[Q_{\text{sim}} = \max(0,\; H_0)\]</div>
+<h2 id="references">Références<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>O'Connell, P. E., Nash, J. E., &amp; Farrell, J. P. (1970).
+River flow forecasting through conceptual models, Part II: The Brosna catchment at Ferbane.
+<em>Journal of Hydrology</em>, 10(4), 317–329.</p>
+<p>Kachroo, R. K. (1992).
+River flow forecasting. Part 5. Applications of a conceptual model.
+<em>Journal of Hydrology</em>, 133(1-2), 141–178.</p>
+<p>Perrin, C. (2000).
+<em>Vers une amélioration d'un modèle global pluie-débit au travers d'une approche comparative</em>.
+PhD dissertation, Institut National Polytechnique de Grenoble, France.
+Annex 1, Fiche n°30 (SMAR), pp. 438–441.</p>
+<p>Thiboult, A., Seiller, G., Poncelet, C., &amp; Anctil, F. (2020).
+The HOOPLA toolbox: a HydrOlOgical Prediction LAboratory.
+<em>Hydrology and Earth System Sciences Discussions</em>.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Dernière mise à jour">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="8 août 2026 21:00:59 UTC">8 août 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Créé">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="8 août 2026 21:00:59 UTC">8 août 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Retour en haut de la page
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
+        
+          
+          <a href="../simhyd/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Modèle SIMHYD">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Précédent
+              </span>
+              <div class="md-ellipsis">
+                Modèle SIMHYD
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../tank/" class="md-footer__link md-footer__link--next" aria-label="Suivant: Modèle TANK">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Suivant
+              </span>
+              <div class="md-ellipsis">
+                Modèle TANK
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/antoinelb/holmes" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../../assets/javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

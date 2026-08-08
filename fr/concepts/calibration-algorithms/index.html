@@ -1,0 +1,2457 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="HydrOLogical Modeling Educational Software - Documentation">
+      
+      
+        <meta name="author" content="Université Laval">
+      
+      
+        <link rel="canonical" href="https://antoinelb.github.io/holmes/fr/concepts/calibration-algorithms/">
+      
+      
+        <link rel="prev" href="../pet-models/">
+      
+      
+        <link rel="next" href="../metrics/">
+      
+      
+        
+          <link rel="alternate" href="../../../concepts/calibration-algorithms/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="fr">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Calage - HOLMES Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#algorithmes-de-calage" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../" title="HOLMES Documentation" class="md-header__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HOLMES Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Calage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../concepts/calibration-algorithms/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antoinelb/holmes" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guide d'utilisation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Référence
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="HOLMES Documentation" class="md-nav__button md-logo" aria-label="HOLMES Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HOLMES Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antoinelb/holmes" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antoinelb/holmes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'utilisation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide d'utilisation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/stations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/weather/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Météo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/calibration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/projection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flux de travail courants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles hydrologiques
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modèles hydrologiques
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/bucket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle bucket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/cequeau/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle CEQUEAU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/crec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle CREC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/gardenia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle GARDENIA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/gr4j/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle GR4J
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/hbv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle HBV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/hymod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle HYMOD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/ihacres/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle IHACRES
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/martine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MARTINE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/mohyse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MOHYSE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/mordor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle MORDOR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/nam/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle NAM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/pdm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle PDM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/sacramento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SACRAMENTO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/simhyd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SIMHYD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/smar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle SMAR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/tank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle TANK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/topmodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle TOPMODEL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/wageningen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle WAGENINGEN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hydro/xinanjiang/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèle XINANJIANG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../snow-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles de neige
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pet-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modèles d'évapotranspiration potentielle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sce-ua-shuffled-complex-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SCE-UA : Shuffled Complex Evolution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SCE-UA : Shuffled Complex Evolution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apercu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aperçu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concepts-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepts clés
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fonctionnement-de-sce-ua" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fonctionnement de SCE-UA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parametres-de-lalgorithme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paramètres de l'algorithme
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#details-mathematiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Détails mathématiques
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#considerations-pratiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Considérations pratiques
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problemes-courants-et-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problèmes courants et solutions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options-de-transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Options de transformation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Références
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Métriques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Référence
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Référence
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Journal des modifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sce-ua-shuffled-complex-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SCE-UA : Shuffled Complex Evolution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SCE-UA : Shuffled Complex Evolution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apercu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aperçu
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concepts-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepts clés
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fonctionnement-de-sce-ua" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fonctionnement de SCE-UA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parametres-de-lalgorithme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paramètres de l'algorithme
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#details-mathematiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Détails mathématiques
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#considerations-pratiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Considérations pratiques
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problemes-courants-et-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problèmes courants et solutions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options-de-transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Options de transformation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Références
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="algorithmes-de-calage">Algorithmes de calage<a class="headerlink" href="#algorithmes-de-calage" title="Permanent link">&para;</a></h1>
+<h2 id="sce-ua-shuffled-complex-evolution">SCE-UA : Shuffled Complex Evolution<a class="headerlink" href="#sce-ua-shuffled-complex-evolution" title="Permanent link">&para;</a></h2>
+<h3 id="apercu">Aperçu<a class="headerlink" href="#apercu" title="Permanent link">&para;</a></h3>
+<p>Le calage d'un modèle consiste à trouver les valeurs de paramètres qui rapprochent le plus possible les sorties du modèle des observations.
+En modélisation pluie-débit, cela signifie ajuster des paramètres comme la capacité du sol, les taux de récession et les temps de routage jusqu'à ce que le débit simulé ressemble au débit observé.</p>
+<p>C'est fondamentalement un problème d'optimisation : on cherche les valeurs de paramètres qui minimisent (ou maximisent) une fonction objectif mesurant l'écart entre simulations et observations.
+La difficulté est que les modèles hydrologiques ont des surfaces de réponse complexes comportant de multiples optimums locaux — les méthodes simples fondées sur le gradient restent souvent piégées dans des solutions sous-optimales.</p>
+<p>SCE-UA (Shuffled Complex Evolution - University of Arizona) est un algorithme d'optimisation globale conçu spécifiquement pour le calage des modèles hydrologiques.
+Développé par Duan, Sorooshian et Gupta au début des années 1990, il est devenu le standard de fait pour le calage automatique des modèles pluie-débit conceptuels.
+SCE-UA combine des éléments de plusieurs traditions d'optimisation pour explorer efficacement l'espace des paramètres et trouver de façon fiable l'optimum global.</p>
+<h3 id="concepts-cles">Concepts clés<a class="headerlink" href="#concepts-cles" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>Fonction objectif</strong> : une mesure mathématique de l'adéquation du modèle aux observations.
+  Les choix courants incluent l'efficacité de Nash-Sutcliffe (NSE), l'efficacité de Kling-Gupta (KGE) ou l'erreur quadratique moyenne (RMSE).
+  L'algorithme de calage tente d'optimiser cette fonction.</p>
+</li>
+<li>
+<p><strong>Espace des paramètres</strong> : l'espace multidimensionnel défini par les bornes des paramètres.
+  Pour un modèle à 4 paramètres comme GR4J, c'est un hypercube à 4 dimensions.</p>
+</li>
+<li>
+<p><strong>Optimisation globale vs locale</strong> : les méthodes locales trouvent le minimum le plus proche; les méthodes globales explorent tout l'espace.
+  Les modèles hydrologiques exigent des méthodes globales parce que leurs surfaces de réponse comportent de nombreux minimums locaux.</p>
+</li>
+<li>
+<p><strong>Recherche par population</strong> : plutôt que de suivre une seule solution, SCE-UA maintient une population de solutions candidates qui explorent collectivement l'espace des paramètres.</p>
+</li>
+<li>
+<p><strong>Complexe</strong> : un sous-ensemble de la population qui évolue de façon semi-indépendante.
+  L'aspect « shuffled » (mélangé) vient du mélange périodique des complexes pour partager l'information.</p>
+</li>
+</ul>
+<h3 id="fonctionnement-de-sce-ua">Fonctionnement de SCE-UA<a class="headerlink" href="#fonctionnement-de-sce-ua" title="Permanent link">&para;</a></h3>
+<p>SCE-UA procède par un processus itératif d'évolution et de mélange :</p>
+<p><strong>Étape 1 : initialisation</strong>.
+Générer une population aléatoire de jeux de paramètres couvrant l'espace des paramètres faisable.
+Évaluer la fonction objectif pour chacun.</p>
+<p><strong>Étape 2 : partition en complexes</strong>.
+Trier la population par valeur de la fonction objectif et distribuer les points entre les complexes en tourniquet (round-robin).
+Chaque complexe contient un mélange de bonnes et de mauvaises solutions.</p>
+<p><strong>Étape 3 : évolution de chaque complexe</strong>.
+Au sein de chaque complexe, sélectionner de façon répétée un sous-ensemble de points (simplexe) et l'améliorer par une procédure de Nelder-Mead modifiée :</p>
+<ul>
+<li>Sélectionner les points en favorisant les meilleures solutions (par une distribution triangulaire)</li>
+<li>Calculer un point de réflexion qui s'éloigne de la pire solution</li>
+<li>Si la réflexion améliore la solution, la conserver</li>
+<li>Sinon, essayer une contraction vers le centroïde</li>
+<li>Si tout échoue, générer un point aléatoire</li>
+</ul>
+<p><strong>Étape 4 : mélange</strong>.
+Recombiner tous les complexes en une seule population, trier par fonction objectif et redistribuer en nouveaux complexes.
+Cela permet à l'information de circuler entre les complexes.</p>
+<p><strong>Étape 5 : vérification de la convergence</strong>.
+Arrêter si :</p>
+<ul>
+<li>Le nombre maximal d'évaluations de la fonction est atteint</li>
+<li>Les paramètres ont convergé (tous les complexes ont trouvé des solutions similaires)</li>
+<li>La fonction objectif ne s'améliore plus</li>
+</ul>
+<p><strong>Étape 6 : répéter</strong> à partir de l'étape 2 jusqu'à convergence.</p>
+<h3 id="parametres-de-lalgorithme">Paramètres de l'algorithme<a class="headerlink" href="#parametres-de-lalgorithme" title="Permanent link">&para;</a></h3>
+<p>SCE-UA possède plusieurs paramètres d'algorithme qui contrôlent son comportement :</p>
+<table>
+<thead>
+<tr>
+<th>Paramètre</th>
+<th>Description</th>
+<th>Valeur typique</th>
+<th>Effet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_complexes</code></td>
+<td>Nombre de complexes</td>
+<td>2–5</td>
+<td>Plus de complexes = plus d'exploration, convergence plus lente</td>
+</tr>
+<tr>
+<td><code>max_evaluations</code></td>
+<td>Nombre maximal d'évaluations de la fonction</td>
+<td>5000–50000</td>
+<td>Budget de calcul</td>
+</tr>
+<tr>
+<td><code>geometric_range_threshold</code></td>
+<td>Critère de convergence</td>
+<td>0.001</td>
+<td>Arrêt quand les paramètres convergent à cette précision</td>
+</tr>
+<tr>
+<td><code>p_convergence_threshold</code></td>
+<td>Seuil d'amélioration de l'objectif</td>
+<td>0.1%</td>
+<td>Arrêt quand l'amélioration passe sous ce seuil</td>
+</tr>
+<tr>
+<td><code>k_stop</code></td>
+<td>Nombre d'itérations pour le contrôle d'amélioration</td>
+<td>10</td>
+<td>Fenêtre d'évaluation de l'amélioration</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Choisir le nombre de complexes :</strong></p>
+<ul>
+<li>Pour les problèmes simples (4 paramètres) : 2–3 complexes</li>
+<li>Pour les problèmes complexes (7 paramètres et plus) : 4–5 complexes</li>
+<li>Plus de complexes réduisent le risque de convergence prématurée mais augmentent le calcul</li>
+</ul>
+<h3 id="details-mathematiques">Détails mathématiques<a class="headerlink" href="#details-mathematiques" title="Permanent link">&para;</a></h3>
+<h4 id="structure-de-la-population">Structure de la population<a class="headerlink" href="#structure-de-la-population" title="Permanent link">&para;</a></h4>
+<p>Pour <span class="arithmatex">\(n\)</span> paramètres de modèle, SCE-UA utilise :</p>
+<ul>
+<li>Points par complexe : <span class="arithmatex">\(m = 2n + 1\)</span></li>
+<li>Taille du simplexe : <span class="arithmatex">\(n + 1\)</span></li>
+<li>Pas d'évolution par complexe : <span class="arithmatex">\(m\)</span></li>
+<li>Population totale : <span class="arithmatex">\(p = m \times n_{complexes}\)</span></li>
+</ul>
+<h4 id="selection-du-simplexe">Sélection du simplexe<a class="headerlink" href="#selection-du-simplexe" title="Permanent link">&para;</a></h4>
+<p>Les points d'un complexe sont sélectionnés pour le simplexe selon une distribution de probabilité triangulaire qui favorise les meilleures solutions :</p>
+<div class="arithmatex">\[L_{pos} = \left\lfloor (m + 0.5) - \sqrt{(m + 0.5)^2 - m(m+1) \cdot U} \right\rfloor\]</div>
+<p>où <span class="arithmatex">\(U\)</span> est un nombre aléatoire uniforme dans <span class="arithmatex">\([0, 1]\)</span>.
+Cela donne une probabilité plus élevée aux points ayant de meilleures valeurs d'objectif (indices plus faibles dans le complexe trié).</p>
+<h4 id="evolution-du-simplexe">Évolution du simplexe<a class="headerlink" href="#evolution-du-simplexe" title="Permanent link">&para;</a></h4>
+<p>Le pas d'évolution utilise des coefficients de réflexion et de contraction :</p>
+<ul>
+<li>Coefficient de réflexion : <span class="arithmatex">\(\alpha = 1.0\)</span></li>
+<li>Coefficient de contraction : <span class="arithmatex">\(\beta = 0.5\)</span></li>
+</ul>
+<p><strong>Réflexion :</strong></p>
+<div class="arithmatex">\[\mathbf{x}_{reflect} = \mathbf{c} + \alpha(\mathbf{c} - \mathbf{x}_{worst})\]</div>
+<p>où <span class="arithmatex">\(\mathbf{c}\)</span> est le centroïde de tous les points du simplexe sauf le pire.</p>
+<p><strong>Contraction :</strong></p>
+<div class="arithmatex">\[\mathbf{x}_{contract} = \mathbf{x}_{worst} + \beta(\mathbf{c} - \mathbf{x}_{worst})\]</div>
+<p>Si ni la réflexion ni la contraction n'améliorent le pire point, un point aléatoire est généré dans les bornes des paramètres.</p>
+<h4 id="criteres-de-convergence">Critères de convergence<a class="headerlink" href="#criteres-de-convergence" title="Permanent link">&para;</a></h4>
+<p><strong>Étendue géométrique normalisée (GNRNG) :</strong></p>
+<div class="arithmatex">\[GNRNG = \exp\left(\frac{1}{n}\sum_{i=1}^{n} \ln\left(\frac{range_i}{bounds_i}\right)\right)\]</div>
+<p>où <span class="arithmatex">\(range_i\)</span> est l'étendue du paramètre <span class="arithmatex">\(i\)</span> dans la population courante et <span class="arithmatex">\(bounds_i\)</span> son étendue faisable.
+Convergence quand <span class="arithmatex">\(GNRNG &lt; threshold\)</span>.</p>
+<p><strong>Critère de variation en pourcentage :</strong></p>
+<div class="arithmatex">\[\Delta = \frac{|f_t - f_{t-k}|}{\bar{f}} \times 100\]</div>
+<p>où <span class="arithmatex">\(f_t\)</span> est la meilleure valeur d'objectif à l'itération <span class="arithmatex">\(t\)</span> et <span class="arithmatex">\(\bar{f}\)</span> la moyenne des meilleures valeurs récentes.
+Convergence quand <span class="arithmatex">\(\Delta &lt; threshold\)</span>.</p>
+<h3 id="considerations-pratiques">Considérations pratiques<a class="headerlink" href="#considerations-pratiques" title="Permanent link">&para;</a></h3>
+<h4 id="avant-le-calage">Avant le calage<a class="headerlink" href="#avant-le-calage" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>Définir soigneusement les bornes des paramètres</strong>.
+   Les bornes doivent être physiquement réalistes mais assez larges pour permettre l'exploration.
+   Des bornes trop étroites peuvent exclure le véritable optimum; des bornes trop larges gaspillent l'effort de calcul.</p>
+</li>
+<li>
+<p><strong>Choisir une fonction objectif appropriée</strong>.
+   Le NSE met l'accent sur les débits de pointe; le KGE fournit une évaluation plus équilibrée.
+   Réfléchissez aux aspects de l'hydrogramme qui comptent le plus pour votre application.</p>
+</li>
+<li>
+<p><strong>Utiliser une période d'initialisation</strong>.
+   La première année de simulation est souvent affectée par les conditions initiales.
+   Excluez-la du calcul de la fonction objectif.</p>
+</li>
+<li>
+<p><strong>Réserver des données pour la validation</strong>.
+   N'utilisez pas toutes vos données pour le calage.
+   Gardez quelques années de côté pour tester si le modèle calé généralise.</p>
+</li>
+</ol>
+<h4 id="pendant-le-calage">Pendant le calage<a class="headerlink" href="#pendant-le-calage" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Suivre la progression</strong>.
+   Surveillez :</li>
+<li>Une amélioration régulière de la fonction objectif</li>
+<li>Des paramètres convergeant vers des valeurs similaires</li>
+<li>
+<p>Une exploration adéquate de l'espace des paramètres</p>
+</li>
+<li>
+<p><strong>Être patient</strong>.
+   L'optimisation globale prend du temps.
+   Un arrêt prématuré peut manquer de meilleures solutions.</p>
+</li>
+<li>
+<p><strong>Exécutions multiples</strong>.
+   Lancez le calage plusieurs fois avec des graines aléatoires différentes.
+   Si les résultats diffèrent sensiblement, le problème peut avoir plusieurs optimums.</p>
+</li>
+</ol>
+<h4 id="interpreter-les-resultats">Interpréter les résultats<a class="headerlink" href="#interpreter-les-resultats" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Vérifier les valeurs des paramètres</strong>.
+   Des paramètres sur les bornes ou près d'elles peuvent indiquer :</li>
+<li>Des bornes trop restrictives</li>
+<li>Une structure de modèle inappropriée</li>
+<li>
+<p>Des problèmes de qualité des données</p>
+</li>
+<li>
+<p><strong>Examiner les résidus</strong>.
+   Tracez les débits simulés contre les débits observés.
+   Des motifs systématiques (par exemple des pointes toujours sous-estimées) suggèrent des limites structurelles du modèle.</p>
+</li>
+<li>
+<p><strong>Comparer les métriques</strong>.
+   Calculez plusieurs métriques de performance (RMSE, NSE, KGE) même si vous n'en avez optimisé qu'une.
+   Cela révèle les compromis.</p>
+</li>
+<li>
+<p><strong>Valider sur des données indépendantes</strong>.
+   Appliquez le modèle calé à des données non utilisées pour le calage.
+   Une dégradation de la performance indique un surajustement.</p>
+</li>
+</ol>
+<h3 id="problemes-courants-et-solutions">Problèmes courants et solutions<a class="headerlink" href="#problemes-courants-et-solutions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Problème</th>
+<th>Causes possibles</th>
+<th>Solutions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Le calage ne converge jamais</td>
+<td>Bornes trop larges, évaluations insuffisantes</td>
+<td>Resserrer les bornes, augmenter <code>max_evaluations</code></td>
+</tr>
+<tr>
+<td>Des exécutions différentes donnent des résultats différents</td>
+<td>Optimums locaux multiples</td>
+<td>Augmenter <code>n_complexes</code>, lancer plusieurs fois</td>
+</tr>
+<tr>
+<td>Les paramètres atteignent les bornes</td>
+<td>Bornes trop restrictives, problèmes de données</td>
+<td>Élargir les bornes, vérifier la qualité des données</td>
+</tr>
+<tr>
+<td>Mauvaise performance en validation</td>
+<td>Surajustement, bassin versant non stationnaire</td>
+<td>Utiliser une période de calage plus courte, ajouter de la régularisation</td>
+</tr>
+<tr>
+<td>Progression très lente</td>
+<td>Trop de paramètres, modèle coûteux</td>
+<td>Réduire la complexité, utiliser une implémentation efficace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="options-de-transformation">Options de transformation<a class="headerlink" href="#options-de-transformation" title="Permanent link">&para;</a></h3>
+<p>HOLMES permet d'appliquer des transformations au débit avant de calculer la fonction objectif :</p>
+<table>
+<thead>
+<tr>
+<th>Transformation</th>
+<th>Formule</th>
+<th>Effet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aucune</td>
+<td><span class="arithmatex">\(Q' = Q\)</span></td>
+<td>Poids égal à tous les débits</td>
+</tr>
+<tr>
+<td>Logarithmique</td>
+<td><span class="arithmatex">\(Q' = \ln(Q)\)</span></td>
+<td>Met l'accent sur les étiages</td>
+</tr>
+<tr>
+<td>Racine carrée</td>
+<td><span class="arithmatex">\(Q' = \sqrt{Q}\)</span></td>
+<td>Accent modéré sur les étiages</td>
+</tr>
+</tbody>
+</table>
+<p>La transformation logarithmique est utile quand vous voulez que le modèle capture fidèlement la récession, pas seulement les débits de pointe.</p>
+<h3 id="references">Références<a class="headerlink" href="#references" title="Permanent link">&para;</a></h3>
+<p>Duan, Q., Sorooshian, S., &amp; Gupta, V. (1992). Effective and efficient global optimization for conceptual rainfall-runoff models. <em>Water Resources Research</em>, 28(4), 1015-1031. <a href="https://doi.org/10.1029/91WR02985">https://doi.org/10.1029/91WR02985</a></p>
+<p>L'article original de SCE-UA, présentant l'algorithme et démontrant son efficacité sur le modèle Sacramento Soil Moisture Accounting.</p>
+<p>Duan, Q., Sorooshian, S., &amp; Gupta, V. K. (1994). Optimal use of the SCE-UA global optimization method for calibrating watershed models. <em>Journal of Hydrology</em>, 158(3-4), 265-284. <a href="https://doi.org/10.1016/0022-1694(94)90057-4">https://doi.org/10.1016/0022-1694(94)90057-4</a></p>
+<p>Un article de suivi fournissant des conseils pratiques sur les réglages de l'algorithme et les critères de convergence.</p>
+<p>Nelder, J. A., &amp; Mead, R. (1965). A simplex method for function minimization. <em>The Computer Journal</em>, 7(4), 308-313.</p>
+<p>L'algorithme du simplexe original qui fonde le pas d'évolution des complexes dans SCE-UA.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Dernière mise à jour">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="8 août 2026 21:00:59 UTC">8 août 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Créé">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="8 août 2026 21:00:59 UTC">8 août 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Retour en haut de la page
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
+        
+          
+          <a href="../pet-models/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Modèles d&#39;évapotranspiration potentielle">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Précédent
+              </span>
+              <div class="md-ellipsis">
+                Modèles d'évapotranspiration potentielle
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../metrics/" class="md-footer__link md-footer__link--next" aria-label="Suivant: Métriques">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Suivant
+              </span>
+              <div class="md-ellipsis">
+                Métriques
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/antoinelb/holmes" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.tabs.link", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../assets/javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
