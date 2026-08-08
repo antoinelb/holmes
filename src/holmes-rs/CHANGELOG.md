@@ -5,7 +5,13 @@ All notable changes to the holmes-rs Rust extension will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] - 2026-08-08
+
+### Added
+- DDS calibration algorithm (`calibration.dds.Dds`, Tolson & Shoemaker 2007): single-solution greedy stochastic search whose perturbation schedule scales to the evaluation budget, with the same `init`/`step` interface as `Sce` (including GIL release during computation)
+
+### Fixed
+- `Sce` and the snow submodule now report their Python module path as `holmes_rs.*` instead of the erroneous `hydro_rs.*`
 
 ## [0.5.1] - 2026-07-18
 
