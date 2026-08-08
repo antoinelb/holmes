@@ -43,6 +43,32 @@ export const frenchLocale = d3.timeFormatLocale({
   ],
 });
 
+// display names for the hydro models, shared by the model, calibration,
+// simulation and projection steps; model names are never translated, and
+// insertion order is the model step's grid order
+export const modelLabels = {
+  gr4j: "GR4J",
+  bucket: "Bucket",
+  cequeau: "CEQUEAU",
+  crec: "CREC",
+  gardenia: "Gardénia",
+  hbv: "HBV",
+  hymod: "HYMOD",
+  ihacres: "IHACRES",
+  martine: "Martine",
+  mohyse: "MOHYSE",
+  mordor: "MORDOR",
+  nam: "NAM",
+  pdm: "PDM",
+  sacramento: "Sacramento",
+  simhyd: "SIMHYD",
+  smar: "SMAR",
+  tank: "Tank",
+  topmodel: "TOPMODEL",
+  wageningen: "Wageningen",
+  xinanjiang: "Xinanjiang",
+};
+
 export const colours = [
   "blue",
   "red",

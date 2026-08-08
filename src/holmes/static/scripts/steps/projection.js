@@ -1,6 +1,8 @@
 import { clear, create, createLoading } from "../utils/elements.js";
 import { regimeView, splitColumnView } from "../utils/plot.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
+import { modelLabels } from "../utils/misc.js";
+import { t } from "../utils/text.js";
 import { complete } from "../pipeline.js";
 
 /*********/
@@ -28,37 +30,12 @@ const horizons = ["2020-2049", "2040-2069", "2070-2099"];
 
 // column order of the indicators figure; keys match the server payload
 const indicatorColumns = [
-  { key: "winter_min", label: "Winter min" },
-  { key: "spring_max", label: "Spring max" },
-  { key: "summer_min", label: "Summer min" },
-  { key: "autumn_max", label: "Autumn max" },
-  { key: "mean", label: "Mean" },
+  { key: "winter_min", label: t("Winter min", "Min hiver") },
+  { key: "spring_max", label: t("Spring max", "Max printemps") },
+  { key: "summer_min", label: t("Summer min", "Min été") },
+  { key: "autumn_max", label: t("Autumn max", "Max automne") },
+  { key: "mean", label: t("Mean", "Moyenne") },
 ];
-
-// display names mirror the model step; kept local since that list is not
-// exported and this step must not touch it
-const modelLabels = {
-  gr4j: "GR4J",
-  bucket: "Bucket",
-  cequeau: "CEQUEAU",
-  crec: "CREC",
-  gardenia: "Gardénia",
-  hbv: "HBV",
-  hymod: "HYMOD",
-  ihacres: "IHACRES",
-  martine: "Martine",
-  mohyse: "MOHYSE",
-  mordor: "MORDOR",
-  nam: "NAM",
-  pdm: "PDM",
-  sacramento: "Sacramento",
-  simhyd: "SIMHYD",
-  smar: "SMAR",
-  tank: "Tank",
-  topmodel: "TOPMODEL",
-  wageningen: "Wageningen",
-  xinanjiang: "Xinanjiang",
-};
 
 const defaultSettings = {
   climateModel: "ClimEx",
@@ -297,16 +274,16 @@ export function controlsView(model, dispatch) {
     controls.dataset.step = "projection";
     clear(controls);
     controls.append(
-      create("h2", {}, "Projection"),
+      create("h2", {}, t("Projection", "Projection")),
       climateModelField(model, dispatch),
-      segField("Scenario", "projection__scenario"),
-      segField("Horizon", "projection__horizon"),
+      segField(t("Scenario", "Scénario"), "projection__scenario"),
+      segField(t("Horizon", "Horizon"), "projection__horizon"),
       create("div", { id: "projection__models" }),
       create("div", { class: "simulation__actions" }, [
         create(
           "button",
           { id: "projection__export", type: "button" },
-          "Export",
+          t("Export", "Exporter"),
           [
             {
               event: "click",
@@ -322,7 +299,7 @@ export function controlsView(model, dispatch) {
 
 function climateModelField(model, dispatch) {
   return create("label", { class: "controls__field" }, [
-    create("span", {}, "Climate model"),
+    create("span", {}, t("Climate model", "Modèle climatique")),
     create(
       "select",
       { id: "projection__climate-model" },
@@ -408,7 +385,7 @@ function syncScenario(model, dispatch) {
     const s = btn.dataset.value;
     const count = proj.memberCounts?.[s];
     btn.textContent = count
-      ? `${scenarioLabels[s]} (${count} members)`
+      ? `${scenarioLabels[s]} (${count} ${t("members", "membres")})`
       : scenarioLabels[s];
     btn.classList.toggle(
       "projection__seg-btn--selected",
@@ -564,7 +541,10 @@ function captionsView(model) {
     `${station ? station.name : id} — ${scenarioLabels[scenario]} ${horizon.replace("-", "–")}`;
   document
     .getElementById("projection__indicators")
-    .querySelector("figcaption").textContent = "Indicators (mm/day)";
+    .querySelector("figcaption").textContent = t(
+    "Indicators (mm/day)",
+    "Indicateurs (mm/jour)",
+  );
 }
 
 function regimeChartView(model, current) {
@@ -611,15 +591,17 @@ function regimeChartView(model, current) {
     kind: "median",
     points: regimePoints(current.median?.regime ?? []),
   });
-  regimeView(svg, series, { label: "Streamflow (mm/day)" });
+  regimeView(svg, series, {
+    label: t("Streamflow (mm/day)", "Débit (mm/jour)"),
+  });
 }
 
 // the reference is the observed weather simulated over the simulation
 // period, so the legend names that period
 function historicalLabel(period) {
   return period
-    ? `historical (${period.start} – ${period.end})`
-    : "historical";
+    ? `${t("historical", "historique")} (${period.start} – ${period.end})`
+    : t("historical", "historique");
 }
 
 function regimePoints(regime) {

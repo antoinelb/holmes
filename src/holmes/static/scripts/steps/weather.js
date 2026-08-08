@@ -7,22 +7,43 @@ import {
 } from "../utils/elements.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
 import { hydrographView } from "../utils/plot.js";
+import { t } from "../utils/text.js";
 import { complete } from "../pipeline.js";
 import { sharedMapView } from "./stations.js";
 
 // ids match the backend WeatherMethod literal (src/holmes/data/weather.py)
 const methods = [
-  { id: "nearest_stations", label: "Nearest stations", icon: "share-2" },
+  {
+    id: "nearest_stations",
+    label: t("Nearest stations", "Stations les plus proches"),
+    icon: "share-2",
+  },
   { id: "era5", label: "ERA5", icon: "globe" },
-  { id: "ministry_grid", label: "Ministry grid", icon: "grid" },
+  {
+    id: "ministry_grid",
+    label: t("Ministry grid", "Grille du ministère"),
+    icon: "grid",
+  },
 ];
 
 // chart grid rows: precipitation bars above temperature lines
 const variables = [
-  { id: "precipitation", label: "Precipitation (mm)", mark: "bar" },
-  { id: "temperature", label: "Temperature (°C)", mark: "line" },
+  {
+    id: "precipitation",
+    label: t("Precipitation (mm)", "Précipitations (mm)"),
+    mark: "bar",
+  },
+  {
+    id: "temperature",
+    label: t("Temperature (°C)", "Température (°C)"),
+    mark: "line",
+  },
 ];
 const roles = ["calibration", "simulation"];
+const roleLabels = {
+  calibration: t("Calibration", "Calage"),
+  simulation: t("Simulation", "Simulation"),
+};
 
 /**********/
 /* update */
@@ -148,7 +169,7 @@ export function controlsView(model, dispatch) {
     controls.dataset.step = "weather";
     clear(controls);
     controls.append(
-      create("h2", {}, "Weather"),
+      create("h2", {}, t("Weather", "Météo")),
       create(
         "div",
         { class: "controls__methods" },
@@ -156,9 +177,14 @@ export function controlsView(model, dispatch) {
       ),
       nStationsField(model, dispatch),
       create("div", { class: "weather__actions" }, [
-        create("button", { id: "weather__export", type: "button" }, "Export", [
-          { event: "click", fct: () => dispatch({ type: "weather/Export" }) },
-        ]),
+        create(
+          "button",
+          { id: "weather__export", type: "button" },
+          t("Export", "Exporter"),
+          [
+            { event: "click", fct: () => dispatch({ type: "weather/Export" }) },
+          ],
+        ),
       ]),
     );
   }
@@ -371,7 +397,7 @@ function cellSeries(model, field, role) {
 function captionView(model, role) {
   const id = model.config[`${role}Station`];
   const station = model.stations?.find((s) => s.id === id);
-  const label = role[0].toUpperCase() + role.slice(1);
+  const label = roleLabels[role];
   document
     .getElementById(`weather__precipitation-${role}`)
     .querySelector("figcaption").textContent = station

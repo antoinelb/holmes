@@ -91,7 +91,9 @@ def goto_app(page: Page) -> None:
 
 
 def goto_step(page: Page, title: str) -> None:
-    button = page.locator(f'#sidebar button[title="{title}"]')
+    # located by the language-neutral step id, so the walk also works when
+    # the UI is in French (the title attribute is translated)
+    button = page.locator(f'#sidebar button[data-step="{step_keys[title]}"]')
     # locked buttons are not disabled: a click would silently no-op
     expect(button).not_to_have_class(locked_re)
     button.click()

@@ -1,6 +1,7 @@
 import { create } from "./utils/elements.js";
 import { onKey } from "./utils/listeners.js";
 import { range } from "./utils/misc.js";
+import { language, t } from "./utils/text.js";
 
 /*********/
 /* model */
@@ -28,6 +29,9 @@ export function update(model, msg, dispatch) {
       };
     case "settings/ToggleTheme":
       return toggleTheme(model);
+    case "settings/ToggleLanguage":
+      toggleLanguage();
+      return model;
     case "settings/GetVersion":
       getVersion(dispatch);
       return { ...model, settings: { ...model.settings, loading: true } };
@@ -56,6 +60,16 @@ function toggleTheme(model) {
   const theme = model.settings.theme === "dark" ? "light" : "dark";
   window.localStorage.setItem("holmes--settings--theme", theme);
   return { ...model, settings: { ...model.settings, theme: theme } };
+}
+
+function toggleLanguage() {
+  window.localStorage.setItem(
+    "holmes--settings--language",
+    language === "fr" ? "en" : "fr",
+  );
+  // reloading re-renders every view (and refetches from warm caches), which
+  // beats invalidating every rebuild-once guard and chart signature by hand
+  window.location.reload();
 }
 
 function resetAll() {
@@ -106,10 +120,20 @@ export function initSettingsView(dispatch) {
       event,
     ),
   );
+  document.addEventListener("keydown", (event) =>
+    onKey(
+      "L",
+      async () =>
+        await dispatch({
+          type: "settings/ToggleLanguage",
+        }),
+      event,
+    ),
+  );
   return create("div", { id: "settings" }, [
     create(
       "button",
-      { title: "Toggle settings" },
+      { title: t("Toggle settings", "Ouvrir les paramètres") },
       [
         create("svg", { class: "icon" }, [
           create("use", { href: "#icon-menu" }),
@@ -136,7 +160,7 @@ export function initSettingsView(dispatch) {
           create("svg", { id: "theme__sun", class: "icon" }, [
             create("use", { href: "#icon-sun" }),
           ]),
-          create("span", {}, ["Toggle theme"]),
+          create("span", {}, [t("Toggle theme", "Changer de thème")]),
           create("span", { class: "hotkey" }, ["T"]),
         ],
         [
@@ -151,12 +175,33 @@ export function initSettingsView(dispatch) {
       ),
       create(
         "button",
+        { id: "language" },
+        [
+          create("svg", { class: "icon" }, [
+            create("use", { href: "#icon-globe" }),
+          ]),
+          // shows the language the toggle switches to, not the current one
+          create("span", {}, [language === "fr" ? "English" : "Français"]),
+          create("span", { class: "hotkey" }, ["L"]),
+        ],
+        [
+          {
+            event: "click",
+            fct: async () =>
+              await dispatch({
+                type: "settings/ToggleLanguage",
+              }),
+          },
+        ],
+      ),
+      create(
+        "button",
         { id: "reset" },
         [
           create("svg", { class: "icon" }, [
             create("use", { href: "#icon-refresh-cw" }),
           ]),
-          create("span", {}, ["Reset all"]),
+          create("span", {}, [t("Reset all", "Tout réinitialiser")]),
         ],
         [
           {
@@ -169,7 +214,7 @@ export function initSettingsView(dispatch) {
         ],
       ),
       create("div", { id: "version" }, [
-        create("span", {}, ["Version: "]),
+        create("span", {}, [t("Version: ", "Version : ")]),
         create("span"),
       ]),
     ]),

@@ -6,6 +6,8 @@ import {
 } from "../utils/elements.js";
 import { multiSeriesView } from "../utils/plot.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
+import { modelLabels } from "../utils/misc.js";
+import { t } from "../utils/text.js";
 import { complete } from "../pipeline.js";
 
 /*********/
@@ -20,48 +22,23 @@ const objectives = [
   { id: "kge", label: "KGE" },
 ];
 const transformations = [
-  { id: "none", label: "None" },
+  { id: "none", label: t("None", "Aucune") },
   { id: "log", label: "Log" },
   { id: "sqrt", label: "Sqrt" },
 ];
 const algorithms = [
-  { id: "manual", label: "Manual" },
+  { id: "manual", label: t("Manual", "Manuel") },
   { id: "sce", label: "SCE" },
 ];
 
-// display names mirror the model step; kept local since that list is not
-// exported and this step must not touch it
-const modelLabels = {
-  gr4j: "GR4J",
-  bucket: "Bucket",
-  cequeau: "CEQUEAU",
-  crec: "CREC",
-  gardenia: "Gardénia",
-  hbv: "HBV",
-  hymod: "HYMOD",
-  ihacres: "IHACRES",
-  martine: "Martine",
-  mohyse: "MOHYSE",
-  mordor: "MORDOR",
-  nam: "NAM",
-  pdm: "PDM",
-  sacramento: "Sacramento",
-  simhyd: "SIMHYD",
-  smar: "SMAR",
-  tank: "Tank",
-  topmodel: "TOPMODEL",
-  wageningen: "Wageningen",
-  xinanjiang: "Xinanjiang",
-};
-
 // import-dialog labels for the config keys an import can replace
 const configLabels = {
-  calibrationStation: "Calibration station",
-  calibrationPeriod: "Calibration period",
-  weatherMethod: "Weather method",
-  weatherNStations: "Weather stations",
-  snowModel: "Snow model",
-  hydroModels: "Models",
+  calibrationStation: t("Calibration station", "Station de calage"),
+  calibrationPeriod: t("Calibration period", "Période de calage"),
+  weatherMethod: t("Weather method", "Méthode météo"),
+  weatherNStations: t("Weather stations", "Stations météo"),
+  snowModel: t("Snow model", "Modèle de neige"),
+  hydroModels: t("Models", "Modèles"),
 };
 
 // what survives a reload: the settings, the fitted parameters and the objective
@@ -815,17 +792,31 @@ export function controlsView(model, dispatch) {
     clear(controls);
     controls.append(
       titleView(dispatch),
-      settingSelect("objective", "Objective", objectives, dispatch),
+      settingSelect(
+        "objective",
+        t("Objective", "Objectif"),
+        objectives,
+        dispatch,
+      ),
       settingSelect(
         "transformation",
-        "Transformation",
+        t("Transformation", "Transformation"),
         transformations,
         dispatch,
       ),
-      settingSelect("algorithm", "Algorithm", algorithms, dispatch),
+      settingSelect(
+        "algorithm",
+        t("Algorithm", "Algorithme"),
+        algorithms,
+        dispatch,
+      ),
       warmupField(model, dispatch),
       create("details", { class: "controls__details" }, [
-        create("summary", {}, "Algorithm settings"),
+        create(
+          "summary",
+          {},
+          t("Algorithm settings", "Réglages de l'algorithme"),
+        ),
         create("div", { id: "calibration__algo-params" }),
       ]),
       create("div", { id: "calibration__models" }),
@@ -853,11 +844,11 @@ export function controlsView(model, dispatch) {
 // algorithm and warmup the user picked survive a reset of the fit itself
 function titleView(dispatch) {
   return create("div", { class: "calibration__title" }, [
-    create("h2", {}, "Calibration"),
+    create("h2", {}, t("Calibration", "Calage")),
     create(
       "button",
       { id: "calibration__clear", class: "calibration__clear", type: "button" },
-      "Clear",
+      t("Clear", "Effacer"),
       [{ event: "click", fct: () => dispatch({ type: "calibration/Reset" }) }],
     ),
   ]);
@@ -886,7 +877,7 @@ function settingSelect(key, label, options, dispatch) {
 
 function warmupField(model, dispatch) {
   return create("label", { class: "controls__field" }, [
-    create("span", {}, "Warmup years"),
+    create("span", {}, t("Warmup years", "Années d'initialisation")),
     createSlider(
       "calibration__warmup",
       0,
@@ -919,7 +910,7 @@ function actionsView(dispatch) {
     create(
       "button",
       { id: "calibration__calibrate", type: "button" },
-      "Calibrate",
+      t("Calibrate", "Caler"),
       [
         {
           event: "click",
@@ -934,18 +925,28 @@ function actionsView(dispatch) {
         },
       ],
     ),
-    create("button", { id: "calibration__export", type: "button" }, "Export", [
-      { event: "click", fct: () => dispatch({ type: "calibration/Export" }) },
-    ]),
+    create(
+      "button",
+      { id: "calibration__export", type: "button" },
+      t("Export", "Exporter"),
+      [
+        { event: "click", fct: () => dispatch({ type: "calibration/Export" }) },
+      ],
+    ),
     // a native file input drives the import; the button only proxies the
     // click so the input can stay hidden
-    create("button", { id: "calibration__import", type: "button" }, "Import", [
-      {
-        event: "click",
-        fct: () =>
-          document.getElementById("calibration__import-file").click(),
-      },
-    ]),
+    create(
+      "button",
+      { id: "calibration__import", type: "button" },
+      t("Import", "Importer"),
+      [
+        {
+          event: "click",
+          fct: () =>
+            document.getElementById("calibration__import-file").click(),
+        },
+      ],
+    ),
     create(
       "input",
       {
@@ -977,14 +978,20 @@ async function importFile(input, dispatch) {
     console.error(error);
     dispatch({
       type: "calibration/ImportError",
-      data: "This file is not valid JSON.",
+      data: t(
+        "This file is not valid JSON.",
+        "Ce fichier n'est pas un JSON valide.",
+      ),
     });
     return;
   }
   if (!validImport(parsed)) {
     dispatch({
       type: "calibration/ImportError",
-      data: "This file is not a calibration export.",
+      data: t(
+        "This file is not a calibration export.",
+        "Ce fichier n'est pas un export de calage.",
+      ),
     });
     return;
   }
@@ -1084,8 +1091,12 @@ function importConfirmContent(model, state, dispatch) {
     create(
       "p",
       {},
-      "This calibration was exported under a different configuration." +
-        " Replace the current one?",
+      t(
+        "This calibration was exported under a different configuration." +
+          " Replace the current one?",
+        "Ce calage a été exporté sous une configuration différente." +
+          " Remplacer le calage actuel?",
+      ),
     ),
     create(
       "ul",
@@ -1102,7 +1113,7 @@ function importConfirmContent(model, state, dispatch) {
       create(
         "button",
         { type: "button", class: "calibration__dialog-secondary" },
-        "Cancel",
+        t("Cancel", "Annuler"),
         [
           {
             event: "click",
@@ -1110,7 +1121,7 @@ function importConfirmContent(model, state, dispatch) {
           },
         ],
       ),
-      create("button", { type: "button" }, "Replace", [
+      create("button", { type: "button" }, t("Replace", "Remplacer"), [
         {
           event: "click",
           fct: () => dispatch({ type: "calibration/ImportConfirm" }),
@@ -1266,7 +1277,7 @@ function modelSection(model, m, dispatch) {
             type: "button",
             hidden: "",
           },
-          "Stop",
+          t("Stop", "Arrêter"),
           [
             {
               event: "click",
@@ -1393,7 +1404,9 @@ function syncActions(model, busy) {
   const models = model.config.hydroModels ?? [];
   const calibrate = document.getElementById("calibration__calibrate");
   calibrate.dataset.mode = busy ? "stop" : "calibrate";
-  calibrate.textContent = busy ? "Stop" : "Calibrate";
+  calibrate.textContent = busy
+    ? t("Stop", "Arrêter")
+    : t("Calibrate", "Caler");
   // manual calibration means slider moves only: nothing to launch
   calibrate.hidden = cal.settings.algorithm === "manual";
 
@@ -1519,14 +1532,14 @@ function captionsView(model) {
   document
     .getElementById("calibration__objective")
     .querySelector("figcaption").textContent =
-    `Objective (${cal.settings.objective.toUpperCase()})`;
+    `${t("Objective", "Objectif")} (${cal.settings.objective.toUpperCase()})`;
   const id = model.config.calibrationStation;
   const station = model.stations?.find((s) => s.id === id);
   document
     .getElementById("calibration__streamflow")
     .querySelector("figcaption").textContent = station
     ? `${station.name} (${id})`
-    : "Streamflow";
+    : t("Streamflow", "Débit");
 }
 
 function objectiveChartView(model) {
@@ -1640,7 +1653,7 @@ function streamflowChartView(model) {
       : null;
   multiSeriesView(svg, series, {
     xType: "time",
-    label: "Streamflow (mm)",
+    label: t("Streamflow (mm)", "Débit (mm)"),
     warmupEnd,
     reference: null,
   });

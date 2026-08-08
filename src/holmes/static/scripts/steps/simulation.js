@@ -1,6 +1,8 @@
 import { clear, create, createLoading, createSlider } from "../utils/elements.js";
 import { dotProfileView, multiSeriesView } from "../utils/plot.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
+import { modelLabels } from "../utils/misc.js";
+import { t } from "../utils/text.js";
 import { complete } from "../pipeline.js";
 
 /*********/
@@ -10,38 +12,19 @@ import { complete } from "../pipeline.js";
 // the six display metrics of the old holmes simulation screen, all with an
 // optimal value of 1; the order is the row order of the dot profile
 const metricRows = [
-  { key: "kge", label: "High flows (KGE)" },
-  { key: "kge_sqrt", label: "Medium flows (KGE-sqrt)" },
-  { key: "kge_log", label: "Low flows (KGE-log)" },
-  { key: "mean_bias", label: "Water balance" },
-  { key: "deviation_bias", label: "Flow variability" },
-  { key: "correlation", label: "Correlation" },
+  { key: "kge", label: t("High flows (KGE)", "Hauts débits (KGE)") },
+  {
+    key: "kge_sqrt",
+    label: t("Medium flows (KGE-sqrt)", "Débits moyens (KGE-sqrt)"),
+  },
+  { key: "kge_log", label: t("Low flows (KGE-log)", "Étiages (KGE-log)") },
+  { key: "mean_bias", label: t("Water balance", "Bilan hydrique") },
+  {
+    key: "deviation_bias",
+    label: t("Flow variability", "Variabilité des débits"),
+  },
+  { key: "correlation", label: t("Correlation", "Corrélation") },
 ];
-
-// display names mirror the model step; kept local since that list is not
-// exported and this step must not touch it
-const modelLabels = {
-  gr4j: "GR4J",
-  bucket: "Bucket",
-  cequeau: "CEQUEAU",
-  crec: "CREC",
-  gardenia: "Gardénia",
-  hbv: "HBV",
-  hymod: "HYMOD",
-  ihacres: "IHACRES",
-  martine: "Martine",
-  mohyse: "MOHYSE",
-  mordor: "MORDOR",
-  nam: "NAM",
-  pdm: "PDM",
-  sacramento: "Sacramento",
-  simhyd: "SIMHYD",
-  smar: "SMAR",
-  tank: "Tank",
-  topmodel: "TOPMODEL",
-  wageningen: "Wageningen",
-  xinanjiang: "Xinanjiang",
-};
 
 // shorter than calibration's default 3: the simulation period is typically a
 // few years, and the warmup band would otherwise swallow most of it
@@ -224,14 +207,14 @@ export function controlsView(model, dispatch) {
     controls.dataset.step = "simulation";
     clear(controls);
     controls.append(
-      create("h2", {}, "Simulation"),
+      create("h2", {}, t("Simulation", "Simulation")),
       warmupField(model, dispatch),
       create("div", { id: "simulation__models" }),
       create("div", { class: "simulation__actions" }, [
         create(
           "button",
           { id: "simulation__export", type: "button" },
-          "Export",
+          t("Export", "Exporter"),
           [
             {
               event: "click",
@@ -247,7 +230,7 @@ export function controlsView(model, dispatch) {
 
 function warmupField(model, dispatch) {
   return create("label", { class: "controls__field" }, [
-    create("span", {}, "Warmup years"),
+    create("span", {}, t("Warmup years", "Années d'initialisation")),
     createSlider(
       "simulation__warmup",
       0,
@@ -413,14 +396,14 @@ function chartsView(model) {
 function captionsView(model) {
   document
     .getElementById("simulation__metrics")
-    .querySelector("figcaption").textContent = "Metrics";
+    .querySelector("figcaption").textContent = t("Metrics", "Métriques");
   const id = model.config.simulationStation;
   const station = model.stations?.find((s) => s.id === id);
   document
     .getElementById("simulation__streamflow")
     .querySelector("figcaption").textContent = station
     ? `${station.name} (${id})`
-    : "Streamflow";
+    : t("Streamflow", "Débit");
 }
 
 function metricsChartView(model, current) {
@@ -485,7 +468,7 @@ function streamflowChartView(model, current) {
       : null;
   multiSeriesView(svg, series, {
     xType: "time",
-    label: "Streamflow (mm)",
+    label: t("Streamflow (mm)", "Débit (mm)"),
     warmupEnd,
     reference: null,
   });

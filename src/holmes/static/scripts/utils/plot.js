@@ -1,4 +1,5 @@
-import { formatNumber } from "./misc.js";
+import { formatNumber, frenchLocale } from "./misc.js";
+import { language, t } from "./text.js";
 
 // holmes-style timeseries: grid lines + bare tick labels (no spines), a
 // hairline series path (or daily bars with mark: "bar"), and x-axis brush
@@ -9,7 +10,7 @@ export function hydrographView(
   colour,
   {
     field = "streamflow",
-    label = "Streamflow (mm)",
+    label = t("Streamflow (mm)", "Débit (mm)"),
     mark = "line",
     xLabels = true,
   } = {},
@@ -341,7 +342,11 @@ export function regimeView(_svg, series, { label = null } = {}) {
 export function splitColumnView(
   _svg,
   columns,
-  { breakValue = 2, lowFraction = 0.58, historicalLabel = "historical" } = {},
+  {
+    breakValue = 2,
+    lowFraction = 0.58,
+    historicalLabel = t("historical", "historique"),
+  } = {},
 ) {
   const width = _svg.clientWidth;
   const height = _svg.clientHeight;
@@ -544,7 +549,8 @@ function xAxis(xScale) {
   return d3.axisBottom(xScale).ticks(5).tickSize(0).tickFormat(tickDate);
 }
 
-// d3's default multi-scale format, but with abbreviated months (%b not %B)
+// d3's default multi-scale format, but with abbreviated months (%b not %B);
+// French month names come from the frenchLocale rather than d3's default
 function tickDate(date) {
   const format =
     d3.timeDay(date) < date
@@ -554,7 +560,9 @@ function tickDate(date) {
         : d3.timeYear(date) < date
           ? "%b"
           : "%Y";
-  return d3.timeFormat(format)(date);
+  return (
+    language === "fr" ? frenchLocale.format(format) : d3.timeFormat(format)
+  )(date);
 }
 
 function marksView(
@@ -729,7 +737,7 @@ function warmupView(svg, xScale, boundaries, warmupEnd) {
     .attr("y", boundaries.t + 12)
     .attr("text-anchor", "middle")
     .datum(warmupEnd)
-    .text("warmup")
+    .text(t("warmup", "initialisation"))
     .call(placeWarmupLabel, xScale);
 }
 
@@ -780,7 +788,7 @@ function referenceView(svg, xScale, yScale, boundaries, reference) {
 // per kind describes every path without listing 20 models
 const legendLabels = {
   model: "simulations",
-  median: "median",
+  median: t("median", "médiane"),
   observations: "observations",
 };
 
@@ -947,9 +955,10 @@ function updateMultiChart(svg, xScale, line, xType, showPoints) {
 // first day of each month in the fixed non-leap year the day-of-year axis
 // lives in (the backend's Feb 29 -> 28 remap targets the same year)
 const monthStarts = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
-const monthNames = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(
-  " ",
-);
+const monthNames = t(
+  "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",
+  "jan fév mar avr mai jun jul aoû sep oct nov déc",
+).split(" ");
 
 // month-start ticks restricted to the visible domain; a deep zoom keeps too
 // few of them, so it falls back to plain day-of-year numbers
@@ -1006,10 +1015,10 @@ function regimeSeriesView(svg, series, line, boundaries, clipId) {
 }
 
 const regimeLegendLabels = {
-  member: "members",
-  model: "model medians",
-  median: "median",
-  historical: "historical",
+  member: t("members", "membres"),
+  model: t("model medians", "médianes des modèles"),
+  median: t("median", "médiane"),
+  historical: t("historical", "historique"),
 };
 
 // one row per kind present, like legendView; kept separate because the kinds
@@ -1131,7 +1140,11 @@ function splitLegendView(svg, boundaries, historicalLabel) {
     .attr("class", "legend")
     .selectAll("g")
     .data([
-      { label: "median", cls: "series-tick series-tick--median", dash: null },
+      {
+        label: t("median", "médiane"),
+        cls: "series-tick series-tick--median",
+        dash: null,
+      },
       {
         label: historicalLabel,
         cls: "series-tick series-tick--historical green",

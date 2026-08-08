@@ -2,6 +2,26 @@ import { clear, create, createLoading } from "../utils/elements.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
 import { formatNumber } from "../utils/misc.js";
 import { hydrographView } from "../utils/plot.js";
+import { t } from "../utils/text.js";
+
+// role and edge ids double as config keys, so their labels are looked up
+// rather than derived from the ids
+const roleLabels = {
+  calibration: t("Calibration", "Calage"),
+  simulation: t("Simulation", "Simulation"),
+};
+const stationLabels = {
+  calibration: t("Calibration station", "Station de calage"),
+  simulation: t("Simulation station", "Station de simulation"),
+};
+const edgeLabels = {
+  start: t("Start", "Début"),
+  end: t("End", "Fin"),
+};
+const edgeResetTitles = {
+  start: t("Set to possible start", "Ramener au début possible"),
+  end: t("Set to possible end", "Ramener à la fin possible"),
+};
 
 /**********/
 /* update */
@@ -212,9 +232,17 @@ export function controlsView(model, dispatch) {
       roleFields("calibration", dispatch),
       roleFields("simulation", dispatch),
       create("div", { id: "stations__actions", class: "stations__actions" }, [
-        create("button", { id: "stations__export", type: "button" }, "Export", [
-          { event: "click", fct: () => dispatch({ type: "stations/Export" }) },
-        ]),
+        create(
+          "button",
+          { id: "stations__export", type: "button" },
+          t("Export", "Exporter"),
+          [
+            {
+              event: "click",
+              fct: () => dispatch({ type: "stations/Export" }),
+            },
+          ],
+        ),
       ]),
     );
   }
@@ -222,10 +250,9 @@ export function controlsView(model, dispatch) {
 }
 
 function roleFields(role, dispatch) {
-  const label = role[0].toUpperCase() + role.slice(1);
   return create("section", { class: "controls__role" }, [
     create("label", { class: "controls__field" }, [
-      create("span", {}, `${label} station`),
+      create("span", {}, stationLabels[role]),
       create(
         "select",
         { id: `controls__${role}-station` },
@@ -250,19 +277,18 @@ function roleFields(role, dispatch) {
 }
 
 function dateField(role, edge, dispatch) {
-  const label = edge[0].toUpperCase() + edge.slice(1);
   return create("label", { class: "controls__field" }, [
     create("div", { class: "controls__field-header" }, [
-      create("span", {}, label),
+      create("span", {}, edgeLabels[edge]),
       create(
         "button",
         {
           type: "button",
           class: "controls__reset",
           id: `controls__${role}-${edge}-reset`,
-          title: `Set to possible ${edge}`,
+          title: edgeResetTitles[edge],
         },
-        "Reset",
+        t("Reset", "Réinitialiser"),
         [
           {
             event: "click",
@@ -448,7 +474,7 @@ function roleSeries(model, role) {
 function captionView(model, role) {
   const id = model.config[`${role}Station`];
   const station = model.stations?.find((s) => s.id === id);
-  const label = role[0].toUpperCase() + role.slice(1);
+  const label = roleLabels[role];
   document
     .getElementById(`hydrographs__${role}`)
     .querySelector("figcaption").textContent = station
@@ -719,20 +745,26 @@ function legendView(dispatch, selectedOnly, showWeatherStations = false) {
   clear(legend);
   if (selectedOnly) {
     legend.append(
-      legendItem("Calibration station", "calibration"),
-      legendItem("Simulation station", "simulation"),
+      legendItem(stationLabels.calibration, "calibration"),
+      legendItem(stationLabels.simulation, "simulation"),
       ...(showWeatherStations
         ? [
-            legendItem("Calibration centroid", "calibration-centroid"),
-            legendItem("Simulation centroid", "simulation-centroid"),
-            legendItem("Weather station", "weather"),
+            legendItem(
+              t("Calibration centroid", "Centroïde de calage"),
+              "calibration-centroid",
+            ),
+            legendItem(
+              t("Simulation centroid", "Centroïde de simulation"),
+              "simulation-centroid",
+            ),
+            legendItem(t("Weather station", "Station météo"), "weather"),
           ]
         : []),
     );
   } else {
     legend.append(
-      legendItem("Open station", "open", dispatch),
-      legendItem("Closed station", "closed", dispatch),
+      legendItem(t("Open station", "Station ouverte"), "open", dispatch),
+      legendItem(t("Closed station", "Station fermée"), "closed", dispatch),
     );
   }
 }
@@ -826,17 +858,30 @@ function mapView(model, stations, dispatch, selectedOnly) {
       [
         create("div", {}, [
           d.id === model.config.calibrationStation
-            ? create("span", { id: "map__dialog__calibration" }, "calibration")
+            ? create(
+                "span",
+                { id: "map__dialog__calibration" },
+                t("calibration", "calage"),
+              )
             : "",
           create("strong", {}, d.name),
           d.id === model.config.simulationStation
             ? create("span", { id: "map__dialog__simulation" }, "simulation")
             : "",
         ]),
-        create("p", {}, `Id: ${d.id}`),
-        create("p", {}, `Watershed area: ${formatNumber(d.area)} km²`),
-        create("p", {}, `Start: ${d.start}`),
-        ...(d.end === null ? [] : [create("p", {}, `End: ${d.end}`)]),
+        create("p", {}, t(`Id: ${d.id}`, `Id : ${d.id}`)),
+        create(
+          "p",
+          {},
+          t(
+            `Watershed area: ${formatNumber(d.area)} km²`,
+            `Superficie du bassin : ${formatNumber(d.area)} km²`,
+          ),
+        ),
+        create("p", {}, t(`Start: ${d.start}`, `Début : ${d.start}`)),
+        ...(d.end === null
+          ? []
+          : [create("p", {}, t(`End: ${d.end}`, `Fin : ${d.end}`))]),
         // role selection only belongs to the stations step
         ...(selectedOnly
           ? []
@@ -844,7 +889,7 @@ function mapView(model, stations, dispatch, selectedOnly) {
               create(
                 "button",
                 { id: "map__dialog__calibration-btn" },
-                "Use as calibration",
+                t("Use as calibration", "Utiliser pour le calage"),
                 [
                   {
                     event: "click",
@@ -859,7 +904,7 @@ function mapView(model, stations, dispatch, selectedOnly) {
               create(
                 "button",
                 { id: "map__dialog__simulation-btn" },
-                "Use as simulation",
+                t("Use as simulation", "Utiliser pour la simulation"),
                 [
                   {
                     event: "click",

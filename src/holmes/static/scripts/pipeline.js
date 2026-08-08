@@ -1,4 +1,5 @@
 import { create, createIcon } from "./utils/elements.js";
+import { t } from "./utils/text.js";
 
 import * as stations from "./steps/stations.js";
 import * as weather from "./steps/weather.js";
@@ -16,7 +17,7 @@ import * as projection from "./steps/projection.js";
 export const steps = [
   {
     id: "stations",
-    label: "Stations",
+    label: t("Stations", "Stations"),
     icon: "map-pin",
     map: true,
     uses: [],
@@ -30,7 +31,7 @@ export const steps = [
   },
   {
     id: "weather",
-    label: "Weather",
+    label: t("Weather", "Météo"),
     icon: "cloud-rain",
     map: true,
     uses: [
@@ -44,7 +45,7 @@ export const steps = [
   },
   {
     id: "model",
-    label: "Model",
+    label: t("Model", "Modèle"),
     icon: "box",
     uses: [],
     provides: ["hydroModels", "snowModel"],
@@ -52,7 +53,7 @@ export const steps = [
   },
   {
     id: "calibration",
-    label: "Calibration",
+    label: t("Calibration", "Calage"),
     icon: "sliders",
     uses: [
       "calibrationStation",
@@ -67,7 +68,7 @@ export const steps = [
   },
   {
     id: "simulation",
-    label: "Simulation",
+    label: t("Simulation", "Simulation"),
     icon: "activity",
     uses: [
       "simulationStation",
@@ -83,7 +84,7 @@ export const steps = [
   },
   {
     id: "projection",
-    label: "Projection",
+    label: t("Projection", "Projection"),
     icon: "trending-up",
     uses: [
       "simulationStation",
@@ -185,7 +186,7 @@ export function sidebarView(model, dispatch) {
       sidebar.appendChild(
         create(
           "button",
-          { class: "pipeline__step", title: step.label },
+          { class: "pipeline__step", title: step.label, "data-step": step.id },
           [createIcon(step.icon)],
           [
             {

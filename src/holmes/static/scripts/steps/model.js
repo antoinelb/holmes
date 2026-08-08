@@ -1,39 +1,25 @@
 import { clear, create } from "../utils/elements.js";
+import { modelLabels } from "../utils/misc.js";
+import { pick, t } from "../utils/text.js";
 
 // order and display names are fixed by the assignment; parameter counts and
 // descriptions come from the backend model_info payload
-const hydroModels = [
-  { id: "gr4j", label: "GR4J" },
-  { id: "bucket", label: "Bucket" },
-  { id: "cequeau", label: "CEQUEAU" },
-  { id: "crec", label: "CREC" },
-  { id: "gardenia", label: "Gardénia" },
-  { id: "hbv", label: "HBV" },
-  { id: "hymod", label: "HYMOD" },
-  { id: "ihacres", label: "IHACRES" },
-  { id: "martine", label: "Martine" },
-  { id: "mohyse", label: "MOHYSE" },
-  { id: "mordor", label: "MORDOR" },
-  { id: "nam", label: "NAM" },
-  { id: "pdm", label: "PDM" },
-  { id: "sacramento", label: "Sacramento" },
-  { id: "simhyd", label: "SIMHYD" },
-  { id: "smar", label: "SMAR" },
-  { id: "tank", label: "Tank" },
-  { id: "topmodel", label: "TOPMODEL" },
-  { id: "wageningen", label: "Wageningen" },
-  { id: "xinanjiang", label: "Xinanjiang" },
-];
+const hydroModels = Object.entries(modelLabels).map(([id, label]) => ({
+  id,
+  label,
+}));
 
 const snowModels = [
-  { id: "none", label: "None" },
+  { id: "none", label: t("None", "Aucun") },
   { id: "cemaneige", label: "CemaNeige" },
 ];
 
 // "none" is a real, selectable value but not a backend model, so its blurb is
 // hardcoded here rather than read from model_info
-const noneDescription =
-  "Rain only — precipitation reaches the model directly, with no snow accumulation or melt accounting.";
+const noneDescription = t(
+  "Rain only — precipitation reaches the model directly, with no snow accumulation or melt accounting.",
+  "Pluie seulement — les précipitations atteignent directement le modèle, sans accumulation ni fonte de neige.",
+);
 
 /**********/
 /* update */
@@ -154,7 +140,11 @@ function rootView(dispatch) {
       hydroModels.map((m) => optionView(m, "hydro", dispatch)),
     ),
     create("section", { class: "model__snow" }, [
-      create("h3", { class: "model__subtitle" }, "Snow model"),
+      create(
+        "h3",
+        { class: "model__subtitle" },
+        t("Snow model", "Modèle de neige"),
+      ),
       create(
         "div",
         { class: "model__snow-options" },
@@ -167,15 +157,19 @@ function rootView(dispatch) {
 
 function headerView(dispatch) {
   return create("div", { class: "model__header" }, [
-    create("h2", { class: "model__title" }, "Hydrological model"),
+    create(
+      "h2",
+      { class: "model__title" },
+      t("Hydrological model", "Modèle hydrologique"),
+    ),
     create("div", { id: "model__mode", class: "model__mode" }, [
-      modeButton("single", "Single", dispatch),
-      modeButton("ensemble", "Ensemble", dispatch),
+      modeButton("single", t("Single", "Unique"), dispatch),
+      modeButton("ensemble", t("Ensemble", "Ensemble"), dispatch),
     ]),
     // only meaningful for a multi-selection, so hidden in single mode
     create("div", { id: "model__bulk", class: "model__bulk" }, [
-      bulkButton("SelectAll", "Select all", dispatch),
-      bulkButton("ClearAll", "Clear", dispatch),
+      bulkButton("SelectAll", t("Select all", "Tout sélectionner"), dispatch),
+      bulkButton("ClearAll", t("Clear", "Effacer"), dispatch),
     ]),
     create("span", { id: "model__summary", class: "model__summary" }),
   ]);
@@ -264,7 +258,7 @@ function syncCanvas(model) {
     const btn = document.getElementById(`model__option-hydro-${m.id}`);
     btn.classList.toggle("model__option--selected", selected.includes(m.id));
     btn.querySelector(".model__option-label").textContent =
-      `${m.label} (${hydroCount(model, m.id)} params)`;
+      `${m.label} (${hydroCount(model, m.id)} ${t("params", "param.")})`;
   });
 
   snowModels.forEach((m) => {
@@ -281,19 +275,23 @@ function syncCanvas(model) {
 
 function summaryText(mode, selected) {
   if (mode === "ensemble") {
-    return `ensemble of ${selected.length} model${
-      selected.length === 1 ? "" : "s"
-    }`;
+    const s = selected.length === 1 ? "" : "s";
+    return t(
+      `ensemble of ${selected.length} model${s}`,
+      `ensemble de ${selected.length} modèle${s}`,
+    );
   }
   // the glyph already marks the single selection, so its name would be
   // redundant here; only the empty case needs a cue
-  return selected.length ? "" : "no model selected";
+  return selected.length
+    ? ""
+    : t("no model selected", "aucun modèle sélectionné");
 }
 
 // "…" until the payload lands, then the parameter count
 function hydroCount(model, id) {
   const info = isLoaded(model.modelInfo) ? model.modelInfo.hydro?.[id] : null;
-  return info ? info.parameters.length : "…";
+  return info ? pick(info.parameters).length : "…";
 }
 
 // "none" carries no parameters; cemaneige shows its count once loaded
@@ -302,9 +300,10 @@ function snowLabel(model, m) {
     return m.label;
   }
   const info = isLoaded(model.modelInfo) ? model.modelInfo.snow?.[m.id] : null;
+  const params = t("params", "param.");
   return info
-    ? `${m.label} (${info.parameters.length} params)`
-    : `${m.label} (… params)`;
+    ? `${m.label} (${pick(info.parameters).length} ${params})`
+    : `${m.label} (… ${params})`;
 }
 
 // the panel is sticky: last-hovered model, else the first selected one; it
@@ -325,14 +324,21 @@ function detailView(model) {
       create(
         "p",
         { class: "model__detail-empty" },
-        "Hover over a model to see its details.",
+        t(
+          "Hover over a model to see its details.",
+          "Survolez un modèle pour voir ses détails.",
+        ),
       ),
     );
     return;
   }
   if (info === null) {
     detail.append(
-      create("p", { class: "model__detail-loading" }, "Loading model details…"),
+      create(
+        "p",
+        { class: "model__detail-loading" },
+        t("Loading model details…", "Chargement des détails du modèle…"),
+      ),
     );
     return;
   }
@@ -341,7 +347,7 @@ function detailView(model) {
       "h3",
       { class: "model__detail-title" },
       info.parameters.length
-        ? `${info.label} (${info.parameters.length} params)`
+        ? `${info.label} (${info.parameters.length} ${t("params", "param.")})`
         : info.label,
     ),
     create("p", { class: "model__detail-description" }, info.description),
@@ -371,7 +377,11 @@ function detailTarget(model) {
 // blurb is always available
 function detailInfo(model, target) {
   if (target.kind === "snow" && target.id === "none") {
-    return { label: "None", description: noneDescription, parameters: [] };
+    return {
+      label: t("None", "Aucun"),
+      description: noneDescription,
+      parameters: [],
+    };
   }
   if (!isLoaded(model.modelInfo)) {
     return null;
@@ -384,8 +394,8 @@ function detailInfo(model, target) {
   }
   return {
     label: displayName(target),
-    description: raw.description,
-    parameters: raw.parameters,
+    description: pick(raw.description),
+    parameters: pick(raw.parameters),
   };
 }
 
