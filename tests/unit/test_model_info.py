@@ -16,15 +16,18 @@ class TestGetModelInfo:
     @pytest.mark.parametrize("model", get_args(HydroModel))
     def test_hydro_info_matches_holmes_rs(self, model):
         info = get_model_info()["hydro"][model]
-        assert info["description"]
-        assert info["parameters"] == list(
-            getattr(holmes_rs.hydro, model).param_descriptions
-        )
+        mod = getattr(holmes_rs.hydro, model)
+        assert info["description"]["en"]
+        assert info["description"]["fr"]
+        assert info["parameters"]["en"] == list(mod.param_descriptions)
+        assert info["parameters"]["fr"] == list(mod.param_descriptions_fr)
 
     def test_cemaneige_parameters_are_hand_written(self):
         info = get_model_info()["snow"]["cemaneige"]
-        assert info["description"]
-        assert len(info["parameters"]) == 3
+        assert info["description"]["en"]
+        assert info["description"]["fr"]
+        assert len(info["parameters"]["en"]) == 3
+        assert len(info["parameters"]["fr"]) == 3
 
 
 class TestGetCalibrationInfo:
@@ -42,7 +45,8 @@ class TestGetCalibrationInfo:
         for param, default, (low, high) in zip(
             params, defaults, bounds, strict=True
         ):
-            assert param["description"]
+            assert param["description"]["en"]
+            assert param["description"]["fr"]
             assert param["default"] == pytest.approx(float(default))
             assert param["min"] == pytest.approx(float(low))
             assert param["max"] == pytest.approx(float(high))
