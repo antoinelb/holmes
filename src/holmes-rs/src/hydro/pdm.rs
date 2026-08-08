@@ -20,6 +20,17 @@ pub const param_descriptions: &[&str] = &[
     "Drainage time constant (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité maximale du réservoir de production (mm)",
+    "Variabilité spatiale de la capacité en eau du sol (-)",
+    "Seuil de drainage en fraction du stockage maximal (-)",
+    "Délai de routage (d)",
+    "Stockage caractéristique du réservoir souterrain cubique (mm)",
+    "Constante de vidange des réservoirs de routage linéaires (d)",
+    "Facteur de correction de la pluie (-)",
+    "Constante de temps de drainage (d)",
+];
+
 // Lower bounds on x6 and x8 are >= 1 so that the linear outflows
 // q = storage / constant never exceed the stored volume, keeping
 // every reservoir non-negative by construction.
@@ -230,6 +241,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "pdm")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

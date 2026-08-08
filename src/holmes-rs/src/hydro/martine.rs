@@ -18,6 +18,16 @@ pub const param_descriptions: &[&str] = &[
     "Intermediate reservoir emptying constant (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de surface (mm)",
+    "Capacité du réservoir intermédiaire (mm)",
+    "Capacité du réservoir de routage quadratique (mm)",
+    "Constante de vidange de la nappe (d)",
+    "Coefficient de répartition (-)",
+    "Délai (d)",
+    "Constante de vidange du réservoir intermédiaire (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 7] = [
     ("x1", 1.0, 2000.0),
     ("x2", 1.0, 2000.0),
@@ -192,6 +202,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "martine")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

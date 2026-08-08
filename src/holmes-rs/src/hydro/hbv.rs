@@ -21,6 +21,18 @@ pub const param_descriptions: &[&str] = &[
     "Lower emptying constant of intermediate reservoir (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de sol (mm)",
+    "Seuil d'ETP (mm)",
+    "Constante de vidange supérieure du réservoir intermédiaire (d)",
+    "Constante de vidange du réservoir souterrain (d)",
+    "Coefficient de percolation (mm/d)",
+    "Temps de base de l'hydrogramme unitaire triangulaire (d)",
+    "Exposant de non-linéarité du sol (-)",
+    "Seuil d'écoulement du réservoir intermédiaire (mm)",
+    "Constante de vidange inférieure du réservoir intermédiaire (-)",
+];
+
 // Lower bounds on x2 and x9 are tightened relative to HOOPLA (which allows 0)
 // to avoid division by zero and guarantee x3 * x9 >= 1, which keeps the
 // intermediate reservoir R non-negative by construction.
@@ -260,6 +272,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "hbv")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

@@ -18,6 +18,16 @@ pub const param_descriptions: &[&str] = &[
     "Unit hydrograph scale parameter (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Coefficient de transpiration (-)",
+    "Capacité maximale d'infiltration (mm)",
+    "Coefficient de vidange de la zone vadose vers l'aquifère (-)",
+    "Coefficient de vidange de la zone vadose vers la rivière (-)",
+    "Coefficient de vidange de l'aquifère vers la rivière (-)",
+    "Paramètre de forme de l'hydrogramme unitaire (-)",
+    "Paramètre d'échelle de l'hydrogramme unitaire (-)",
+];
+
 const BOUNDS: [(&str, f64, f64); 7] = [
     ("x1", 0.01, 1.0),
     ("x2", 1.0, 2000.0),
@@ -202,6 +212,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "mohyse")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

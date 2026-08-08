@@ -17,6 +17,15 @@ pub const param_descriptions: &[&str] = &[
     "Capacity of reservoir L (mm)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Coefficient de correction de la pluie (-)",
+    "Constante de vidange du réservoir L (d)",
+    "Constante de vidange du réservoir N (-)",
+    "Temps de réponse de l'hydrogramme unitaire UH2 (d)",
+    "Capacité du réservoir U (mm)",
+    "Capacité du réservoir L (mm)",
+];
+
 const BOUNDS: [(&str, f64, f64); 6] = [
     ("x1", 0.5, 2.0),
     ("x2", 1.0, 1000.0),
@@ -258,6 +267,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "mordor")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

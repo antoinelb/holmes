@@ -20,6 +20,17 @@ pub const param_descriptions: &[&str] = &[
     "Flow partitioning coefficient (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Coefficient d'écoulement direct (-)",
+    "Paramètre d'infiltration (-)",
+    "Coefficient de réduction de l'ETP pour les couches de sol (-)",
+    "Capacité du réservoir de routage quadratique (mm)",
+    "Constante de vidange du réservoir de routage linéaire (d)",
+    "Délai (d)",
+    "Coefficient de correction de l'ETP (-)",
+    "Coefficient de partage des écoulements (-)",
+];
+
 const BOUNDS: [(&str, f64, f64); 8] = [
     ("x1", 0.01, 1.0),
     ("x2", 0.01, 10.0),
@@ -234,6 +245,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "smar")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

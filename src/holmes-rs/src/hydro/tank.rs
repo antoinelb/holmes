@@ -18,6 +18,16 @@ pub const param_descriptions: &[&str] = &[
     "Slow emptying multiplier of lower soil reservoir (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Seuil de vidange supérieur du réservoir de surface (mm)",
+    "Seuil de vidange inférieur (mm)",
+    "Constante de vidange rapide du réservoir de surface (d)",
+    "Multiplicateur de vidange intermédiaire du réservoir de sol supérieur (-)",
+    "Délai (d)",
+    "Coefficient de correction de l'ETP (-)",
+    "Multiplicateur de vidange lente du réservoir de sol inférieur (-)",
+];
+
 // Lower bounds on x3, x4, x7 are >= 1 so every linear drain (q = storage
 // divided by the product of these factors) never exceeds its storage,
 // keeping all four reservoirs non-negative by construction.
@@ -204,6 +214,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "tank")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

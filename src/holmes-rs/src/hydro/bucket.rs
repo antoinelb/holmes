@@ -17,6 +17,15 @@ pub const param_descriptions: &[&str] = &[
     "Transfer delay constant (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de sol (mm)",
+    "Fraction d'évapotranspiration (-)",
+    "Constante de délai du ruissellement (d)",
+    "Exposant de non-linéarité (-)",
+    "Fraction de percolation (-)",
+    "Constante de délai de transfert (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 6] = [
     ("x1", 10.0, 1000.0),
     ("x2", 0.0, 1.0),
@@ -184,6 +193,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "bucket")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

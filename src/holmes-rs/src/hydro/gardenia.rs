@@ -17,6 +17,15 @@ pub const param_descriptions: &[&str] = &[
     "Delay (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de surface (mm)",
+    "Constante de percolation linéaire (-)",
+    "Paramètre de vidange latérale du réservoir de sol (-)",
+    "Constante de vidange linéaire du réservoir souterrain (d)",
+    "Coefficient de correction de l'ETP (-)",
+    "Délai (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 6] = [
     ("x1", 1.0, 1000.0),
     ("x2", 1.0, 1000.0),
@@ -173,6 +182,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "gardenia")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

@@ -164,6 +164,20 @@ class TestGr4jParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(gr4j, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(gr4j.param_descriptions_fr) == len(gr4j.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in gr4j.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestBucketInit:
     """Tests for bucket.init function."""
@@ -267,6 +281,20 @@ class TestBucketParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in bucket.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(bucket, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(bucket.param_descriptions_fr) == len(bucket.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in bucket.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -412,6 +440,20 @@ class TestCequeauParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(cequeau, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(cequeau.param_descriptions_fr) == len(cequeau.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in cequeau.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestCrecInit:
     """Tests for crec.init function."""
@@ -543,6 +585,20 @@ class TestCrecParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in crec.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(crec, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(crec.param_descriptions_fr) == len(crec.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in crec.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -688,6 +744,20 @@ class TestGardeniaParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(gardenia, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(gardenia.param_descriptions_fr) == len(gardenia.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in gardenia.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestHymodInit:
     """Tests for hymod.init function."""
@@ -819,6 +889,20 @@ class TestHymodParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in hymod.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(hymod, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(hymod.param_descriptions_fr) == len(hymod.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in hymod.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -955,6 +1039,20 @@ class TestHbvParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in hbv.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(hbv, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(hbv.param_descriptions_fr) == len(hbv.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in hbv.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -1099,6 +1197,22 @@ class TestXinanjiangParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in xinanjiang.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(xinanjiang, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(xinanjiang.param_descriptions_fr) == len(
+            xinanjiang.param_names
+        )
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in xinanjiang.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -1248,6 +1362,22 @@ class TestSacramentoParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(sacramento, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(sacramento.param_descriptions_fr) == len(
+            sacramento.param_names
+        )
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in sacramento.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestPdmInit:
     """Tests for pdm.init function."""
@@ -1379,6 +1509,20 @@ class TestPdmParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in pdm.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(pdm, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(pdm.param_descriptions_fr) == len(pdm.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in pdm.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -1610,6 +1754,20 @@ class TestIhacresParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(ihacres, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(ihacres.param_descriptions_fr) == len(ihacres.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in ihacres.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestMartineInit:
     """Tests for martine.init function."""
@@ -1712,6 +1870,20 @@ class TestMartineParamDescriptions:
 
     def test_param_descriptions_non_empty(self):
         for desc in martine.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(martine, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(martine.param_descriptions_fr) == len(martine.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in martine.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -1819,6 +1991,20 @@ class TestTopmodelParamDescriptions:
 
     def test_param_descriptions_non_empty(self):
         for desc in topmodel.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(topmodel, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(topmodel.param_descriptions_fr) == len(topmodel.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in topmodel.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -1949,6 +2135,20 @@ class TestNamParamDescriptions:
 
     def test_param_descriptions_non_empty(self):
         for desc in nam.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(nam, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(nam.param_descriptions_fr) == len(nam.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in nam.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -2092,6 +2292,20 @@ class TestMohyseParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(mohyse, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(mohyse.param_descriptions_fr) == len(mohyse.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in mohyse.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestSmarInit:
     """Tests for smar.init function."""
@@ -2223,6 +2437,20 @@ class TestSmarParamDescriptions:
     def test_param_descriptions_non_empty(self):
         """All descriptions should be non-empty strings."""
         for desc in smar.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(smar, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(smar.param_descriptions_fr) == len(smar.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in smar.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
@@ -2366,6 +2594,20 @@ class TestSimhydParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(simhyd, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(simhyd.param_descriptions_fr) == len(simhyd.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in simhyd.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestMordorInit:
     """Tests for mordor.init function."""
@@ -2506,6 +2748,20 @@ class TestMordorParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(mordor, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(mordor.param_descriptions_fr) == len(mordor.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in mordor.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestWageningenInit:
     """Tests for wageningen.init function."""
@@ -2617,6 +2873,22 @@ class TestWageningenParamDescriptions:
             assert isinstance(desc, str)
             assert len(desc) > 0
 
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(wageningen, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(wageningen.param_descriptions_fr) == len(
+            wageningen.param_names
+        )
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in wageningen.param_descriptions_fr:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
 
 class TestTankInit:
     """Tests for tank.init function."""
@@ -2715,5 +2987,19 @@ class TestTankParamDescriptions:
 
     def test_param_descriptions_non_empty(self):
         for desc in tank.param_descriptions:
+            assert isinstance(desc, str)
+            assert len(desc) > 0
+
+    def test_param_descriptions_fr_exists(self):
+        """param_descriptions_fr should be accessible."""
+        assert hasattr(tank, "param_descriptions_fr")
+
+    def test_param_descriptions_fr_count(self):
+        """Should have same count as param_names."""
+        assert len(tank.param_descriptions_fr) == len(tank.param_names)
+
+    def test_param_descriptions_fr_non_empty(self):
+        """All French descriptions should be non-empty strings."""
+        for desc in tank.param_descriptions_fr:
             assert isinstance(desc, str)
             assert len(desc) > 0

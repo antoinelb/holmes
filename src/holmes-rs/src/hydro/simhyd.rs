@@ -20,6 +20,17 @@ pub const param_descriptions: &[&str] = &[
     "Maximum infiltration capacity (mm)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir d'interception (mm)",
+    "Capacité du réservoir d'eau du sol (mm)",
+    "Constante de vidange du réservoir souterrain (-)",
+    "Délai (d)",
+    "Constante de vidange du réservoir de routage (d)",
+    "Constante d'écoulement hypodermique (-)",
+    "Constante de recharge de la nappe (-)",
+    "Capacité maximale d'infiltration (mm)",
+];
+
 const BOUNDS: [(&str, f64, f64); 8] = [
     ("x1", 0.5, 10.0),
     ("x2", 1.0, 500.0),
@@ -210,6 +221,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "simhyd")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

@@ -5,6 +5,14 @@ All notable changes to the holmes-rs Rust extension will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-08-08
+
+### Added
+- `param_descriptions_fr` constant on every hydro model module: the French translations of `param_descriptions`, same order and unit suffixes
+
+### Fixed
+- CREC's `x1` description said "Ground reservoir" but the parameter drains the surface store (`Q_r = R²/(R + x1)`); it now reads "Surface reservoir emptying constant"
+
 ## [0.6.0] - 2026-08-08
 
 ### Added

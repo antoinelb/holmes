@@ -20,6 +20,17 @@ pub const param_descriptions: &[&str] = &[
     "Free-water saturation-excess distribution exponent (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Coefficient de partage des écoulements entre routage rapide et lent (-)",
+    "Constante de vidange du réservoir de routage rapide (d)",
+    "Multiplicateur de vidange du réservoir de routage lent (-)",
+    "Capacité du réservoir d'eau libre (mm)",
+    "Capacité du réservoir de sol (mm)",
+    "Délai de l'hydrogramme unitaire (d)",
+    "Constante de vidange du réservoir d'eau libre (d)",
+    "Exposant de distribution de l'excès de saturation en eau libre (-)",
+];
+
 // Lower bounds on x2, x3 and x7 are tightened relative to HOOPLA (which allows
 // values below one) so that T -= T/x2, M -= M/(x2*x3) and R -= R/x7 can never
 // drive the reservoir states negative; with x2 >= 1, x3 >= 1 and x7 >= 1 each
@@ -229,6 +240,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "xinanjiang")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

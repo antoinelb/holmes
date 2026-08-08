@@ -22,6 +22,19 @@ pub const param_descriptions: &[&str] = &[
     "Capillary rise parameter (mm)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Seuil de vidange du réservoir souterrain (mm)",
+    "Constante de vidange des réservoirs de routage (d)",
+    "Constante d'écoulement hypodermique (-)",
+    "Délai (d)",
+    "Constante de percolation (-)",
+    "Constante de vidange du réservoir souterrain (d)",
+    "Capacité maximale du réservoir de sol (mm)",
+    "Constante d'écoulement de surface (-)",
+    "Capacité maximale du réservoir de surface (mm)",
+    "Paramètre de remontée capillaire (mm)",
+];
+
 // Lower bounds on x2, x3, x6, x8 are >= 1 so that linear outflows of
 // the form q = storage / x can never exceed the stored volume, which
 // keeps every reservoir non-negative by construction. x5 is strictly
@@ -331,6 +344,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "nam")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

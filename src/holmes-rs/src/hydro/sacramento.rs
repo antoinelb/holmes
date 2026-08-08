@@ -26,6 +26,18 @@ pub const param_descriptions: &[&str] = &[
     "Delay (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de routage direct (d)",
+    "Capacité en eau libre de la zone supérieure (mm)",
+    "Constante de vidange de la zone inférieure (d)",
+    "Capacité en eau de tension de la zone supérieure (mm)",
+    "Taux de percolation maximal (mm/d)",
+    "Constante de vidange de l'écoulement hypodermique (d)",
+    "Coefficient de partage de la zone supérieure (-)",
+    "Coefficient de percolation profonde (-)",
+    "Délai (d)",
+];
+
 // Lower bounds on x1, x3, x6, x8 are strictly >= 1 so that the linear
 // outflow q = storage / constant never exceeds the stored volume, which
 // keeps every reservoir non-negative by construction.
@@ -315,6 +327,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "sacramento")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

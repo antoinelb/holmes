@@ -15,6 +15,13 @@ pub const param_descriptions: &[&str] = &[
     "Unit hydrograph time base (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de production (mm)",
+    "Coefficient d'échanges souterrains (mm/d)",
+    "Capacité du réservoir de routage (mm)",
+    "Temps de base de l'hydrogramme unitaire (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 4] = [
     ("x1", 10.0, 1500.0),
     ("x2", -5.0, 3.0),
@@ -250,6 +257,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "gr4j")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

@@ -18,6 +18,16 @@ pub const param_descriptions: &[&str] = &[
     "Groundwater PET sigmoid offset (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Capacité du réservoir de routage quadratique (mm)",
+    "Paramètre de drainage exponentiel de la nappe (mm)",
+    "Capacité du réservoir d'interception (mm)",
+    "Délai de routage (d)",
+    "Paramètre d'échelle de la distribution de l'indice topographique (mm)",
+    "Décalage de la sigmoïde de l'indice topographique (-)",
+    "Décalage de la sigmoïde d'ETP de la nappe (-)",
+];
+
 const BOUNDS: [(&str, f64, f64); 7] = [
     ("x1", 1.0, 1000.0),
     ("x2", 0.1, 50.0),
@@ -182,6 +192,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "topmodel")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

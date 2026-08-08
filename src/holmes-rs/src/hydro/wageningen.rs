@@ -20,6 +20,17 @@ pub const param_descriptions: &[&str] = &[
     "Delay (d)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Seuil de vidange par percolation (mm)",
+    "Capacité maximale du réservoir de sol (mm)",
+    "Constante de vidange par infiltration (mm)",
+    "Paramètre de remontée capillaire (d)",
+    "Paramètre de dissociation des écoulements (mm)",
+    "Constante de vidange du routage rapide (d)",
+    "Multiplicateur de vidange du routage lent (-)",
+    "Délai (d)",
+];
+
 const BOUNDS: [(&str, f64, f64); 8] = [
     ("x1", 1.0, 500.0),
     ("x2", 10.0, 2000.0),
@@ -198,6 +209,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "wageningen")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

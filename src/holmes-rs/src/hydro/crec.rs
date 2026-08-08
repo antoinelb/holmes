@@ -9,12 +9,21 @@ use pyo3::prelude::*;
 pub const param_names: &[&str] = &["x1", "x2", "x3", "x4", "x5", "x6"];
 
 pub const param_descriptions: &[&str] = &[
-    "Ground reservoir emptying constant (d)",
+    "Surface reservoir emptying constant (d)",
     "Linear percolation parameter (-)",
     "Splitting parameter for raw rainfall (-)",
     "Splitting parameter for PET production (-)",
     "Linear emptying parameter of soil reservoir (-)",
     "Delay parameter (d)",
+];
+
+pub const param_descriptions_fr: &[&str] = &[
+    "Constante de vidange du réservoir de surface (d)",
+    "Paramètre de percolation linéaire (-)",
+    "Paramètre de partage de la pluie brute (-)",
+    "Paramètre de partage pour la production d'ETP (-)",
+    "Paramètre de vidange linéaire du réservoir de sol (-)",
+    "Paramètre de délai (d)",
 ];
 
 const BOUNDS: [(&str, f64, f64); 6] = [
@@ -177,6 +186,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "crec")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

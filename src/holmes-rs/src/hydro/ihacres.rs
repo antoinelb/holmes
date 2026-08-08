@@ -18,6 +18,16 @@ pub const param_descriptions: &[&str] = &[
     "Characteristic catchment drying constant Tw (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Paramètre de forçage du bilan de masse 1/C (-)",
+    "Fraction d'écoulement rapide de la pluie efficace (-)",
+    "Constante de temps du réservoir de routage rapide; >= 1 d pour un schéma d'Euler stable (d)",
+    "Multiplicateur de routage lent; constante de temps lente = x3*x4 (-)",
+    "Délai pur (d)",
+    "Facteur de modulation de l'ETP f (-)",
+    "Constante caractéristique d'assèchement du bassin Tw (-)",
+];
+
 // Note: x3 >= 1.0 is a stability constraint, not just a physical one.
 // The explicit-Euler routing scheme `Qr = R/x3; R = R - Qr` becomes unstable
 // when x3 < 1 because the per-step decay coefficient |1 - 1/x3| > 1.
@@ -185,6 +195,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "ihacres")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)

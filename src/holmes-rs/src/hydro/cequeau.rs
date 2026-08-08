@@ -21,6 +21,18 @@ pub const param_descriptions: &[&str] = &[
     "Lower groundwater drainage constant (-)",
 ];
 
+pub const param_descriptions_fr: &[&str] = &[
+    "Seuil d'infiltration (mm)",
+    "Seuil de drainage du réservoir de sol (mm)",
+    "Constante d'infiltration (-)",
+    "Constante de drainage latéral supérieur (-)",
+    "Capacité maximale du réservoir de sol (mm)",
+    "Délai (days)",
+    "Seuil de drainage de la nappe (mm)",
+    "Constante de drainage latéral inférieur (-)",
+    "Constante de drainage inférieur de la nappe (-)",
+];
+
 const BOUNDS: [(&str, f64, f64); 9] = [
     ("x1", 0.0, 3000.0),
     ("x2", 1.0, 3000.0),
@@ -214,6 +226,7 @@ pub fn make_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     let m = PyModule::new(py, "cequeau")?;
     m.add("param_names", param_names)?;
     m.add("param_descriptions", param_descriptions)?;
+    m.add("param_descriptions_fr", param_descriptions_fr)?;
     m.add_function(wrap_pyfunction!(py_init, &m)?)?;
     m.add_function(wrap_pyfunction!(py_simulate, &m)?)?;
     Ok(m)
