@@ -1,6 +1,6 @@
+from . import paths, plotting
+
 __all__ = [
     "paths",
-    "print",
+    "plotting",
 ]
-
-from . import paths, print

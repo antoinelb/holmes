@@ -1,4 +1,4 @@
-import { create, createCheckbox, createIcon } from "./utils/elements.js";
+import { create } from "./utils/elements.js";
 import { onKey } from "./utils/listeners.js";
 import { range } from "./utils/misc.js";
 
@@ -6,66 +6,66 @@ import { range } from "./utils/misc.js";
 /* model */
 /*********/
 
-export function initModel(canSave) {
+export function initSettings() {
   return {
     loading: false,
     open: false,
-    theme: canSave
-      ? (window.localStorage.getItem("holmes--settings--theme") ?? "dark")
-      : "dark",
+    theme: window.localStorage.getItem("holmes--settings--theme") ?? "dark",
     version: null,
   };
 }
-
-export const initialMsg = {
-  type: "SettingsMsg",
-  data: { type: "GetVersion" },
-};
 
 /**********/
 /* update */
 /**********/
 
-export async function update(model, msg, dispatch) {
-  dispatch = createDispatch(dispatch);
+export function update(model, msg, dispatch) {
   switch (msg.type) {
-    case "CheckEscape":
-      const settingsCheckEl = document.getElementById("settings");
-      if (
-        msg.data.type === "click" &&
-        settingsCheckEl?.contains(msg.data.target)
-      ) {
-        return model;
-      } else {
-        return { ...model, open: false };
-      }
-    case "GetVersion":
+    case "settings/ToggleOpen":
+      return {
+        ...model,
+        settings: { ...model.settings, open: !model.settings.open },
+      };
+    case "settings/ToggleTheme":
+      return toggleTheme(model);
+    case "settings/GetVersion":
       getVersion(dispatch);
-      return { ...model, loading: true };
-    case "GotVersion":
-      return { ...model, loading: false, version: msg.data };
-    case "ToggleOpen":
-      return { ...model, open: !model.open };
-    case "ToggleTheme":
-      const theme = model.theme === "dark" ? "light" : "dark";
-      window.localStorage.setItem("holmes--settings--theme", theme);
-      return { ...model, theme: theme };
-    case "Reset":
-      range(window.localStorage.length)
-        .map((i) => window.localStorage.key(i))
-        .filter((key) => key.substring(0, 6) === "holmes")
-        .forEach((key) => {
-          window.localStorage.removeItem(key);
-        });
-      window.location.reload();
+      return { ...model, settings: { ...model.settings, loading: true } };
+    case "settings/GotVersion":
+      return {
+        ...model,
+        settings: { ...model.settings, loading: false, version: msg.data },
+      };
+    case "settings/ResetAll":
+      resetAll();
       return model;
     default:
       return model;
   }
 }
 
-function createDispatch(dispatch) {
-  return (msg) => dispatch({ type: "SettingsMsg", data: msg });
+export function closeOnEscape(model, event) {
+  const settingsDiv = document.getElementById("settings");
+  if (event.type === "click" && settingsDiv?.contains(event.target)) {
+    return model;
+  }
+  return { ...model, open: false };
+}
+
+function toggleTheme(model) {
+  const theme = model.settings.theme === "dark" ? "light" : "dark";
+  window.localStorage.setItem("holmes--settings--theme", theme);
+  return { ...model, settings: { ...model.settings, theme: theme } };
+}
+
+function resetAll() {
+  range(window.localStorage.length)
+    .map((i) => window.localStorage.key(i))
+    .filter((key) => key.substring(0, 6) === "holmes")
+    .forEach((key) => {
+      window.localStorage.removeItem(key);
+    });
+  window.location.reload();
 }
 
 async function getVersion(dispatch) {
@@ -79,7 +79,7 @@ async function getVersion(dispatch) {
       throw new Error(`HTTP ${resp.status}`);
     }
     const version = await resp.text();
-    dispatch({ type: "GotVersion", data: version });
+    dispatch({ type: "settings/GotVersion", data: version });
   } catch (e) {
     clearTimeout(timeout);
     if (e.name === "AbortError") {
@@ -87,7 +87,7 @@ async function getVersion(dispatch) {
     } else {
       console.error("Failed to fetch version:", e);
     }
-    dispatch({ type: "GotVersion", data: "unknown" });
+    dispatch({ type: "settings/GotVersion", data: "unknown" });
   }
 }
 
@@ -95,15 +95,13 @@ async function getVersion(dispatch) {
 /* view */
 /********/
 
-export function initView(dispatch) {
-  const globalDispatch = dispatch;
-  dispatch = createDispatch(dispatch);
+export function initSettingsView(dispatch) {
   document.addEventListener("keydown", (event) =>
     onKey(
       "T",
       async () =>
         await dispatch({
-          type: "ToggleTheme",
+          type: "settings/ToggleTheme",
         }),
       event,
     ),
@@ -122,7 +120,7 @@ export function initView(dispatch) {
           event: "click",
           fct: () =>
             dispatch({
-              type: "ToggleOpen",
+              type: "settings/ToggleOpen",
             }),
         },
       ],
@@ -146,7 +144,7 @@ export function initView(dispatch) {
             event: "click",
             fct: async () =>
               await dispatch({
-                type: "ToggleTheme",
+                type: "settings/ToggleTheme",
               }),
           },
         ],
@@ -165,23 +163,8 @@ export function initView(dispatch) {
             event: "click",
             fct: async () =>
               await dispatch({
-                type: "Reset",
+                type: "settings/ResetAll",
               }),
-          },
-        ],
-      ),
-      create(
-        "div",
-        { id: "allow-save" },
-        [
-          createIcon("save"),
-          create("label", { for: "allow-save__btn" }, ["Allow save"]),
-          createCheckbox({ id: "allow-save__btn" }),
-        ],
-        [
-          {
-            event: "click",
-            fct: () => globalDispatch({ type: "ToggleCanSave" }),
           },
         ],
       ),
@@ -193,33 +176,24 @@ export function initView(dispatch) {
   ]);
 }
 
-export function view(model, dispatch, allowSave) {
-  dispatch = createDispatch(dispatch);
-
+export function settingsView(model) {
   const settingsEl = document.getElementById("settings");
   if (settingsEl) {
-    if (model.open) {
+    if (model.settings.open) {
       settingsEl.classList.add("settings--open");
     } else {
       settingsEl.classList.remove("settings--open");
     }
   }
 
-  if (model.theme === "dark") {
+  if (model.settings.theme === "dark") {
     document.body.classList.remove("light");
   } else {
     document.body.classList.add("light");
   }
 
-  const allowSaveBtn = document.getElementById("allow-save__btn");
-  if (allowSave) {
-    allowSaveBtn.checked = true;
-  } else {
-    allowSaveBtn.checked = false;
-  }
-
   const versionSpan = document.querySelector("#version span:last-child");
-  if (versionSpan && versionSpan.textContent !== model.version) {
-    versionSpan.textContent = model.version;
+  if (versionSpan && versionSpan.textContent !== model.settings.version) {
+    versionSpan.textContent = model.settings.version;
   }
 }

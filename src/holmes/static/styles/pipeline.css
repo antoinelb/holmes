@@ -1,0 +1,1072 @@
+main {
+  position: relative;
+}
+
+#canvas {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+}
+
+.pipeline__placeholder {
+  opacity: 0.5;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  left: 1em;
+  position: absolute;
+  top: 5em;
+  z-index: 10;
+}
+
+.pipeline__step {
+  background: oklch(var(--bg));
+  border: 0.15em solid oklch(var(--fg) / 0.3);
+  border-radius: 50%;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  font-size: 1rem;
+  height: 2.75em;
+  padding: 0;
+  width: 2.75em;
+
+  &:hover {
+    background: oklch(var(--theme-more));
+    color: oklch(var(--fg-dark));
+  }
+
+  &.pipeline__step--current {
+    background: oklch(var(--theme) / 0.5);
+    color: oklch(var(--fg-dark));
+  }
+
+  &.pipeline__step--done {
+    border-color: oklch(var(--green));
+  }
+
+  &.pipeline__step--stale {
+    border-color: oklch(var(--yellow));
+  }
+
+  &.pipeline__step--locked {
+    cursor: not-allowed;
+    opacity: 0.4;
+
+    &:hover {
+      background: oklch(var(--bg));
+      color: oklch(var(--fg));
+    }
+  }
+}
+
+#controls {
+  background: oklch(var(--bg));
+  border: 1px solid oklch(var(--theme) / 0.5);
+  border-radius: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+  padding: 0.5em 1em 1em 1em;
+  position: absolute;
+  right: 1em;
+  top: 5em;
+  width: fit-content;
+  z-index: 10;
+
+  &:empty {
+    display: none;
+  }
+
+  & h2 {
+    margin: 0;
+    text-align: center;
+  }
+}
+
+.controls__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+
+  /* the flex display above beats the ua [hidden] rule, which would leave
+     the n-stations slider visible for the grid methods */
+  &[hidden] {
+    display: none;
+  }
+}
+
+.controls__field-header {
+  align-items: center;
+  display: flex;
+  gap: 0.5em;
+  justify-content: space-between;
+}
+
+/* #controls outweighs the base button rules, which otherwise tie on
+   specificity and win on source order */
+#controls .controls__reset {
+  background: oklch(var(--fg) / 0.1);
+  border: none;
+  border-radius: 0.25em;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  font-size: 0.75rem;
+  height: auto;
+  padding: 0.25em 0.5em;
+  width: auto;
+
+  &:hover {
+    background: oklch(var(--fg) / 0.2);
+    color: oklch(var(--fg));
+  }
+
+  &:active {
+    background: oklch(var(--fg) / 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background: oklch(var(--fg) / 0.1);
+    }
+  }
+}
+
+.controls__role {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.controls__period {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.controls__methods {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+/* the whole button (icon + name) toggles, but only the icon circle carries
+   the border/background; #controls outweighs the base button:hover rule,
+   which otherwise ties on specificity and wins on source order */
+#controls .controls__method {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  flex-direction: column;
+  font-size: 1rem;
+  gap: 0.5em;
+  height: auto;
+  padding: 0;
+
+  & .controls__method-icon {
+    align-items: center;
+    background: oklch(var(--bg));
+    border: 0.15em solid oklch(var(--fg) / 0.3);
+    border-radius: 50%;
+    display: flex;
+    height: 2.75em;
+    justify-content: center;
+    transition: background 300ms;
+    width: 2.75em;
+
+    & .icon {
+      height: 1.5em;
+      width: 1.5em;
+    }
+  }
+
+  &:hover,
+  &:active {
+    background: none;
+    color: oklch(var(--fg));
+
+    & .controls__method-icon {
+      background: oklch(var(--theme-more));
+      color: oklch(var(--fg-dark));
+    }
+  }
+
+  &.controls__method--selected .controls__method-icon {
+    background: oklch(var(--theme) / 0.5);
+    border-color: oklch(var(--theme));
+    color: oklch(var(--fg-dark));
+  }
+}
+
+#controls input:disabled {
+  background: oklch(var(--fg) / 0.05);
+  border-color: oklch(var(--fg) / 0.2);
+  color: oklch(var(--fg) / 0.4);
+  cursor: not-allowed;
+}
+
+/* native <details>, used for the SCE-settings panel and per-model sections */
+/* the panel is content-sized, so without a fixed width it would grow and
+   shrink as the details sections open and close; the chart panel derives its
+   right offset from the same variable so the two can never overlap */
+:root {
+  --calibration-controls-width: 20rem;
+}
+
+#controls[data-step="calibration"],
+#controls[data-step="simulation"],
+#controls[data-step="projection"] {
+  box-sizing: border-box;
+  width: var(--calibration-controls-width);
+  /* the model list scrolls instead of the panel, so the actions stay put */
+  overflow-y: hidden;
+}
+
+/* the only growing child: it takes the leftover height and scrolls in place */
+#calibration__models,
+#simulation__models,
+#projection__models {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5em;
+  min-height: 0;
+  overflow-y: auto;
+  /* room for the scrollbar so it never sits on the sections' border */
+  padding-right: 0.25em;
+}
+
+.controls__details {
+  border: 1px solid oklch(var(--fg) / 0.15);
+  border-radius: 0.5em;
+  box-sizing: border-box;
+  padding: 0.5em 0.75em;
+  width: 100%;
+
+  & summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 0.5em;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      color: oklch(var(--fg) / 0.5);
+      content: "▸";
+    }
+  }
+
+  &[open] summary::before {
+    content: "▾";
+  }
+
+  & > *:not(summary) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding-top: 0.5em;
+  }
+}
+
+/* the heading keeps its centring; the Clear button is absolute so it does not
+   shift the title off-centre when it appears */
+.calibration__title {
+  position: relative;
+}
+
+/* subtle grey, like .controls__reset; #controls outweighs the base button
+   rules, which otherwise tie on specificity and win on source order */
+#controls .calibration__clear {
+  background: oklch(var(--fg) / 0.1);
+  border: none;
+  border-radius: 0.25em;
+  bottom: 0;
+  box-shadow: none;
+  color: oklch(var(--fg) / 0.7);
+  font-size: 0.75rem;
+  height: auto;
+  padding: 0.25em 0.5em;
+  position: absolute;
+  right: 0;
+  width: auto;
+
+  &:hover {
+    background: oklch(var(--fg) / 0.2);
+    color: oklch(var(--fg));
+  }
+
+  &:active {
+    background: oklch(var(--fg) / 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background: oklch(var(--fg) / 0.1);
+      color: oklch(var(--fg) / 0.7);
+    }
+  }
+}
+
+/* one .controls__details per calibrated model */
+.calibration__model {
+  &.calibration__model--busy summary {
+    animation: calibration-pulse 1.5s ease-in-out infinite;
+  }
+
+  &.calibration__model--highlight {
+    background: oklch(var(--theme) / 0.08);
+    border-color: oklch(var(--theme));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calibration__model--busy summary {
+    animation: none;
+  }
+}
+
+@keyframes calibration-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* metric chip in the summary; mirrors .model__param/.model__param-name */
+.calibration__objective,
+.simulation__metric {
+  background: oklch(var(--theme) / 0.15);
+  border-radius: 0.7em;
+  color: oklch(var(--theme-more));
+  font-family: ui-monospace, monospace;
+  font-size: 0.8em;
+  margin-left: auto;
+  padding: 0.1em 0.7em;
+}
+
+/* one parameter row: name + the .slider component from elements.css */
+.calibration__param {
+  align-items: center;
+  display: grid;
+  gap: 0.5em;
+  grid-template-columns: 3em 1fr;
+}
+
+.stations__actions,
+.weather__actions,
+.calibration__actions,
+.simulation__actions {
+  display: flex;
+  gap: 0.75em;
+
+  /* the flex display beats the UA [hidden] rule; hiding the row rather than
+     the button alone also drops the panel gap it would leave behind */
+  &[hidden] {
+    display: none;
+  }
+
+  & button {
+    flex: 1;
+  }
+
+  /* the base button display: flex beats the UA [hidden] rule */
+  & button[hidden] {
+    display: none;
+  }
+}
+
+/* Calibrate reads as the primary action: alone on its own row, with the
+   Export/Import file actions sharing the row below */
+.calibration__actions {
+  flex-wrap: wrap;
+}
+
+#calibration__calibrate {
+  flex-basis: 100%;
+}
+
+/* the import modal: native <dialog> chrome restyled like the map dialog;
+   Replace keeps the theme button, Cancel echoes Clear's subtle grey */
+#calibration__import-dialog {
+  background-color: oklch(var(--bg));
+  border: 1px solid oklch(var(--theme) / 0.5);
+  border-radius: 0.5em;
+  color: oklch(var(--fg));
+  max-width: 26em;
+  padding: 1.25em;
+
+  &::backdrop {
+    background: oklch(0 0 0 / 0.5);
+  }
+
+  & p {
+    margin: 0;
+  }
+
+  & ul {
+    color: oklch(var(--fg) / 0.8);
+    font-size: 0.85rem;
+    margin: 0.75em 0 0;
+    padding-left: 1.25em;
+  }
+
+  & .calibration__dialog-actions {
+    display: flex;
+    gap: 0.75em;
+    justify-content: flex-end;
+    margin-top: 1.25em;
+
+    & button {
+      font-size: 0.9rem;
+      height: 2.25em;
+    }
+
+    & .calibration__dialog-secondary {
+      background: oklch(var(--fg) / 0.1);
+      box-shadow: none;
+      color: oklch(var(--fg) / 0.7);
+
+      &:hover {
+        background: oklch(var(--fg) / 0.2);
+        color: oklch(var(--fg));
+      }
+
+      &:active {
+        background: oklch(var(--fg) / 0.3);
+      }
+    }
+  }
+}
+
+/* one read-only row per simulated model: name + metric chip; hovering it
+   drives the chart cross-highlight, so the highlight mirrors calibration's.
+   projection reuses the row without the chip */
+.simulation__model,
+.projection__model {
+  align-items: center;
+  border: 1px solid oklch(var(--fg) / 0.15);
+  border-radius: 0.5em;
+  box-sizing: border-box;
+  display: flex;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
+  width: 100%;
+
+  &.simulation__model--highlight,
+  &.projection__model--highlight {
+    background: oklch(var(--theme) / 0.08);
+    border-color: oklch(var(--theme));
+  }
+}
+
+/* segmented pill for the scenario and horizon picks; not .model__mode, whose
+   sliding fill assumes exactly two fixed-width halves — this one holds one to
+   three segments of variable width */
+.projection__seg {
+  border: 0.1em solid oklch(var(--theme) / 0.5);
+  border-radius: 1em;
+  display: flex;
+  overflow: hidden;
+}
+
+/* #controls outweighs the base button rules, which otherwise tie on
+   specificity and win on source order */
+#controls .projection__seg-btn {
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  flex: 1;
+  font-size: 0.8rem;
+  height: auto;
+  padding: 0.3em 0.2em;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+
+  &:hover,
+  &:active {
+    background: oklch(var(--theme) / 0.15);
+    color: oklch(var(--fg));
+  }
+
+  &.projection__seg-btn--selected,
+  &.projection__seg-btn--selected:hover,
+  &.projection__seg-btn--selected:active {
+    background: oklch(var(--theme) / 0.6);
+    color: oklch(var(--fg-dark));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #controls .projection__seg-btn {
+    transition: none;
+  }
+}
+
+/* small per-model stop button; #controls outweighs the base button rules,
+   which otherwise tie on specificity and win on source order */
+#controls .calibration__stop {
+  background: oklch(var(--fg) / 0.1);
+  border: none;
+  border-radius: 0.25em;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  font-size: 0.75rem;
+  height: auto;
+  padding: 0.25em 0.5em;
+  width: auto;
+
+  /* the base button display: flex beats the UA [hidden] rule */
+  &[hidden] {
+    display: none;
+  }
+
+  &:hover {
+    background: oklch(var(--error) / 0.8);
+    color: oklch(var(--fg-dark));
+  }
+
+  &:active {
+    background: oklch(var(--error));
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background: oklch(var(--fg) / 0.1);
+    }
+  }
+}
+
+/* native select styled to match the input look (underline, no fill) rather
+   than the themed pill the base select rule gives */
+#controls select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: oklch(var(--bg));
+  border: none;
+  border-bottom: 1px solid oklch(var(--theme) / 0.8);
+  border-radius: 0;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  padding: 0.25em 0.5em;
+
+  & option {
+    background: oklch(var(--bg));
+    color: oklch(var(--fg));
+  }
+}
+
+/* the station pickers keep the filled pill of the base select rule, tinted to
+   match their map marker; #controls outweighs the flat `#controls select`
+   above, which would otherwise win on specificity and strip the fill */
+#controls #controls__calibration-station,
+#controls #controls__simulation-station {
+  border-bottom: none;
+  border-radius: 0.5em;
+}
+
+#controls #controls__calibration-station {
+  background: oklch(var(--purple) / 0.5);
+  box-shadow: 0 0.25em 0.5em 0.25em oklch(var(--purple) / 0.2);
+}
+
+#controls #controls__simulation-station {
+  background: oklch(var(--green) / 0.5);
+  box-shadow: 0 0.25em 0.5em 0.25em oklch(var(--green) / 0.2);
+}
+
+#hydrographs,
+#weather-charts,
+#calibration-charts,
+#simulation-charts,
+#projection-charts {
+  background: oklch(var(--bg));
+  border: 1px solid oklch(var(--theme) / 0.5);
+  border-radius: 0.5em;
+  bottom: 1em;
+  display: flex;
+  gap: 1em;
+  height: 24vh;
+  left: 1em;
+  padding: 0.5em 1em 1em 1em;
+  position: absolute;
+  right: 1em;
+  z-index: 10;
+
+  /* display: flex beats the UA [hidden] rule */
+  &[hidden] {
+    display: none;
+  }
+
+  & figure {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    margin: 0;
+    min-width: 0;
+
+    /* absent: the role has nothing to show, so it leaves the layout and the
+       survivors take the space; empty: a single missing chart inside a
+       populated column, which keeps its box so the column stays aligned */
+    &.hydrographs__figure--absent {
+      display: none;
+    }
+
+    &.hydrographs__figure--empty {
+      visibility: hidden;
+    }
+
+    /* the global .loading spinner centres itself in the nearest positioned
+       ancestor, hence position: relative */
+    & .hydrographs__loading {
+      display: none;
+      flex: 1;
+      position: relative;
+    }
+
+    &.hydrographs__figure--loading {
+      & .hydrographs__loading {
+        display: block;
+      }
+
+      & .plot {
+        display: none;
+      }
+    }
+  }
+
+  & figcaption {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  /* d3 axes default to 10px */
+  & .plot text {
+    font-size: 0.8rem;
+  }
+
+  & .plot .axis-title {
+    font-size: 1rem;
+  }
+
+  /* like .axis-title, this has to live under the id so it outweighs the
+     .plot text rule above rather than tying with it */
+  & .plot .legend-label {
+    font-size: 1.1rem;
+  }
+
+  & .plot {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+
+  /* daily data at full resolution reads best hairline (holmes idiom) */
+  & .streamflow-line {
+    stroke-width: 0.5px;
+  }
+}
+
+/* same panel, but a 2×2 grid: precipitation row above temperature row */
+#weather-charts {
+  display: grid;
+  gap: 0 1em;
+  grid-template-columns: 1fr 1fr;
+  /* only the top row carries a figcaption, so it needs the extra share to
+     leave both plots the same height */
+  grid-template-rows: 1.35fr 1fr;
+
+  /* one role selected: its column spans the panel instead of leaving a gap */
+  &.weather-charts--single {
+    grid-template-columns: 1fr;
+  }
+
+  & figure {
+    /* a grid item must be allowed to shrink for the svg to size */
+    min-height: 0;
+  }
+
+  /* half the height of the streamflow panel per chart, so the type shrinks
+     with it; the rotated title is the tightest fit */
+  & .plot text {
+    font-size: 0.8rem;
+  }
+
+  & .plot .axis-title {
+    font-size: 0.8rem;
+  }
+}
+
+/* same panel, but stacked charts owning the whole canvas: full height
+   instead of the bottom strip, clear of the sidebar rail on the left and the
+   controls card on the right. simulation shares the geometry (and the
+   controls-width variable) because its card is the same width */
+#calibration-charts,
+#simulation-charts,
+#projection-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  height: auto;
+  left: 4.5em;
+  /* the controls card sits 1.1rem from the right edge; leave a gap after it */
+  right: calc(var(--calibration-controls-width) + 2.5rem);
+  /* same offset as #controls so the two cards align at the top */
+  top: 5em;
+
+  & figure {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    margin: 0;
+    min-height: 0;
+  }
+
+  /* the chart svg only: a bare `svg` would also catch the loading spinner,
+     whose 3em box this width would stretch to the full panel */
+  & .plot {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+}
+
+/* the regime reads the whole ensemble, so it gets the larger share of the
+   stack; the parent id keeps this above the `figure` rule it overrides */
+#projection-charts #projection__regime {
+  flex: 1.6;
+}
+
+/* full-canvas takeover: fills #canvas (a centred flexbox), left padding clears
+   the pipeline sidebar (left: 1em, ~2.75em wide), top padding clears the
+   wordmark */
+.model {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  height: 100%;
+  padding: 4.5em 1.5em 1.5em 4.5em;
+  width: 100%;
+}
+
+.model__header {
+  align-items: center;
+  display: flex;
+  gap: 1em;
+}
+
+.model__title,
+.model__subtitle {
+  margin: 0;
+}
+
+.model__summary {
+  /* pushes the summary to the right edge of the header row */
+  margin-left: auto;
+  opacity: 0.7;
+}
+
+/* segmented Single/Ensemble pill; #canvas .model outweighs the base button
+   rules, which otherwise tie on specificity and win on source order */
+.model__mode {
+  border: 0.1em solid oklch(var(--theme) / 0.5);
+  border-radius: 1em;
+  display: inline-flex;
+  overflow: hidden;
+  position: relative;
+  /* the only hover/press feedback: the halves stay flat so nothing competes
+     with the sliding fill */
+  transition: border-color 200ms;
+
+  &:hover {
+    border-color: oklch(var(--theme));
+  }
+
+  &:active {
+    border-color: oklch(var(--theme-most));
+  }
+
+  /* one fill that slides between the halves rather than two backgrounds
+     toggling, so switching mode reads as motion; it is half the track wide,
+     which is why the buttons are given a fixed equal width below */
+  &::before {
+    background: oklch(var(--theme) / 0.6);
+    /* its own radius, so the fill is the same pill on either half; the track's
+       overflow: hidden would otherwise square off whichever side is inboard */
+    border-radius: 1em;
+    content: "";
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transition: transform 250ms ease;
+    width: 50%;
+  }
+
+  &.model__mode--ensemble::before {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .model__mode::before {
+    transition: none;
+  }
+}
+
+.model .model__mode-btn {
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  font-size: 0.8rem;
+  height: auto;
+  padding: 0.25em 0;
+  /* both halves must be equal for the 50%-wide fill to land on either one;
+     wide enough for "Ensemble", the longer of the two labels */
+  width: 6em;
+  /* above the sliding fill, which is a sibling pseudo-element */
+  position: relative;
+  z-index: 1;
+  transition: color 250ms ease;
+
+  /* the sliding fill is the only feedback the toggle gives, so the base
+     button's hover and press tints are cancelled rather than layered over it */
+  &:hover,
+  &:active {
+    background: none;
+    color: oklch(var(--fg));
+  }
+
+  &.model__mode-btn--active,
+  &.model__mode-btn--active:hover,
+  &.model__mode-btn--active:active {
+    color: oklch(var(--fg-dark));
+  }
+}
+
+/* subtle grey pair beside the mode toggle; display: flex beats the UA
+   [hidden] rule that hides them outside ensemble mode */
+.model__bulk {
+  display: flex;
+  gap: 0.5em;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* .model outweighs the base button rules, which otherwise tie on specificity
+   and win on source order */
+.model .model__bulk-btn {
+  background: oklch(var(--fg) / 0.1);
+  border: none;
+  border-radius: 0.25em;
+  box-shadow: none;
+  color: oklch(var(--fg) / 0.7);
+  font-size: 0.8rem;
+  height: auto;
+  padding: 0.25em 0.7em;
+
+  &:hover {
+    background: oklch(var(--fg) / 0.2);
+    color: oklch(var(--fg));
+  }
+
+  &:active {
+    background: oklch(var(--fg) / 0.3);
+  }
+}
+
+.model__grid {
+  display: grid;
+  gap: 0.25em 1em;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.model__snow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.model__snow-options {
+  display: flex;
+  gap: 2em;
+}
+
+/* options render as plain glyph + label rows, not the themed buttons the base
+   rules give; #canvas .model outweighs button and button:hover */
+.model .model__option {
+  background: none;
+  border: none;
+  border-radius: 0.35em;
+  box-shadow: none;
+  color: oklch(var(--fg));
+  font-size: 1rem;
+  gap: 0.5em;
+  height: auto;
+  justify-content: flex-start;
+  /* grid items default to min-width: auto, so the button must be allowed to
+     shrink below its content for the label to truncate rather than wrap */
+  min-width: 0;
+  padding: 0.35em 0.5em;
+  width: 100%;
+
+  &:hover,
+  &:active {
+    background: oklch(var(--fg) / 0.08);
+    color: oklch(var(--fg));
+  }
+}
+
+/* one line, ellipsis on overflow; min-width: 0 lets the flex item shrink */
+.model__option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model .model__snow-options .model__option {
+  width: auto;
+}
+
+/* the glyph morphs between a radio circle and a checkbox square; the mode
+   class on the grid drives the border-radius transition, snow stays circular */
+.model__glyph {
+  border: 0.12em solid oklch(var(--fg) / 0.4);
+  border-radius: 50%;
+  flex: none;
+  height: 1.15em;
+  position: relative;
+  transition:
+    border-radius 250ms,
+    border-color 250ms,
+    background 250ms;
+  width: 1.15em;
+}
+
+.model__grid--ensemble .model__glyph {
+  border-radius: 0.25em;
+}
+
+/* radio fill (single mode + all snow options): inner dot */
+.model__grid--single .model__option--selected .model__glyph,
+.model__snow .model__option--selected .model__glyph {
+  border-color: oklch(var(--theme));
+
+  &::after {
+    background: oklch(var(--theme));
+    border-radius: 50%;
+    content: "";
+    inset: 0.22em;
+    position: absolute;
+  }
+}
+
+/* checkbox fill (ensemble mode): filled square with a checkmark */
+.model__grid--ensemble .model__option--selected .model__glyph {
+  background: oklch(var(--theme));
+  border-color: oklch(var(--theme));
+
+  &::after {
+    border: solid oklch(var(--fg-dark));
+    border-width: 0 0.12em 0.12em 0;
+    content: "";
+    height: 0.55em;
+    left: 0.38em;
+    position: absolute;
+    top: 0.14em;
+    transform: rotate(45deg);
+    width: 0.3em;
+  }
+}
+
+/* sits directly below the snow section, hugs its content, and reads as a
+   continuation of it (a top rule) rather than a separate card */
+.model__detail {
+  border-top: 1px solid oklch(var(--theme) / 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: 0.7em 0 0;
+}
+
+.model__detail-title {
+  margin: 0;
+}
+
+.model__detail-description {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.model__detail-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.model__param {
+  background: oklch(var(--fg) / 0.08);
+  border-radius: 0.7em;
+  color: oklch(var(--fg) / 0.8);
+  font-size: 0.85rem;
+  padding: 0.1em 0.7em;
+}
+
+.model__param-name {
+  color: oklch(var(--theme-more));
+  font-family: ui-monospace, monospace;
+  font-weight: bold;
+}
+
+.model__detail-empty,
+.model__detail-loading {
+  margin: 0;
+  opacity: 0.5;
+}
+
+#wordmark {
+  align-items: center;
+  display: flex;
+  font-size: 1.2rem;
+  /* same box as the settings button (2.5em at 1.2rem) so both centre lines match */
+  height: 2.5em;
+  left: 1em;
+  margin: 0;
+  position: absolute;
+  top: 0.5em;
+  z-index: 10;
+}
+
+#settings > button {
+  border-radius: 50%;
+  right: 0.5em;
+  top: 0.5em;
+}

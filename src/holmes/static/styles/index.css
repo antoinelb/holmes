@@ -1,52 +1,16 @@
 @import "./template.css";
 @import "./elements.css";
-@import "./notifications.css";
 @import "./settings.css";
-@import "./nav.css";
-@import "./calibration.css";
-@import "./simulation.css";
-@import "./projection.css";
+@import "./map.css";
+@import "./pipeline.css";
 
 body {
   display: grid;
-  grid-template-rows: max-content 1fr;
-
-  & header {
-    grid-column: 1 / -1;
-
-    & h1 {
-      margin: 0;
-      padding: 0.25em 0.5em 0 0.5em;
-      text-align: center;
-    }
-  }
+  grid-template-rows: 1fr;
 
   & main {
     height: 100%;
     min-height: 0;
-
-    & section {
-      display: grid;
-      grid-template-rows: max-content max-content 1fr;
-      height: 100%;
-      min-height: 0;
-      row-gap: 0.5em;
-
-      &[hidden] {
-        display: none;
-      }
-
-      & h2 {
-        margin: 0;
-        padding: 0 0.5em;
-        text-align: center;
-      }
-
-      & .config {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-    }
   }
 }
 
@@ -74,10 +38,132 @@ body {
     fill: oklch(var(--fg));
   }
 
-  & .grid-horizontal,
-  & .grid-vertical {
+  & .grid-horizontal {
     stroke: oklch(var(--fg) / 0.5);
     stroke-width: 0.25px;
+  }
+
+  & .series-line {
+    fill: none;
+    stroke-width: 1px;
+
+    &.series-line--model {
+      stroke: oklch(var(--fg) / 0.25);
+    }
+
+    /* every line is a hairline; the median reads through colour and its
+       position on top of the stack, not through weight */
+    &.series-line--median {
+      stroke: oklch(var(--fg));
+    }
+
+    &.series-line--observations {
+      stroke: oklch(var(--colour));
+    }
+
+    /* the projection stack: member hairlines palest, per-model medians keep
+       the --model level, the complete median the full --median level */
+    &.series-line--member {
+      stroke: oklch(var(--fg) / 0.12);
+    }
+
+    /* the historical reference; the colour class (green) supplies the hue
+       and the dash is an attribute set by the view */
+    &.series-line--historical {
+      stroke: oklch(var(--colour));
+    }
+  }
+
+  /* markers for short series; mirrors the .series-line palette as fills */
+  & .series-point {
+    stroke: none;
+
+    &.series-point--model {
+      fill: oklch(var(--fg) / 0.25);
+    }
+
+    &.series-point--median {
+      fill: oklch(var(--fg));
+    }
+
+    &.series-point--observations {
+      fill: oklch(var(--colour));
+    }
+
+    /* indicator dots, one per (model, member); slightly more present than
+       the member hairlines since a dot has no length to read through */
+    &.series-point--member {
+      fill: oklch(var(--fg) / 0.3);
+    }
+  }
+
+  /* hover cross-highlight, applied to both lines and points */
+  & .series--dim {
+    opacity: 0.15;
+  }
+
+  & .series-line.series--active {
+    opacity: 1;
+    stroke: oklch(var(--theme));
+  }
+
+  & .series-point.series--active {
+    fill: oklch(var(--theme));
+  }
+
+  /* a hovered model's member traces colour like its median but stay paler,
+     so the median still leads; placed after the generic rule to win the tie */
+  & .series-line--member.series--active {
+    stroke: oklch(var(--theme) / 0.45);
+  }
+
+  /* reference ticks on the indicators figure: solid fg for the ensemble
+     median, the colour class (green) for the dashed historical */
+  & .series-tick--median {
+    stroke: oklch(var(--fg));
+    stroke-width: 2px;
+  }
+
+  & .series-tick--historical {
+    stroke: oklch(var(--colour));
+    stroke-width: 2px;
+  }
+
+  /* the split-scale break marker on the indicators axis */
+  & .axis-break {
+    stroke: oklch(var(--fg));
+  }
+
+  /* the size lives in pipeline.css, where it can outweigh the .plot text rule */
+  & .legend-label {
+    fill: oklch(var(--fg) / 0.7);
+  }
+
+  /* bars are one filled path of per-day boxes, so the path defaults above
+     (stroked outline, no fill) have to be inverted */
+  & .bar-path {
+    fill: oklch(var(--colour));
+    stroke: none;
+  }
+
+  & .warmup-rect {
+    fill: oklch(var(--fg) / 0.05);
+  }
+
+  & .warmup-label {
+    fill: oklch(var(--fg) / 0.35);
+    font-size: 0.75rem;
+    pointer-events: none;
+  }
+
+  /* the optimal score; the .red class on the element supplies --colour */
+  & .reference-line {
+    stroke-width: 1px;
+  }
+
+  & .reference-label {
+    fill: oklch(var(--colour));
+    font-size: 0.7rem;
   }
 
   & .blue {
@@ -110,5 +196,9 @@ body {
 
   & .turquoise {
     --colour: 0.56 0.2 180;
+  }
+
+  & .theme {
+    --colour: var(--theme);
   }
 }

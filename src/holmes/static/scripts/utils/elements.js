@@ -40,6 +40,10 @@ export function clear(node) {
   });
 }
 
+// transform (optional) maps between the raw parameter space (number input,
+// change payloads) and the range input's own space, so a log-scaled parameter
+// can slide smoothly over several orders of magnitude while the number input
+// still reads and writes the raw value; null keeps the two spaces identical
 export function createSlider(
   id,
   min,
@@ -47,6 +51,7 @@ export function createSlider(
   isInteger,
   events = [],
   initialVal = null,
+  transform = null,
 ) {
   if (initialVal === null) {
     initialVal = isInteger
@@ -54,15 +59,27 @@ export function createSlider(
       : round((max + min) / 2, 1);
   }
 
+  // the range input lives in transformed space when a transform is given; its
+  // step is a thousandth of that span so float sliders stay fine-grained
+  const tMin = transform ? transform.toSlider(min) : min;
+  const tMax = transform ? transform.toSlider(max) : max;
+  const rangeStep = transform ? (tMax - tMin) / 1000 : isInteger ? "1" : "0.01";
+  const rangeValue = transform
+    ? transform.toSlider(initialVal)
+    : isInteger
+      ? initialVal.toString()
+      : initialVal.toFixed(1);
+  const numberValue = isInteger ? initialVal.toString() : initialVal.toFixed(1);
+
   return create("div", { class: "slider" }, [
     create(
       "input",
       {
         type: "range",
-        min: min,
-        max: max,
-        step: isInteger ? "1" : "0.01",
-        value: isInteger ? initialVal.toString() : initialVal.toFixed(1),
+        min: tMin,
+        max: tMax,
+        step: rangeStep,
+        value: rangeValue,
       },
       [],
       [
@@ -70,7 +87,9 @@ export function createSlider(
         {
           event: "input",
           fct: (event) => {
-            document.getElementById(id).value = event.target.value;
+            document.getElementById(id).value = transform
+              ? transform.fromSlider(Number(event.target.value))
+              : event.target.value;
           },
         },
       ],
@@ -83,7 +102,7 @@ export function createSlider(
         min: min,
         max: max,
         step: isInteger ? "1" : "0.01",
-        value: isInteger ? initialVal.toString() : initialVal.toFixed(1),
+        value: numberValue,
       },
       [],
       [
@@ -98,7 +117,9 @@ export function createSlider(
               const slider = event.target.parentNode.querySelector(
                 "input[type='range']",
               );
-              slider.value = event.target.value;
+              slider.value = transform
+                ? transform.toSlider(Number(event.target.value))
+                : event.target.value;
               slider.dispatchEvent(new Event("change", { bubbles: true }));
             }, 500);
           },
