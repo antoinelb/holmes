@@ -9,6 +9,21 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Added
+- `holmes package` command zipping every built data product into the dated `data-YYYY-MM-DD.zip` archive published on the repo's rolling `data` release
+- Nightly data-refresh GitHub Actions workflow (`.github/workflows/data.yml`) running `holmes download` and `holmes package` and replacing the dated archive on the `data` release, toggled with the `DATA_REFRESH_ENABLED` repository variable (manual runs always allowed)
+- `HOLMES_SKIP_DATA_SYNC` environment variable to skip the startup data sync
+
+### Changed
+- **Breaking**: the server no longer builds data at runtime: every product is pre-built and served as one dated zip on the `data` release; at startup the server downloads and extracts a newer archive if one exists (keeping the current data served during the swap) and raises an actionable `MissingDataError` when no data is available at all — map tiles remain the one lazily fetched exception
+- **Breaking**: data now lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows) instead of the working directory's `data/`, overridable with the `HOLMES_DATA_DIR` environment variable (a repo checkout uses `HOLMES_DATA_DIR=data`)
+- **Breaking**: `holmes download` is now the maintainer path building every product incrementally from its true source — daily re-runs only fetch the current year (plus the previous year in January) for ERA5 and the ministry grid, always refresh the streamflow files, recompute the cheap derived products, and skip the static ones — and requires the new `download` optional extra (`pip install 'holmes-hydro[download]'`), which carries the heavy geo dependencies (cdsapi, xarray, rioxarray, exactextract, netcdf4, pystac-client) removed from the base install
+
+### Removed
+- **Breaking**: the runtime cache-or-fetch data layer, the committed data files fetched from the repo, and the per-product release assets, all superseded by the dated archive on the `data` release
+
 ## [4.2.1] - 2026-08-15
 
 ### Fixed

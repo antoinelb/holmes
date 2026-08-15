@@ -34,7 +34,8 @@ holmes run
 
 Ouvrir le navigateur à [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-La ligne de commande fournit aussi `holmes download` pour reconstruire les jeux de données publiés depuis leurs sources et `holmes experiment` pour lancer des expériences de calage en lot.
+Au démarrage, le serveur télécharge le jeu de données préconstruit depuis la release `data` du dépôt, donc aucun identifiant n'est nécessaire.
+La ligne de commande fournit aussi `holmes experiment` pour lancer des expériences de calage en lot; `holmes download` et `holmes package` sont des commandes de mainteneur pour reconstruire et empaqueter les jeux de données.
 
 [:material-compass: Guide d'utilisation](guide/index.md){ .md-button .md-button--primary }
 [:material-water: Concepts](concepts/index.md){ .md-button }
