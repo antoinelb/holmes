@@ -24,6 +24,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 ### Removed
 - **Breaking**: the runtime cache-or-fetch data layer, the committed data files fetched from the repo, and the per-product release assets, all superseded by the dated archive on the `data` release
 
+## [4.2.2] - 2026-08-15
+
+### Removed
+- The unused `gcsfs`, `zarr` and `tqdm` dependencies (left over from an evaluated-then-rejected ARCO-ERA5 data path), slimming the install by 34 packages
+
 ## [4.2.1] - 2026-08-15
 
 ### Fixed
