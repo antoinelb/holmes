@@ -312,6 +312,30 @@ class TestUpdateMinistryGrid:
         assert product["temperature"].to_list() == pytest.approx([-3.0] * 6)
         assert no_part_files(tmp_data_dir)
 
+    def test_force_selects_full_build(
+        self, tmp_data_dir, monkeypatch, stations_df, era5_product, polygons
+    ):
+        old = make_product(["061004", "061020"], [2014])
+        path = tmp_data_dir / "raw" / "weather" / "ministry_grid.ipc"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        old.write_ipc(path)
+
+        processed = make_processed_dataset(polygons, 2015)
+        monkeypatch.setattr(
+            weather, "_download_ministry_grid_files", lambda names: None
+        )
+        monkeypatch.setattr(
+            weather,
+            "_read_year_ministry_grid_weather_data",
+            lambda year: processed if year == 2015 else None,
+        )
+        weather.update_ministry_grid(stations_df, force=True)
+
+        product = pl.read_ipc(path, memory_map=False)
+        # the old product is replaced outright, not upserted
+        assert product["datetime"].dt.year().unique().to_list() == [2015]
+        assert product["precipitation"].to_list() == pytest.approx([2.0] * 6)
+
     def test_incremental_refresh(
         self, tmp_data_dir, monkeypatch, stations_df, era5_product, polygons
     ):
@@ -455,6 +479,35 @@ class TestUpdateStationsBackfill:
         assert backfill["precipitation"].to_list() == [1.0, 8.0, 8.0]
         assert backfill["temperature"].to_list() == [-1.0, -2.0, -8.0]
         assert no_part_files(tmp_data_dir)
+
+    def test_force_selects_full_build(
+        self, tmp_data_dir, monkeypatch, station_csvs, samples
+    ):
+        ministry, era5 = samples
+        old = pl.DataFrame(
+            {
+                "climate_id": ["7060225"],
+                "datetime": [datetime(2014, 7, 1)],
+                "precipitation": [5.0],
+                "temperature": [-5.0],
+            }
+        )
+        path = tmp_data_dir / "raw" / weather.stations_backfill_file
+        path.parent.mkdir(exist_ok=True, parents=True)
+        old.write_ipc(path)
+
+        monkeypatch.setattr(
+            weather, "_sample_ministry_grid", lambda inv, years: ministry
+        )
+        monkeypatch.setattr(
+            weather, "_sample_era5_cells", lambda inv, years: era5
+        )
+        weather.update_stations_backfill(force=True)
+
+        backfill = pl.read_ipc(path, memory_map=False)
+        # the old product is replaced outright, not upserted
+        assert backfill["datetime"].dt.year().unique().to_list() == [2015]
+        assert backfill["precipitation"].to_list() == [1.0, 8.0, 8.0]
 
     def test_incremental_upserts_refresh_years(
         self, tmp_data_dir, monkeypatch, station_csvs, samples
@@ -829,8 +882,45 @@ class TestReadEra5Years:
         data = weather._read_era5_years([(47.75, -71.25)], [2015])
         assert data.equals(cell)
 
-    def test_missing_file_raises(self, tmp_data_dir):
+    def test_missing_trailing_year_is_skipped(self, tmp_data_dir, monkeypatch):
+        cell = pl.DataFrame(
+            {
+                "datetime": [datetime(2025, 1, 1)],
+                "precipitation": [1.0],
+                "temperature": [0.0],
+                "latitude": [47.75],
+                "longitude": [-71.25],
+            }
+        )
+        path = weather._era5_cell_year_path(47.75, -71.25, 2025)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        cell.write_ipc(path)
+        warn = MagicMock()
+        monkeypatch.setattr(weather, "warn_print", warn)
+        # early January: CDS has not reached 2026 yet
+        data = weather._read_era5_years([(47.75, -71.25)], [2025, 2026])
+        assert data.equals(cell)
+        warn.assert_called_once()
+
+    def test_partial_year_coverage_raises(self, tmp_data_dir):
+        cell = pl.DataFrame(
+            {
+                "datetime": [datetime(2015, 1, 1)],
+                "precipitation": [1.0],
+                "temperature": [0.0],
+                "latitude": [47.75],
+                "longitude": [-71.25],
+            }
+        )
+        path = weather._era5_cell_year_path(47.75, -71.25, 2015)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        cell.write_ipc(path)
         with pytest.raises(RuntimeError, match="Missing ERA5 cell files"):
+            weather._read_era5_years([(47.75, -71.25), (48.0, -71.25)], [2015])
+
+    def test_no_data_at_all_raises(self, tmp_data_dir, monkeypatch):
+        monkeypatch.setattr(weather, "warn_print", MagicMock())
+        with pytest.raises(RuntimeError, match="No ERA5 data"):
             weather._read_era5_years([(47.75, -71.25)], [2015])
 
 
@@ -1070,9 +1160,10 @@ class TestMinistryGridFile:
             lambda url, **kwargs: make_response(b"<html>error</html>"),
         )
         assert weather._ministry_grid_file("PREC_2015.nc") is None
-        assert not (
-            tmp_data_dir / "raw" / "weather" / "ministry_grid" / "PREC_2015.nc"
-        ).exists()
+        directory = tmp_data_dir / "raw" / "weather" / "ministry_grid"
+        assert not (directory / "PREC_2015.nc").exists()
+        # a failed attempt must not strand a stale .part file either
+        assert not list(directory.glob("*.part"))
 
 
 class TestReadStationInventory:

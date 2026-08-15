@@ -475,8 +475,10 @@ def _ensure_era5_cells(
             max_workers=era5_max_workers
         ) as pool:
             futures = [
-                pool.submit(_fetch_era5_cell_years, latitude, longitude, years)
-                for latitude, longitude, years in needed
+                pool.submit(
+                    _fetch_era5_cell_years, latitude, longitude, missing_years
+                )
+                for latitude, longitude, missing_years in needed
             ]
             for future in concurrent.futures.as_completed(futures):
                 future.result()
@@ -591,21 +593,31 @@ def _read_era5_years(
 ) -> pl.DataFrame:
     """Concatenate the per-year cell files, failing loudly on a miss.
 
-    A missing file after `_ensure_era5_cells` means CDS could not cover a
-    requested year; partial data would silently skew the watershed means.
+    The trailing year alone may be absent for every cell: in the first
+    days of January the reanalysis lag means CDS has not reached the new
+    year yet, and the daily refresh must not fail for a week. Any other
+    miss means partial coverage, which would silently skew the watershed
+    means, so it raises.
     """
     frames: list[pl.DataFrame] = []
-    missing: list[str] = []
-    for latitude, longitude in cells:
-        for year in years:
-            path = _era5_cell_year_path(latitude, longitude, year)
-            if path.exists():
-                frames.append(pl.read_ipc(path, memory_map=False))
-            else:
-                missing.append(path.name)
-    if missing:
+    for year in sorted(years):
+        files = [
+            _era5_cell_year_path(latitude, longitude, year)
+            for latitude, longitude in cells
+        ]
+        existing = [file for file in files if file.exists()]
+        if not existing and year == max(years):
+            warn_print(f"No ERA5 data for {year} yet; skipping it.")
+            continue
+        if len(existing) < len(files):
+            missing = [file.name for file in files if not file.exists()]
+            raise RuntimeError(
+                f"Missing ERA5 cell files after fetch: {', '.join(missing)}."
+            )
+        frames.extend(pl.read_ipc(file, memory_map=False) for file in existing)
+    if not frames:
         raise RuntimeError(
-            f"Missing ERA5 cell files after fetch: {', '.join(missing)}."
+            f"No ERA5 data for any of {', '.join(map(str, years))}."
         )
     return pl.concat(frames)
 
@@ -942,6 +954,7 @@ def _ministry_grid_file(name: str) -> Path | None:
     if path.exists():
         return path
 
+    staged = path.with_suffix(".part")
     try:
         response = httpx.get(
             ministry_grid_base_url + name,
@@ -954,7 +967,6 @@ def _ministry_grid_file(name: str) -> Path | None:
         # a truncated body, or an error page served in place of the file,
         # would otherwise be cached as if it were data and fail on every
         # later read
-        staged = path.with_suffix(".part")
         staged.write_bytes(response.content)
         xr.open_dataset(staged).close()
         staged.replace(path)
@@ -962,6 +974,8 @@ def _ministry_grid_file(name: str) -> Path | None:
         return path
 
     except Exception as exc:
+        # a failed attempt must not strand a stale .part next to the cache
+        staged.unlink(missing_ok=True)
         warn_print(f"Could not download {name} ({exc}).")
         return None
 
