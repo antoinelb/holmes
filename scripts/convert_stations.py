@@ -6,6 +6,9 @@ precipitation, tmax, tmin, temperature. Stations missing a parameter entirely
 (no temperature or no precipitation gauge) are skipped: the nearest-stations
 method needs both.
 
+The produced CSVs are no longer committed: they ship only inside the data
+release archive built by `holmes package`.
+
 Run as `python scripts/convert_stations.py`.
 """
 

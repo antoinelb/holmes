@@ -89,6 +89,8 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox]
+    env:
+      HOLMES_DATA_DIR: data
     steps:
       - uses: actions/checkout@v4
 
@@ -110,11 +112,28 @@ jobs:
           command: develop
           working-directory: src/holmes-rs
 
-      - name: Restore data caches
-        # e2e boots the real server; a cold data/ would rebuild station and
-        # weather products from source (minutes of downloads). The prebuilt
-        # caches live on the repo's rolling `data` release (make upload-assets)
-        run: curl -sL https://github.com/antoinelb/holmes/releases/download/data/data-cache.tar.gz | tar xz
+      - name: Restore data archive
+        # e2e boots the real server, which never builds data: extract the
+        # latest dated zip from the rolling `data` release. Writing the
+        # marker makes the startup sync a cheap up-to-date no-op (and
+        # exercises the compare path). Map tiles are not pre-seeded; the
+        # server fetches them lazily from CartoDB.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          latest="$(gh release view data --json assets \
+            --jq '[.assets[].name | select(test("^data-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.zip$"))] | sort | last // empty')"
+          if [ -z "$latest" ]; then
+            echo "no dated archive on the data release" >&2
+            exit 1
+          fi
+          gh release download data --pattern "$latest" --output "$latest"
+          mkdir -p data
+          unzip -q "$latest" -d data
+          stamp="${latest#data-}"
+          echo "${stamp%.zip}" > data/archive_date.txt
+          rm "$latest"
 
       - name: Install Playwright browsers
         run: uv run playwright install ${{ matrix.browser }} --with-deps
