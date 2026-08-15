@@ -65,7 +65,13 @@ def run_server() -> Generator[str]:
             str(port),
         ],
         cwd=root_dir,
-        env=os.environ | {"RELOAD": "0", "DEBUG": "0"},
+        env=os.environ
+        | {
+            "RELOAD": "0",
+            "DEBUG": "0",
+            # the warmed data lives in the checkout, not the user data dir
+            "HOLMES_DATA_DIR": str((root_dir / "data").resolve()),
+        },
     )
     try:
         _wait_ready(url, proc)

@@ -47,11 +47,16 @@ Station, weather, and projection data are fetched from their true sources at run
 Customize the server by creating a `.env` file:
 
 ```env
-DEBUG=True          # Enable debug mode (default: False)
-RELOAD=True         # Enable auto-reload on code changes (default: False)
-HOST=127.0.0.1      # Server host (default: 127.0.0.1)
-PORT=8000           # Server port (default: 8000)
+DEBUG=True                  # Enable debug mode (default: False)
+RELOAD=True                 # Enable auto-reload on code changes (default: False)
+HOST=127.0.0.1              # Server host (default: 127.0.0.1)
+PORT=8000                   # Server port (default: 8000)
+HOLMES_DATA_DIR=data        # Data directory (default: the per-user data
+                            # directory, e.g. ~/.local/share/holmes on Linux)
+HOLMES_SKIP_DATA_SYNC=True  # Skip the startup data sync (default: False)
 ```
+
+A repo checkout should set `HOLMES_DATA_DIR=data` to keep using the repo-local `data/` directory.
 
 ## Development
 
