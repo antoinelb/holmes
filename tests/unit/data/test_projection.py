@@ -725,15 +725,8 @@ class TestReadGridMetadata:
 
 class TestBoundingBox:
     def test_margin_of_one_cell(self, stations_df):
-        import geopolars as gpl
-
         grid = make_grid()
-        polygons = (
-            gpl.GeoDataFrame(stations_df.select("id", "geometry"))
-            .to_geopandas()
-            .set_crs("EPSG:4326")
-            .to_crs(grid.crs)
-        )
+        polygons = projection._to_geopandas(stations_df).to_crs(grid.crs)
         (j0, j1), (i0, i1) = projection._bounding_box(polygons, grid)
         min_x, min_y, max_x, max_y = polygons.total_bounds
         assert grid.rlat[j0] < min_y
@@ -742,14 +735,8 @@ class TestBoundingBox:
         assert grid.rlon[i1] > max_x
 
     def test_outside_domain_raises(self, stations_df):
-        import geopolars as gpl
-
         grid = make_grid()._replace(rlat=np.arange(10.0, 11.0, 0.1))
-        polygons = (
-            gpl.GeoDataFrame(stations_df.select("id", "geometry"))
-            .to_geopandas()
-            .set_crs("EPSG:4326")
-        )
+        polygons = projection._to_geopandas(stations_df)
         with pytest.raises(ValueError, match="outside the projection"):
             projection._bounding_box(polygons, grid)
 

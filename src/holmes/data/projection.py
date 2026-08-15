@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import NamedTuple
 
 import geopandas as gpd
-import geopolars as gpl
 import httpx
 import numpy as np
 import numpy.typing as npt
@@ -21,6 +20,7 @@ from holmes.utils.print import done_print, load_progress
 from .weather import (
     _calculate_masked_mean,
     _compute_coverage_weights,
+    _to_geopandas,
     download_release_asset,
 )
 
@@ -311,12 +311,7 @@ def _station_weights(
     Run once per ensemble: the two rotated poles differ, so the polygons
     must be reprojected for each grid.
     """
-    polygons = (
-        gpl.GeoDataFrame(stations.select("id", "geometry"))
-        .to_geopandas()
-        .set_crs("EPSG:4326")
-        .to_crs(grid.crs)
-    )
+    polygons = _to_geopandas(stations).to_crs(grid.crs)
     box = _bounding_box(polygons, grid)
     return box, _compute_box_weights(polygons, grid, box)
 

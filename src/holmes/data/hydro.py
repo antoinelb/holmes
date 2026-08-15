@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 from typing import cast
 
-import geopolars as gpl
+import geopandas as gpd
 import httpx
 import polars as pl
 import pyproj
@@ -196,7 +196,22 @@ async def _download_watersheds() -> pl.DataFrame:
                     _path.rmdir()
 
         load_print(f"Reading {name} watersheds...")
-        watersheds_ = gpl.read_file(path)
+        shapes = gpd.read_file(path)
+        watersheds_ = pl.DataFrame(
+            {
+                column: shapes[column].to_list()
+                for column in shapes.columns
+                if column != "geometry"
+            }
+        ).with_columns(
+            # .to_list(): polars needs pyarrow (not a dependency here) to
+            # ingest a pandas series, but takes a plain list of bytes as is
+            pl.Series(
+                "geometry",
+                shapes.geometry.to_wkb().to_list(),
+                dtype=pl.Binary,
+            )
+        )
         if name == "closed":
             watersheds_ = (
                 watersheds_.rename({"tp": "id"})

@@ -8,7 +8,6 @@ from typing import Literal, assert_never
 import cdsapi
 import exactextract
 import geopandas as gpd
-import geopolars as gpl
 import httpx
 import numpy as np
 import numpy.typing as npt
@@ -166,12 +165,7 @@ def read_weather_data(
             )
         )
     )
-    polygons = (
-        gpl.GeoDataFrame(stations.select("id", "geometry"))
-        .to_geopandas()
-        .set_crs("EPSG:4326")
-        .to_crs(crs)
-    )
+    polygons = _to_geopandas(stations).to_crs(crs)
 
     match method:
         case "nearest_stations":
@@ -342,11 +336,7 @@ def read_weather_grid(
     Called after read_weather_data and sent in the same reply, so the rasters
     a method needs are already cached by the time this runs.
     """
-    polygons = (
-        gpl.GeoDataFrame(stations.select("id", "geometry"))
-        .to_geopandas()
-        .set_crs("EPSG:4326")
-    )
+    polygons = _to_geopandas(stations)
 
     match method:
         case "era5":
@@ -364,6 +354,15 @@ def read_weather_grid(
 ###########
 # private #
 ###########
+
+
+def _to_geopandas(stations: pl.DataFrame) -> gpd.GeoDataFrame:
+    """Watershed polygons (WKB geometry column) as a geopandas frame."""
+    return gpd.GeoDataFrame(
+        {"id": stations["id"].to_list()},
+        geometry=gpd.GeoSeries.from_wkb(stations["geometry"].to_list()),
+        crs="EPSG:4326",
+    )
 
 
 ####################

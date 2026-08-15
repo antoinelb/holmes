@@ -4,6 +4,7 @@ from datetime import date
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+import geopandas as gpd
 import numpy as np
 import polars as pl
 import pyproj
@@ -160,23 +161,20 @@ class TestDownloadWatersheds:
         closed_polygon = shapely.ops.transform(
             to_lambert, shapely.box(-71.6, 47.5, -71.5, 47.7)
         )
-        open_frame = pl.DataFrame(
+        open_frame = gpd.GeoDataFrame(
             {
                 "Station": ["061004", "061004", "061021"],
                 "Sup_Diffus": [500.0, 100.0, 300.0],
-                "geometry": [
-                    shapely.to_wkb(open_polygon),
-                    shapely.to_wkb(shapely.box(-71.3, 47.6, -71.2, 47.7)),
-                    None,
-                ],
-            }
+            },
+            geometry=[
+                open_polygon,
+                shapely.box(-71.3, 47.6, -71.2, 47.7),
+                None,
+            ],
         )
-        closed_frame = pl.DataFrame(
-            {
-                "tp": ["061022"],
-                "Sup_Km": [400.0],
-                "geometry": [shapely.to_wkb(closed_polygon)],
-            }
+        closed_frame = gpd.GeoDataFrame(
+            {"tp": ["061022"], "Sup_Km": [400.0]},
+            geometry=[closed_polygon],
         )
         return open_frame, closed_frame, open_polygon
 
@@ -189,7 +187,7 @@ class TestDownloadWatersheds:
             (base / name).mkdir(parents=True)
             (base / name / "watersheds.shp").touch()
         monkeypatch.setattr(
-            hydro.gpl,
+            hydro.gpd,
             "read_file",
             lambda path: open_frame if "open" in str(path) else closed_frame,
         )
@@ -235,7 +233,7 @@ class TestDownloadWatersheds:
             hydro.httpx, "AsyncClient", MagicMock(return_value=client)
         )
         monkeypatch.setattr(
-            hydro.gpl,
+            hydro.gpd,
             "read_file",
             lambda path: open_frame if "open" in str(path) else closed_frame,
         )

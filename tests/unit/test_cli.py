@@ -62,6 +62,13 @@ class TestRun:
         assert result.exit_code == 0
         server.assert_called_once()
 
+    def test_is_the_default_command(self, monkeypatch):
+        server = MagicMock()
+        monkeypatch.setattr(holmes.app, "run_server", server)
+        result = runner.invoke(cli._init_cli(), [])
+        assert result.exit_code == 0
+        server.assert_called_once()
+
 
 class TestDownload:
     def test_cold_cache_rebuilds_everything(self, download_world):
