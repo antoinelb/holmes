@@ -26,6 +26,8 @@ jobs:
 
   static-analysis:
     runs-on: ubuntu-latest
+    # backstop against hung network steps (GitHub's default is 360 min)
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -54,6 +56,7 @@ jobs:
   # over both suites combined
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -85,6 +88,8 @@ jobs:
 
   e2e-tests:
     runs-on: ubuntu-latest
+    # ~5x the normal runtime; a wedged browser or hung server fails fast
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -136,7 +141,15 @@ jobs:
           rm "$latest"
 
       - name: Install Playwright browsers
-        run: uv run playwright install ${{ matrix.browser }} --with-deps
+        timeout-minutes: 12
+        # the apt half of --with-deps occasionally hangs on the Ubuntu
+        # mirrors; kill a stalled attempt after 3 min and retry
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 uv run playwright install ${{ matrix.browser }} --with-deps && exit 0
+            echo "install attempt $attempt stalled or failed; retrying" >&2
+          done
+          exit 1
 
       - name: Run E2E tests
         run: uv run pytest tests/e2e -v --browser ${{ matrix.browser }}
