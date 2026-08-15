@@ -9,6 +9,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [4.2.1] - 2026-08-15
+
+### Fixed
+- Installation no longer fails with uv or pip ≥ 24.1: the abandoned pre-release `geopolars` dependency (invalid metadata rejected by modern pip) was replaced with the already-required `geopandas`, also dropping the transitive `pyarrow` dependency
+
 ## [4.2.0] - 2026-08-15
 
 ### Added
