@@ -27,7 +27,7 @@ from holmes.model_info import get_model_info
 from holmes.utils.api import send as _send
 from holmes.utils.api import with_path_params
 from holmes.utils.paths import data_dir, static_dir
-from holmes.utils.print import done_print, load_print
+from holmes.utils.print import done_print, warn_print
 
 ##########
 # public #
@@ -76,7 +76,7 @@ async def _websocket(ws: WebSocket) -> None:
             msg = await ws.receive_json()
             await _handle_message(ws, msg)
     except WebSocketDisconnect:
-        load_print("Calibration WebSocket client disconnected")
+        warn_print("Calibration WebSocket client disconnected")
     finally:
         await _cleanup_websocket(ws)
 

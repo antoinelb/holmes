@@ -5,6 +5,7 @@ import typer
 from . import app, experiment
 from .data import hydro, projection, weather
 from .utils.paths import data_dir
+from .utils.print import done_print
 
 ############
 # external #
@@ -72,7 +73,7 @@ def _download(
 
     era5_path = data_dir / "raw" / "weather" / "era5.ipc"
     if era5_path.exists() and not force:
-        typer.echo(
+        done_print(
             f"Already have {era5_path.name}; pass --force to rebuild it."
         )
     else:
@@ -80,14 +81,14 @@ def _download(
 
     backfill_path = data_dir / "raw" / weather.stations_backfill_file
     if backfill_path.exists() and not force:
-        typer.echo(
+        done_print(
             f"Already have {backfill_path.name}; pass --force to rebuild it."
         )
     else:
         weather.rebuild_stations_backfill()
 
     if projection.has_projection_data(stations) and not force:
-        typer.echo(
+        done_print(
             "Already have the projection products; pass --force to rebuild "
             "them."
         )

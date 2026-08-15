@@ -10,7 +10,7 @@ import numpy.typing as npt
 import polars as pl
 from holmes_rs.calibration.sce import Sce
 
-from holmes.utils.print import done_print, load_print
+from holmes.utils.print import task
 
 logger = logging.getLogger("holmes")
 
@@ -151,19 +151,18 @@ async def calibrate(
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64] | None]:
     # Thin async wrapper over the synchronous streaming calibrator, kept so the
     # historical `await calibrate(...)` call sites need no change.
-    load_print("Calibrating model...")
-    result = calibrate_stream(
-        data,
-        hydro_model,
-        objective,
-        snow_model,
-        transformation,
-        warmup_steps,
-        algorithm=algorithm,
-        params=params,
-        pet_model=pet_model,
-    )
-    done_print("Calibrated model")
+    with task("Calibrating model...", "Calibrated model."):
+        result = calibrate_stream(
+            data,
+            hydro_model,
+            objective,
+            snow_model,
+            transformation,
+            warmup_steps,
+            algorithm=algorithm,
+            params=params,
+            pet_model=pet_model,
+        )
     return result
 
 
