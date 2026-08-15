@@ -1,12 +1,10 @@
 import re
-import shutil
 import sys
 import threading
 import time
-from collections.abc import Iterable, Sized
 from dataclasses import dataclass, field
 from types import TracebackType
-from typing import Any, Literal, assert_never
+from typing import Literal, assert_never
 
 #############
 # constants #
@@ -185,16 +183,8 @@ def progress_task(msg: str, done_msg: str, total: int) -> Task:
     return Task(task_id, msg, done_msg)
 
 
-def done_print(
-    msg: str,
-    symbol: str = "+",
-    indent: int = 0,
-    echo: bool = True,
-) -> None:
-    # symbol/indent/echo are compatibility shims for the legacy API;
-    # deleted with the data-layer split
-    if echo:
-        _print_permanent(msg, symbol, bold_green, legacy_indent=indent)
+def done_print(msg: str) -> None:
+    _print_permanent(msg, "+", bold_green)
 
 
 def warn_print(msg: str) -> None:
@@ -205,58 +195,17 @@ def fail_print(msg: str) -> None:
     _print_permanent(msg, "x", bold_red)
 
 
-# compatibility shims for the legacy API; deleted with the data-layer split
-
-
-def load_print(
-    text: str,
-    symbol: str = "✱",
-    indent: int = 0,
-    echo: bool = True,
-    end: str = "\r",
-) -> None:
-    if echo:
-        print(
-            f"\r{' ' * indent}{_paint_symbol(symbol, blue)} {text}".ljust(
-                shutil.get_terminal_size().columns
-            ),
-            end=end,
-        )
-
-
-def load_progress(
-    iter_: Iterable[Any],
-    text: str,
-    indent: int = 0,
-    echo: bool = True,
-    total: int | None = None,
-) -> Iterable[Any]:
-    if not echo:
-        yield from iter_
-        return
-    if total is None and isinstance(iter_, Sized):
-        total = len(iter_)
-    width = len(str(total)) if total is not None else 0
-    for i, item in enumerate(iter_, start=1):
-        symbol = f"{i:>{width}}/{total}" if total is not None else str(i)
-        load_print(text, symbol=symbol, indent=indent)
-        yield item
-
-
 ###########
 # private #
 ###########
 
 
-def _print_permanent(
-    msg: str, symbol: str, colour: str, legacy_indent: int = 0
-) -> None:
+def _print_permanent(msg: str, symbol: str, colour: str) -> None:
     with _lock:
         _materialize_pending(_state)
         _write(
             _state,
-            " " * legacy_indent
-            + _format_line(_state.indent, msg, _paint_symbol(symbol, colour)),
+            _format_line(_state.indent, msg, _paint_symbol(symbol, colour)),
         )
 
 

@@ -1,14 +1,14 @@
 import asyncio
 import warnings
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import holmes_rs
 import numpy as np
 import pytest
 
 import holmes.api_simulation as simulation
-import holmes.experiment
+import holmes.data.joined
 
 gr4j_defaults = list(holmes_rs.hydro.gr4j.init()[0])
 bucket_defaults = list(holmes_rs.hydro.bucket.init()[0])
@@ -31,7 +31,9 @@ valid_msg = {
 @pytest.fixture
 def joined_data(monkeypatch, joined_df):
     monkeypatch.setattr(
-        holmes.experiment, "read_data", AsyncMock(return_value=joined_df)
+        holmes.data.joined,
+        "read_joined_data",
+        MagicMock(return_value=joined_df),
     )
 
 

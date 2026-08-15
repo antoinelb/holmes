@@ -19,7 +19,7 @@ import polars as pl
 # paths is imported as a module (not `from ... import data_dir`) so tests
 # patching `holmes.utils.paths.data_dir` reach this module too
 from holmes.utils import paths
-from holmes.utils.print import done_print, load_print
+from holmes.utils.print import done_print, warn_print
 
 #############
 # constants #
@@ -141,7 +141,7 @@ def _handle_sync_failure(action: str) -> None:
     """Warn if existing local data keeps the server usable, raise
     otherwise."""
     if (paths.data_dir / sentinel).exists():
-        load_print(f"Could not {action}; using existing local data.", end="\n")
+        warn_print(f"Could not {action}; using existing local data.")
         return
     raise MissingDataError(
         f"No local data found and could not {action}. {missing_data_help}"

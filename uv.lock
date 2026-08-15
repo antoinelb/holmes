@@ -1153,26 +1153,30 @@ version = "4.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "altair" },
-    { name = "cdsapi" },
-    { name = "exactextract" },
     { name = "gcsfs" },
     { name = "geopandas" },
     { name = "holmes-rs" },
     { name = "httpx" },
-    { name = "netcdf4" },
     { name = "numpy" },
     { name = "platformdirs" },
     { name = "polars" },
-    { name = "pystac-client" },
-    { name = "rioxarray" },
     { name = "starlette" },
     { name = "tqdm" },
     { name = "typer" },
     { name = "uvicorn" },
     { name = "vl-convert-python" },
     { name = "websockets" },
-    { name = "xarray" },
     { name = "zarr" },
+]
+
+[package.optional-dependencies]
+download = [
+    { name = "cdsapi" },
+    { name = "exactextract" },
+    { name = "netcdf4" },
+    { name = "pystac-client" },
+    { name = "rioxarray" },
+    { name = "xarray" },
 ]
 
 [package.dev-dependencies]
@@ -1197,27 +1201,28 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "altair", specifier = ">=6.2.2" },
-    { name = "cdsapi", specifier = ">=0.7.7" },
-    { name = "exactextract", specifier = ">=0.3.0" },
+    { name = "cdsapi", marker = "extra == 'download'", specifier = ">=0.7.7" },
+    { name = "exactextract", marker = "extra == 'download'", specifier = ">=0.3.0" },
     { name = "gcsfs", specifier = ">=2026.7.0" },
     { name = "geopandas", specifier = ">=1.1.3" },
     { name = "holmes-rs", editable = "src/holmes-rs" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "netcdf4", specifier = ">=1.7.4" },
+    { name = "netcdf4", marker = "extra == 'download'", specifier = ">=1.7.4" },
     { name = "numpy", specifier = ">=2.4.6" },
     { name = "platformdirs", specifier = ">=4" },
     { name = "polars", specifier = ">=1.41.0" },
-    { name = "pystac-client", specifier = ">=0.9.0" },
-    { name = "rioxarray", specifier = ">=0.22.0" },
+    { name = "pystac-client", marker = "extra == 'download'", specifier = ">=0.9.0" },
+    { name = "rioxarray", marker = "extra == 'download'", specifier = ">=0.22.0" },
     { name = "starlette", specifier = ">=1.0.0" },
     { name = "tqdm", specifier = ">=4.68.2" },
     { name = "typer", specifier = ">=0.26.3" },
     { name = "uvicorn", specifier = ">=0.47.0" },
     { name = "vl-convert-python", specifier = ">=1.9.0" },
     { name = "websockets", specifier = ">=16.0" },
-    { name = "xarray", specifier = ">=2026.4.0" },
+    { name = "xarray", marker = "extra == 'download'", specifier = ">=2026.4.0" },
     { name = "zarr", specifier = ">=3.2.1" },
 ]
+provides-extras = ["download"]
 
 [package.metadata.requires-dev]
 dev = [

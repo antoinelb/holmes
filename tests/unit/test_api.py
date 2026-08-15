@@ -162,7 +162,7 @@ class TestHandleStationsMessage:
         monkeypatch.setattr(
             holmes.data.hydro,
             "get_station_data",
-            AsyncMock(return_value=stations_df),
+            MagicMock(return_value=stations_df),
         )
         await api._handle_message(fake_ws, {"type": "stations"})
         reply = fake_ws.sent[0]
@@ -235,22 +235,17 @@ class TestHandleWeatherMessage:
 
 class TestLoadWeather:
     async def test_happy_path_echoes_request(
-        self, monkeypatch, fake_ws, stations_df, weather_df, grid_df
+        self, monkeypatch, fake_ws, weather_df, grid_df
     ):
-        monkeypatch.setattr(
-            holmes.data.hydro,
-            "get_station_data",
-            AsyncMock(return_value=stations_df),
-        )
         monkeypatch.setattr(
             holmes.data.weather,
             "read_weather_data",
-            lambda stations, **kwargs: weather_df,
+            lambda **kwargs: weather_df,
         )
         monkeypatch.setattr(
             holmes.data.weather,
             "read_weather_grid",
-            lambda stations, **kwargs: grid_df,
+            lambda **kwargs: grid_df,
         )
         await api._load_weather(fake_ws, "era5", ["061004"], 3)
         reply = fake_ws.sent[0]
@@ -261,9 +256,9 @@ class TestLoadWeather:
 
     async def test_failure_sends_error(self, monkeypatch, fake_ws):
         monkeypatch.setattr(
-            holmes.data.hydro,
-            "get_station_data",
-            AsyncMock(side_effect=RuntimeError("boom")),
+            holmes.data.weather,
+            "read_weather_data",
+            MagicMock(side_effect=RuntimeError("boom")),
         )
         await api._load_weather(fake_ws, "era5", ["061004"], 3)
         assert fake_ws.sent[0]["type"] == "error"
@@ -290,7 +285,7 @@ class TestLoadStreamflow:
         monkeypatch.setattr(
             holmes.data.hydro,
             "get_streamflow_data",
-            AsyncMock(
+            MagicMock(
                 return_value=streamflow_df.filter(pl.col("id") == "061004")
             ),
         )
@@ -303,7 +298,7 @@ class TestLoadStreamflow:
         monkeypatch.setattr(
             holmes.data.hydro,
             "get_streamflow_data",
-            AsyncMock(side_effect=RuntimeError("boom")),
+            MagicMock(side_effect=RuntimeError("boom")),
         )
         await api._load_streamflow(fake_ws, "061004")
         assert fake_ws.sent[0]["type"] == "error"

@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -5,52 +6,27 @@ from typer.testing import CliRunner
 
 import holmes.app
 import holmes.cli as cli
-import holmes.data.hydro
-import holmes.data.projection
-import holmes.data.weather
+import holmes.download
+import holmes.download.package
 import holmes.experiment
 
 runner = CliRunner()
 
 
 @pytest.fixture
-def download_world(monkeypatch, stations_df):
-    calls: dict[str, object] = {}
+def no_download_extra(monkeypatch):
     monkeypatch.setattr(
-        holmes.data.hydro,
-        "get_station_data",
-        AsyncMock(return_value=stations_df),
+        cli.importlib,
+        "import_module",
+        MagicMock(side_effect=ImportError("No module named 'xarray'")),
     )
-    monkeypatch.setattr(
-        holmes.data.weather,
-        "read_weather_data",
-        lambda stations, **kwargs: calls.setdefault("era5", kwargs),
-    )
-    monkeypatch.setattr(
-        holmes.data.weather,
-        "rebuild_stations_backfill",
-        lambda: calls.setdefault("backfill", True),
-    )
-    monkeypatch.setattr(
-        holmes.data.projection,
-        "has_projection_data",
-        lambda stations: calls.setdefault("has_projection", False) and False,
-    )
-
-    async def read_projection_data(stations, *, rebuild):
-        calls["projection"] = rebuild
-
-    monkeypatch.setattr(
-        holmes.data.projection, "read_projection_data", read_projection_data
-    )
-    return calls
 
 
 class TestInitCli:
     def test_registers_commands(self):
         result = runner.invoke(cli._init_cli(), ["--help"])
         assert result.exit_code == 0
-        for command in ["run", "download", "experiment"]:
+        for command in ["run", "download", "package", "experiment"]:
             assert command in result.output
 
 
@@ -71,51 +47,48 @@ class TestRun:
 
 
 class TestDownload:
-    def test_cold_cache_rebuilds_everything(self, download_world):
+    def test_runs_the_orchestrator(self, monkeypatch):
+        run = MagicMock()
+        monkeypatch.setattr(holmes.download, "run_download", run)
         result = runner.invoke(cli._init_cli(), ["download"])
         assert result.exit_code == 0
-        assert download_world["era5"] == {"method": "era5", "rebuild": True}
-        assert download_world["backfill"] is True
-        assert download_world["projection"] is False
+        run.assert_called_once_with(force=False)
 
-    def test_existing_files_are_kept(
-        self, tmp_data_dir, monkeypatch, download_world, weather_df
-    ):
-        era5_path = tmp_data_dir / "raw" / "weather" / "era5.ipc"
-        era5_path.parent.mkdir(parents=True)
-        weather_df.write_ipc(era5_path)
-        backfill_path = (
-            tmp_data_dir / "raw" / holmes.data.weather.stations_backfill_file
-        )
-        backfill_path.touch()
-        monkeypatch.setattr(
-            holmes.data.projection,
-            "has_projection_data",
-            lambda stations: True,
-        )
-        result = runner.invoke(cli._init_cli(), ["download"])
-        assert result.exit_code == 0
-        assert result.output.count("Already have") == 3
-        assert "era5" not in download_world
-        assert "backfill" not in download_world
-        assert "projection" not in download_world
-
-    def test_force_rebuilds_despite_files(
-        self, tmp_data_dir, monkeypatch, download_world, weather_df
-    ):
-        era5_path = tmp_data_dir / "raw" / "weather" / "era5.ipc"
-        era5_path.parent.mkdir(parents=True)
-        weather_df.write_ipc(era5_path)
-        monkeypatch.setattr(
-            holmes.data.projection,
-            "has_projection_data",
-            lambda stations: True,
-        )
+    def test_force_is_passed_through(self, monkeypatch):
+        run = MagicMock()
+        monkeypatch.setattr(holmes.download, "run_download", run)
         result = runner.invoke(cli._init_cli(), ["download", "--force"])
         assert result.exit_code == 0
-        assert download_world["era5"]["rebuild"] is True
-        assert download_world["backfill"] is True
-        assert download_world["projection"] is True
+        run.assert_called_once_with(force=True)
+
+    def test_missing_extra_fails_with_hint(self, no_download_extra):
+        result = runner.invoke(cli._init_cli(), ["download"])
+        assert result.exit_code == 1
+        assert "holmes-hydro[download]" in result.output
+
+
+class TestPackage:
+    def test_builds_the_archive(self, monkeypatch):
+        build = MagicMock()
+        monkeypatch.setattr(holmes.download.package, "build_archive", build)
+        result = runner.invoke(cli._init_cli(), ["package"])
+        assert result.exit_code == 0
+        build.assert_called_once_with(None)
+
+    def test_output_is_passed_through(self, monkeypatch, tmp_path):
+        build = MagicMock()
+        monkeypatch.setattr(holmes.download.package, "build_archive", build)
+        output = tmp_path / "data.zip"
+        result = runner.invoke(
+            cli._init_cli(), ["package", "--output", str(output)]
+        )
+        assert result.exit_code == 0
+        build.assert_called_once_with(Path(output))
+
+    def test_missing_extra_fails_with_hint(self, no_download_extra):
+        result = runner.invoke(cli._init_cli(), ["package"])
+        assert result.exit_code == 1
+        assert "holmes-hydro[download]" in result.output
 
 
 class TestExperiment:

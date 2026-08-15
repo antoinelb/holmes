@@ -1,9 +1,9 @@
 """Joined station + streamflow + weather products for the server.
 
 One pre-joined frame per weather method (era5, ministry_grid and the
-five nearest-station slider positions), replicating the exact join
-`holmes.experiment.read_data` performs so the server's calibration path
-sees identical frames without ever joining anything itself.
+five nearest-station slider positions); the server's calibration path
+(`holmes.data.joined.read_joined_data`) reads these frames without ever
+joining anything itself.
 """
 
 from pathlib import Path
@@ -69,7 +69,7 @@ def _join(
     weather: pl.DataFrame,
     streamflow: pl.DataFrame,
 ) -> pl.DataFrame:
-    """The exact join `holmes.experiment.read_data` performs."""
+    """The join every downstream consumer reads prebuilt."""
     return (
         stations.select("id", "name", "lat", "lon", "area", "elevation_layers")
         # weather-left so days outside the observed record are kept

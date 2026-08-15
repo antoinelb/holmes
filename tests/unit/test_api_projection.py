@@ -1,7 +1,7 @@
 import asyncio
 from datetime import date
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import holmes_rs
 import numpy as np
@@ -127,7 +127,7 @@ class TestLoadProjection:
         monkeypatch.setattr(
             holmes.data.hydro,
             "get_station_data",
-            AsyncMock(return_value=stations_df),
+            MagicMock(return_value=stations_df),
         )
 
     async def test_missing_data_refuses(self, monkeypatch, fake_ws, stations):
@@ -172,7 +172,7 @@ class TestLoadProjection:
 
 class TestGetProjectionData:
     async def test_memoises_per_station(self, monkeypatch, projection_df):
-        read = AsyncMock(return_value=projection_df)
+        read = MagicMock(return_value=projection_df)
         monkeypatch.setattr(
             holmes.data.projection, "read_projection_data", read
         )
@@ -180,7 +180,7 @@ class TestGetProjectionData:
         first = await projection._get_projection_data("061004", stations)
         second = await projection._get_projection_data("061004", stations)
         assert first is second
-        read.assert_awaited_once()
+        read.assert_called_once()
 
 
 class TestRunEnsemble:

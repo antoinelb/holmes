@@ -1,7 +1,6 @@
-import asyncio
 import threading
 
-import holmes.data.hydro
+import holmes.data.weather
 
 from tests.integration.conftest import recv_until
 
@@ -34,21 +33,24 @@ class TestWeather:
             assert {row["id"] for row in msg["data"]["grid"]} == {"061004"}
 
     def test_new_pick_supersedes_pending_load(
-        self, client, monkeypatch, stations_df
+        self, client, monkeypatch, weather_df
     ):
         release = threading.Event()
         calls = {"count": 0}
 
-        async def gated_get_station_data(**kwargs):
+        def gated_read_weather_data(**kwargs):
+            # runs in the api's to_thread worker, so a plain wait parks the
+            # first load on a thread-safe gate the test opens after the
+            # second request has superseded it
             calls["count"] += 1
             if calls["count"] == 1:
-                # park the first load on a thread-safe gate the test opens
-                # after the second request has superseded it
-                await asyncio.to_thread(release.wait)
-            return stations_df
+                release.wait()
+            return weather_df
 
         monkeypatch.setattr(
-            holmes.data.hydro, "get_station_data", gated_get_station_data
+            holmes.data.weather,
+            "read_weather_data",
+            gated_read_weather_data,
         )
         try:
             with client.websocket_connect("/ws") as ws:

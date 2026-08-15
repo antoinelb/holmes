@@ -15,10 +15,6 @@ from starlette.websockets import WebSocketState
 import holmes.api
 import holmes.api_calibration
 import holmes.api_projection
-import holmes.cli
-import holmes.data.hydro
-import holmes.data.projection
-import holmes.data.weather
 import holmes.experiment
 import holmes.utils.paths
 
@@ -37,8 +33,9 @@ class FakeWebSocket:
 
 @pytest.fixture(autouse=True)
 def tmp_data_dir(tmp_path, monkeypatch):
-    # data_dir is imported by value (`from holmes.utils.paths import data_dir`),
-    # so every consuming module holds its own reference to patch
+    # data_dir is imported by value (`from holmes.utils.paths import data_dir`)
+    # in a few modules, so each holds its own reference to patch; the data
+    # and download layers import `paths` as a module and need no entry here
     data_dir = tmp_path / "data"
     results_dir = data_dir / "results"
     # the checkout guarantees these exist, and some code (e.g.
@@ -46,11 +43,6 @@ def tmp_data_dir(tmp_path, monkeypatch):
     results_dir.mkdir(parents=True)
     for module in (
         holmes.utils.paths,
-        holmes.data.weather,
-        holmes.data.hydro,
-        holmes.data.projection,
-        holmes.cli,
-        holmes.experiment,
         holmes.api,
     ):
         monkeypatch.setattr(module, "data_dir", data_dir)

@@ -8,11 +8,11 @@ import polars as pl
 import pytest
 from starlette.testclient import TestClient
 
-import holmes.api
+import holmes.data.archive
 import holmes.data.hydro
+import holmes.data.joined
 import holmes.data.projection
 import holmes.data.weather
-import holmes.experiment
 from holmes.app import create_app
 
 from tests.unit.conftest import (  # noqa: F401  (autouse re-registration)
@@ -20,6 +20,13 @@ from tests.unit.conftest import (  # noqa: F401  (autouse re-registration)
     no_network,
     tmp_data_dir,
 )
+
+
+@pytest.fixture(autouse=True)
+def no_data_sync(monkeypatch) -> None:
+    # create_app syncs the data archive at startup; integration tests run on
+    # synthetic frames and must never touch the release
+    monkeypatch.setattr(holmes.data.archive, "sync_data", lambda: None)
 
 
 @pytest.fixture
@@ -32,25 +39,25 @@ def synthetic_world(
     joined_df: pl.DataFrame,
     projection_df: pl.DataFrame,
 ) -> None:
-    async def get_station_data(**kwargs) -> pl.DataFrame:
+    def get_station_data() -> pl.DataFrame:
         return stations_df
 
-    async def get_streamflow_data(id: str) -> pl.DataFrame:
+    def get_streamflow_data(id: str) -> pl.DataFrame:
         return streamflow_df.filter(pl.col("id") == id)
 
-    def read_weather_data(stations, **kwargs) -> pl.DataFrame:
+    def read_weather_data(**kwargs) -> pl.DataFrame:
         return weather_df
 
-    def read_weather_grid(stations, **kwargs) -> pl.DataFrame:
+    def read_weather_grid(**kwargs) -> pl.DataFrame:
         return grid_df
 
-    async def read_data(**kwargs) -> pl.DataFrame:
+    def read_joined_data(**kwargs) -> pl.DataFrame:
         return joined_df
 
     def has_projection_data(stations) -> bool:
         return True
 
-    async def read_projection_data(stations, **kwargs) -> pl.DataFrame:
+    def read_projection_data(stations) -> pl.DataFrame:
         return projection_df.filter(
             pl.col("id").is_in(stations["id"].implode())
         )
@@ -67,7 +74,9 @@ def synthetic_world(
     monkeypatch.setattr(
         holmes.data.weather, "read_weather_grid", read_weather_grid
     )
-    monkeypatch.setattr(holmes.experiment, "read_data", read_data)
+    monkeypatch.setattr(
+        holmes.data.joined, "read_joined_data", read_joined_data
+    )
     monkeypatch.setattr(
         holmes.data.projection, "has_projection_data", has_projection_data
     )
