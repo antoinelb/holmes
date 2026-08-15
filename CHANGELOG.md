@@ -9,7 +9,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [4.3.0] - 2026-08-15
 
 ### Added
 - `holmes package` command zipping every built data product into the dated `data-YYYY-MM-DD.zip` archive published on the repo's rolling `data` release
