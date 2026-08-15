@@ -1,0 +1,91 @@
+name: data refresh
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 02:00/03:00 in Montreal
+  workflow_dispatch:
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    # the nightly cron is toggleable from the GitHub UI via the repo
+    # variable; a manual Run workflow always works
+    if: github.event_name == 'workflow_dispatch' || vars.DATA_REFRESH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      HOLMES_DATA_DIR: data
+      CDSAPI_URL: https://cds.climate.copernicus.eu/api
+      CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync --group dev --all-extras --python 3.14
+
+      - name: Build Rust extension
+        uses: PyO3/maturin-action@v1
+        with:
+          command: develop
+          working-directory: src/holmes-rs
+
+      - name: Restore previous archive
+        # warm start: the download layer only fetches what yesterday's
+        # archive lacks. A missing archive is tolerated (cold build).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          latest="$(gh release view data --json assets \
+            --jq '[.assets[].name | select(test("^data-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.zip$"))] | sort | last // empty')"
+          if [ -n "$latest" ]; then
+            gh release download data --pattern "$latest" --output "$latest"
+            mkdir -p data
+            unzip -q "$latest" -d data
+            rm "$latest"
+          else
+            echo "no previous archive; cold build"
+          fi
+
+      - name: Download data
+        run: uv run --all-extras --python 3.14 holmes download
+
+      - name: Package archive
+        run: uv run --all-extras --python 3.14 holmes package
+
+      - name: Publish archive
+        # upload before deleting the previous archives so the release always
+        # holds at least one dated zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          zips=(data-????-??-??.zip)
+          if [ "${#zips[@]}" -ne 1 ]; then
+            echo "expected exactly one archive, found: ${zips[*]}" >&2
+            exit 1
+          fi
+          new="${zips[0]}"
+          gh release upload data "$new" --clobber
+          mapfile -t assets < <(gh release view data --json assets --jq '.assets[].name')
+          for asset in "${assets[@]}"; do
+            if [ "$asset" != "$new" ]; then
+              gh release delete-asset data "$asset" --yes
+            fi
+          done
