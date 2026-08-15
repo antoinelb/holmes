@@ -1,6 +1,7 @@
 import io
 import zipfile
 from datetime import date
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -384,7 +385,7 @@ class TestGetDemData:
 
     def test_no_coverage_raises(self, tmp_data_dir, monkeypatch, watersheds):
         def download(wkb, path):
-            raise RuntimeError()
+            raise hydro._NoDemCoverageError()
 
         monkeypatch.setattr(hydro, "_download_dem", download)
         with pytest.raises(RuntimeError, match="No DEM coverage"):
@@ -393,6 +394,18 @@ class TestGetDemData:
     def test_other_failure_raises(self, tmp_data_dir, monkeypatch, watersheds):
         def download(wkb, path):
             raise ValueError("boom")
+
+        monkeypatch.setattr(hydro, "_download_dem", download)
+        with pytest.raises(RuntimeError, match="Failed DEM"):
+            hydro._get_dem_data(watersheds)
+
+    def test_unrelated_runtime_error_is_not_relabeled(
+        self, tmp_data_dir, monkeypatch, watersheds
+    ):
+        # a RuntimeError from the raster stack must not pass as missing
+        # coverage
+        def download(wkb, path):
+            raise RuntimeError("raster stack blew up")
 
         monkeypatch.setattr(hydro, "_download_dem", download)
         with pytest.raises(RuntimeError, match="Failed DEM"):
@@ -419,8 +432,6 @@ class TestDownloadDem:
 
     @staticmethod
     def touch_raster(mock: MagicMock) -> None:
-        from pathlib import Path
-
         mock.rio.to_raster.side_effect = lambda path: Path(path).touch()
 
     def test_no_hrefs_raises(self, monkeypatch, wkb, tmp_path):
@@ -559,6 +570,38 @@ class TestFetchStreamflow:
         assert "061004" in warnings[0]
         # the other station is unaffected by the failure
         assert (directory / "061020.ipc").exists()
+
+    def test_parse_failure_with_previous_file_warns_and_keeps_it(
+        self, tmp_data_dir, monkeypatch, stations_df
+    ):
+        directory = tmp_data_dir / "raw" / "hydro" / "streamflow"
+        directory.mkdir(parents=True)
+        old = pl.DataFrame(
+            {
+                "id": ["061004"],
+                "datetime": [date(2019, 1, 1)],
+                "streamflow": [1.0],
+            }
+        )
+        old.write_ipc(directory / "061004.ipc")
+        # the row matches the regex but is not a real date, so the failure
+        # surfaces as a polars error rather than a ValueError
+        bad_body = "Bassin versant: 500,5 km²\n061004 2020/13/45 1.5\n"
+        make_sync_client(
+            monkeypatch,
+            [
+                MagicMock(text=bad_body),
+                MagicMock(text=streamflow_body("061020")),
+            ],
+        )
+        warnings = []
+        monkeypatch.setattr(hydro, "warn_print", warnings.append)
+        hydro.fetch_streamflow(stations_df)
+        assert pl.read_ipc(directory / "061004.ipc", memory_map=False).equals(
+            old
+        )
+        assert len(warnings) == 1
+        assert "061004" in warnings[0]
 
     def test_failure_without_previous_file_raises(
         self, tmp_data_dir, monkeypatch, stations_df

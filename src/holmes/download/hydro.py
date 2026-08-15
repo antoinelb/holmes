@@ -96,8 +96,7 @@ def fetch_streamflow(stations: pl.DataFrame, *, force: bool = False) -> None:
     keeps a previous file with a warning, but raises when no previous file
     exists: the archive would otherwise miss a product.
     """
-    # `force` changes nothing (every run already refetches everything); it
-    # is accepted only so the orchestrator can call every builder uniformly
+    # force changes nothing (every run refetches); kept for uniformity
     del force
     if "id" not in stations.columns or stations.height == 0:
         raise ValueError("No stations to fetch streamflow for.")
@@ -115,7 +114,13 @@ def fetch_streamflow(stations: pl.DataFrame, *, force: bool = False) -> None:
             )
             try:
                 data = _fetch_station_streamflow(client, id)
-            except (httpx.HTTPError, ValueError) as exc:
+            # PolarsError covers parse failures past the regexes, e.g. a
+            # row whose date matches the format but is not a real date
+            except (
+                httpx.HTTPError,
+                ValueError,
+                pl.exceptions.PolarsError,
+            ) as exc:
                 if path.exists():
                     warn_print(
                         f"Could not refresh streamflow for {id} ({exc}); "
@@ -302,6 +307,14 @@ def _download_watersheds(*, force: bool) -> pl.DataFrame:
     return pl.concat(_watersheds)
 
 
+class _NoDemCoverageError(RuntimeError):
+    """Raised when the STAC search finds no DEM over a watershed.
+
+    A dedicated type so the caller cannot mislabel an unrelated
+    RuntimeError from the raster stack as missing coverage.
+    """
+
+
 def _get_dem_data(
     watersheds: pl.DataFrame, *, n_bands: int = 5, force: bool = False
 ) -> pl.DataFrame:
@@ -326,7 +339,7 @@ def _get_dem_data(
                     raise RuntimeError(f"No watershed geometry for {id}.")
                 try:
                     _download_dem(wkb, path)
-                except RuntimeError as exc:
+                except _NoDemCoverageError as exc:
                     raise RuntimeError(f"No DEM coverage for {id}.") from exc
                 except Exception as exc:
                     raise RuntimeError(
@@ -349,7 +362,7 @@ def _download_dem(wkb: bytes, path: Path) -> None:
 
     hrefs = _find_dtm_hrefs([minx, miny, maxx, maxy])
     if not hrefs:
-        raise RuntimeError()
+        raise _NoDemCoverageError()
 
     # Reproject the watershed polygon 4326 -> native COG CRS for clipping
     # (same idiom as _download_watersheds).
