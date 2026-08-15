@@ -9,6 +9,11 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [4.2.0] - 2026-08-15
+
+### Added
+- Running `holmes` without a subcommand now starts the dashboard, equivalent to `holmes run`
+
 ## [4.1.0] - 2026-08-08
 
 ### Added
