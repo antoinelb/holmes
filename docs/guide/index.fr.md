@@ -13,7 +13,9 @@ holmes run
 ```
 
 Ouvrez ensuite [http://127.0.0.1:8000](http://127.0.0.1:8000) dans votre navigateur.
-À la première utilisation, l'application télécharge les données hydrométriques et météorologiques dont elle a besoin, donc le premier chargement de chaque étape peut prendre un moment; tout est ensuite mis en cache localement.
+Au premier lancement, le serveur télécharge le jeu de données préconstruit — une archive depuis la release `data` du dépôt — donc le démarrage peut prendre quelques minutes; ensuite, il ne retélécharge que lorsqu'une archive plus récente est publiée, et continue de servir les données courantes entre-temps.
+Aucun identifiant n'est nécessaire pour utiliser l'application.
+Les données se trouvent dans le répertoire de données de l'utilisateur (`~/.local/share/holmes` sous Linux, `~/Library/Application Support/holmes` sous macOS, `%LOCALAPPDATA%\holmes\holmes` sous Windows); définissez la variable d'environnement `HOLMES_DATA_DIR` pour utiliser un autre emplacement, et `HOLMES_SKIP_DATA_SYNC=True` pour sauter complètement la vérification au démarrage.
 
 ![L'application au premier chargement](../assets/images/screenshots/app-start-fr-dark.png#only-dark)
 ![L'application au premier chargement](../assets/images/screenshots/app-start-fr-light.png#only-light)

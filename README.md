@@ -36,11 +36,22 @@ The web interface will be available at http://127.0.0.1:8000.
 Other commands:
 
 ```bash
-holmes download     # rebuild the published datasets from their true sources
 holmes experiment   # run batch calibration experiments
+holmes download     # maintainers: build every data product from its true source
+holmes package      # maintainers: zip the built products into data-YYYY-MM-DD.zip
 ```
 
-Station, weather, and projection data are fetched from their true sources at runtime and cached under `data/`; prebuilt products are served from the repo so a fresh install works without any credentials.
+### Data
+
+The server never builds data.
+At startup it compares the newest `data-YYYY-MM-DD.zip` asset on the repo's rolling [`data` release](https://github.com/antoinelb/holmes/releases/tag/data) against its local copy, and downloads and extracts the archive if it is newer — old data keeps being served during the swap, and no credentials are ever needed to run the app.
+Data lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows), overridable with `HOLMES_DATA_DIR`; map tiles are the one exception, still fetched lazily from CartoDB.
+
+Rebuilding the archive is the maintainer path.
+`holmes download` builds every product incrementally from its true source: daily re-runs only fetch the current year (plus the previous year in January) for ERA5 and the ministry grid, always refresh the small streamflow files, recompute the cheap derived products, and skip the static ones (station data, projections).
+It needs the `download` extra (`pip install 'holmes-hydro[download]'`, which carries the heavy geo dependencies) and, on a cold ERA5 cell cache, CDS credentials in `~/.cdsapirc` or the `CDSAPI_URL`/`CDSAPI_KEY` environment variables.
+`holmes package` then zips the built products into the dated archive.
+A nightly GitHub Actions workflow (`.github/workflows/data.yml`, 07:00 UTC) runs both and replaces the dated zip on the `data` release; it is toggled with the `DATA_REFRESH_ENABLED` repository variable (Settings → Actions → Variables) and can always be run manually via workflow dispatch.
 
 ### Configuration
 

@@ -33,7 +33,8 @@ holmes run
 
 Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-The CLI also provides `holmes download` to rebuild the published datasets from their true sources and `holmes experiment` to run batch calibration experiments.
+On startup the server downloads the prebuilt dataset from the repository's `data` release, so no credentials are needed.
+The CLI also provides `holmes experiment` to run batch calibration experiments; `holmes download` and `holmes package` are maintainer commands to rebuild and package the datasets.
 
 [:material-compass: User guide](guide/index.md){ .md-button .md-button--primary }
 [:material-water: Concepts](concepts/index.md){ .md-button }
