@@ -42,13 +42,13 @@ jobs:
         run: uv sync --group dev --all-extras --python 3.12
 
       - name: Check formatting (ruff)
-        run: uv run ruff format --check src/holmes tests
+        run: uv run --all-extras --python 3.12 ruff format --check src/holmes tests
 
       - name: Lint (ruff)
-        run: uv run ruff check src/holmes tests
+        run: uv run --all-extras --python 3.12 ruff check src/holmes tests
 
       - name: Type check (ty)
-        run: uv run ty check src/holmes tests
+        run: uv run --all-extras --python 3.12 ty check src/holmes tests
 
   # unit and integration run as one job: the 100% coverage requirement holds
   # over both suites combined
@@ -81,7 +81,7 @@ jobs:
           working-directory: src/holmes-rs
 
       - name: Run unit and integration tests with coverage
-        run: uv run pytest tests/unit tests/integration -v --cov --cov-report=term-missing --cov-fail-under=$MINIMUM_COVERAGE
+        run: uv run --all-extras --python ${{ matrix.python }} pytest tests/unit tests/integration -v --cov --cov-report=term-missing --cov-fail-under=$MINIMUM_COVERAGE
 
   e2e-tests:
     runs-on: ubuntu-latest
