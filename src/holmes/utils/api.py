@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse as _JSONResponse
 from starlette.responses import PlainTextResponse, Response
 from starlette.websockets import WebSocket, WebSocketState
 
-from holmes.utils.print import load_print
+from holmes.utils.print import warn_print
 
 #########
 # types #
@@ -283,15 +283,15 @@ def convert_for_json(data: Any, *, dates_as_str: bool = False) -> Any:
 
 async def send(ws: WebSocket, event: str, data: Any) -> bool:
     if ws.client_state != WebSocketState.CONNECTED:
-        load_print(f"Cannot send '{event}': WebSocket not connected")
+        warn_print(f"Cannot send '{event}': WebSocket not connected")
         return False
 
     try:
         await ws.send_json({"type": event, "data": convert_for_json(data)})
         return True
     except RuntimeError as exc:
-        load_print(f"Failed to send '{event}': {exc}")
+        warn_print(f"Failed to send '{event}': {exc}")
         return False
     except Exception as exc:  # pragma: no cover
-        load_print(f"Unexpected error sending '{event}': {exc}")
+        warn_print(f"Unexpected error sending '{event}': {exc}")
         return False
