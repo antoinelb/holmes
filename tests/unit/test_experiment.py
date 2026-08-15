@@ -9,8 +9,6 @@ import numpy as np
 import polars as pl
 import pytest
 
-import holmes.data.hydro
-import holmes.data.weather
 import holmes.experiment as experiment
 import holmes.model
 
@@ -35,54 +33,18 @@ def make_experiment(**overrides) -> experiment.Experiment:
 
 
 class TestReadData:
-    async def test_cache_hit(self, tmp_data_dir, joined_df):
+    def test_delegates_to_the_joined_product(self, tmp_data_dir, joined_df):
         path = tmp_data_dir / "raw" / "data_ministry_grid.ipc"
         path.parent.mkdir(parents=True)
-        joined_df.write_ipc(path)
-        data = await experiment.read_data()
+        joined_df.write_ipc(path, compression="zstd")
+        data = experiment.read_data()
         assert data.equals(joined_df)
 
-    async def test_joins_weather_left(
-        self,
-        tmp_data_dir,
-        monkeypatch,
-        stations_df,
-        weather_df,
-        streamflow_df,
-    ):
-        (tmp_data_dir / "raw").mkdir(parents=True)
-        monkeypatch.setattr(
-            holmes.data.hydro,
-            "get_station_data",
-            AsyncMock(return_value=stations_df),
-        )
-        # a shortened streamflow record leaves weather-only days behind
-        short = streamflow_df.filter(pl.col("datetime") < date(2017, 1, 1))
-
-        async def get_streamflow_data(id):
-            return short.filter(pl.col("id") == id)
-
-        monkeypatch.setattr(
-            holmes.data.hydro, "get_streamflow_data", get_streamflow_data
-        )
-        monkeypatch.setattr(
-            holmes.data.weather,
-            "read_weather_data",
-            lambda stations, method, n_stations: weather_df,
-        )
-        data = await experiment.read_data()
-        assert data.height == weather_df.height
-        late = data.filter(pl.col("datetime") >= date(2017, 1, 1))
-        assert late["streamflow"].null_count() == late.height
-        assert (tmp_data_dir / "raw" / "data_ministry_grid.ipc").exists()
-
-    async def test_nearest_stations_cache_carries_n(
-        self, tmp_data_dir, joined_df
-    ):
+    def test_nearest_stations_product_carries_n(self, tmp_data_dir, joined_df):
         path = tmp_data_dir / "raw" / "data_nearest_stations_4.ipc"
         path.parent.mkdir(parents=True)
-        joined_df.write_ipc(path)
-        data = await experiment.read_data(
+        joined_df.write_ipc(path, compression="zstd")
+        data = experiment.read_data(
             weather_method="nearest_stations", n_stations=4
         )
         assert data.equals(joined_df)
@@ -245,7 +207,7 @@ class TestRunExperimentEntry:
     async def test_reads_and_runs_each_experiment(
         self, monkeypatch, joined_df
     ):
-        read = AsyncMock(return_value=joined_df)
+        read = MagicMock(return_value=joined_df)
         monkeypatch.setattr(experiment, "read_data", read)
         figs = MagicMock()
         monkeypatch.setattr(experiment, "_create_timeseries_figs", figs)
@@ -254,7 +216,7 @@ class TestRunExperimentEntry:
         await experiment.run_experiment()
         figs.assert_called_once()
         assert run.await_count == 4
-        assert read.await_count == 5
+        assert read.call_count == 5
 
 
 class TestCreateTimeseriesFigs:

@@ -136,7 +136,9 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
 
 async def _handle_stations_message(ws: WebSocket) -> None:
     data = (
-        _with_centroids(await holmes.data.hydro.get_station_data())
+        _with_centroids(
+            await asyncio.to_thread(holmes.data.hydro.get_station_data)
+        )
         .drop("geometry")
         .rename({"geometry_geojson": "geometry"})
     )
@@ -217,12 +219,9 @@ async def _load_weather(
     n_stations: int,
 ) -> None:
     try:
-        station_data = await holmes.data.hydro.get_station_data()
-        # the cold path is minutes of synchronous NetCDF or CDS work: keep it
-        # off the event loop
+        # sync IPC reads of prebuilt products, kept off the event loop
         weather = await asyncio.to_thread(
             holmes.data.weather.read_weather_data,
-            station_data,
             method=method,
             n_stations=n_stations,
         )
@@ -230,7 +229,6 @@ async def _load_weather(
         # station pool), so only the data read takes the count
         grid = await asyncio.to_thread(
             holmes.data.weather.read_weather_grid,
-            station_data,
             method=method,
         )
     except Exception as exc:
@@ -274,7 +272,9 @@ async def _handle_streamflow_message(
 
 async def _load_streamflow(ws: WebSocket, station: str) -> None:
     try:
-        data = await holmes.data.hydro.get_streamflow_data(station)
+        data = await asyncio.to_thread(
+            holmes.data.hydro.get_streamflow_data, station
+        )
     except Exception as exc:
         await _send(ws, "error", f"Failed to load streamflow data: {exc}")
         return

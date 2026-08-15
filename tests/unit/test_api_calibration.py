@@ -1,7 +1,7 @@
 import asyncio
 import threading
 from datetime import date
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import holmes_rs
 import numpy as np
@@ -9,7 +9,7 @@ import polars as pl
 import pytest
 
 import holmes.api_calibration as calibration
-import holmes.experiment
+import holmes.data.joined
 
 gr4j_defaults = list(holmes_rs.hydro.gr4j.init()[0])
 
@@ -48,8 +48,8 @@ valid_start_msg = {
 
 @pytest.fixture
 def joined_data(monkeypatch, joined_df):
-    read = AsyncMock(return_value=joined_df)
-    monkeypatch.setattr(holmes.experiment, "read_data", read)
+    read = MagicMock(return_value=joined_df)
+    monkeypatch.setattr(holmes.data.joined, "read_joined_data", read)
     return read
 
 
@@ -102,9 +102,9 @@ class TestGetData:
         first = await calibration.get_data("ministry_grid", 3)
         second = await calibration.get_data("ministry_grid", 3)
         assert first is second
-        joined_data.assert_awaited_once()
+        joined_data.assert_called_once()
         await calibration.get_data("ministry_grid", 4)
-        assert joined_data.await_count == 2
+        assert joined_data.call_count == 2
 
 
 class TestFilterData:

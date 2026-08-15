@@ -10,7 +10,7 @@ import polars as pl
 from starlette.websockets import WebSocket
 
 import holmes.data.hydro
-import holmes.experiment
+import holmes.data.joined
 import holmes.model
 from holmes.data.weather import WeatherMethod, max_n_stations, min_n_stations
 from holmes.model import (
@@ -27,8 +27,8 @@ from holmes.utils.api import send
 # state #
 #########
 
-# `read_data` assembles the full station/streamflow/weather join once per
-# weather method; the cold build is seconds of work, so it is memoised and
+# the prebuilt station/streamflow/weather join is read from disk once per
+# weather method; the read is cheap IPC but not free, so it is memoised and
 # guarded by a lock to avoid two concurrent requests both paying for it.
 _data_cache: dict[str, pl.DataFrame] = {}
 _data_lock = asyncio.Lock()
@@ -74,10 +74,12 @@ async def get_data(method: WeatherMethod, n_stations: int) -> pl.DataFrame:
     key = f"{method}|{n_stations}"
     async with _data_lock:
         if key not in _data_cache:
-            # a cold build reads NetCDF and assembles the join: keep it off the
+            # a sync IPC read of the prebuilt joined product, kept off the
             # event loop
             _data_cache[key] = await asyncio.to_thread(
-                _read_data_sync, method, n_stations
+                holmes.data.joined.read_joined_data,
+                method=method,
+                n_stations=n_stations,
             )
         return _data_cache[key]
 
@@ -601,16 +603,6 @@ def _check_observations(filtered: pl.DataFrame, warmup_steps: int = 0) -> None:
         raise ValueError(
             "No streamflow observations in the calibration period."
         )
-
-
-def _read_data_sync(method: WeatherMethod, n_stations: int) -> pl.DataFrame:
-    # `read_data` is async; a fresh loop in this worker thread runs it without
-    # touching the server's event loop
-    return asyncio.run(
-        holmes.experiment.read_data(
-            weather_method=method, n_stations=n_stations
-        )
-    )
 
 
 def _valid_dates(start: Any, end: Any) -> bool:

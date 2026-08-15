@@ -1,11 +1,12 @@
 import asyncio
+import importlib
+from pathlib import Path
+from types import ModuleType
 
 import typer
 
 from . import app, experiment
-from .data import hydro, projection, weather
-from .utils.paths import data_dir
-from .utils.print import done_print
+from .utils.print import fail_print
 
 ############
 # external #
@@ -34,6 +35,8 @@ def _init_cli() -> typer.Typer:
     cli.command("r", hidden=True)(_run)
     cli.command("download")(_download)
     cli.command("d", hidden=True)(_download)
+    cli.command("package")(_package)
+    cli.command("p", hidden=True)(_package)
     cli.command("experiment")(_run_experiments)
     cli.command("e", hidden=True)(_run_experiments)
     return cli
@@ -57,43 +60,27 @@ def _download(
     ),
 ) -> None:
     """
-    (d) Rebuilds the datasets served from the repo from their true source.
+    (d) Builds every data product incrementally from its true source.
 
-    This is the maintainer path: it downloads the ERA5 cells from Copernicus
-    and writes the era5.ipc that the repo serves, plus the per-station
-    stations_backfill.ipc sampled from the ministry grids and ERA5 cells, so
-    it needs CDS credentials on a cold cell cache. Running the app never
-    needs it — missing published files are fetched from the repo on first
-    use. It also prefetches the projection products (ClimEx and
-    ESPO-G6-R2) for every station: those are not published (PAVICS needs
-    no credentials), but a cold build takes several minutes, so it is
-    done deliberately here rather than lazily on first use.
+    This is the maintainer path: running the app never needs it — the
+    server refreshes its local products from the published archive at
+    startup. Building needs the `download` extra and, on a cold ERA5
+    cell cache, CDS credentials.
     """
-    stations = asyncio.run(hydro.get_station_data())
+    download = _import_download_module("holmes.download")
+    download.run_download(force=force)
 
-    era5_path = data_dir / "raw" / "weather" / "era5.ipc"
-    if era5_path.exists() and not force:
-        done_print(
-            f"Already have {era5_path.name}; pass --force to rebuild it."
-        )
-    else:
-        weather.read_weather_data(stations, method="era5", rebuild=True)
 
-    backfill_path = data_dir / "raw" / weather.stations_backfill_file
-    if backfill_path.exists() and not force:
-        done_print(
-            f"Already have {backfill_path.name}; pass --force to rebuild it."
-        )
-    else:
-        weather.rebuild_stations_backfill()
-
-    if projection.has_projection_data(stations) and not force:
-        done_print(
-            "Already have the projection products; pass --force to rebuild "
-            "them."
-        )
-    else:
-        asyncio.run(projection.read_projection_data(stations, rebuild=force))
+def _package(
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Path of the archive to write."
+    ),
+) -> None:
+    """
+    (p) Zips every built product into the dated release archive.
+    """
+    package = _import_download_module("holmes.download.package")
+    package.build_archive(output)
 
 
 def _run_experiments() -> None:
@@ -101,3 +88,16 @@ def _run_experiments() -> None:
     (e) Runs the experiments.
     """
     asyncio.run(experiment.run_experiment())
+
+
+def _import_download_module(name: str) -> ModuleType:
+    # lazy so the CLI never pays for the heavy build stack (xarray, cdsapi,
+    # ...) unless a build command actually runs
+    try:
+        return importlib.import_module(name)
+    except ImportError as exc:
+        fail_print(
+            f"Could not import {name} ({exc}); building data products "
+            "needs the download extra: pip install 'holmes-hydro[download]'."
+        )
+        raise typer.Exit(1) from exc

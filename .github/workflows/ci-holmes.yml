@@ -37,8 +37,9 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies
-        # --python overrides the repo's .python-version (3.14)
-        run: uv sync --group dev --python 3.12
+        # --python overrides the repo's .python-version (3.14);
+        # --all-extras because the download layer is type-checked too
+        run: uv sync --group dev --all-extras --python 3.12
 
       - name: Check formatting (ruff)
         run: uv run ruff format --check src/holmes tests
@@ -70,7 +71,8 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies
-        run: uv sync --group dev --python ${{ matrix.python }}
+        # --all-extras because the unit tests import the download layer
+        run: uv sync --group dev --all-extras --python ${{ matrix.python }}
 
       - name: Build Rust extension
         uses: PyO3/maturin-action@v1

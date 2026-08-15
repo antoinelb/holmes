@@ -12,9 +12,9 @@ import holmes.data
 import holmes.model
 import holmes.utils.api
 import holmes.utils.config
-from holmes.utils.paths import data_dir, results_dir
+from holmes.utils.paths import results_dir
 from holmes.utils.plotting import named_colours
-from holmes.utils.print import done_print, load_print, load_progress
+from holmes.utils.print import done_print, progress_task
 
 #########
 # types #
@@ -83,54 +83,25 @@ async def run_experiment() -> None:
         ),
     ]
 
-    data = await read_data()
+    data = read_data()
 
     _create_timeseries_figs(data)
 
     for experiment in experiments:
-        data = await read_data(weather_method=experiment.weather_method)
+        data = read_data(weather_method=experiment.weather_method)
         await _run_experiment(data, experiment)
 
 
-async def read_data(
+def read_data(
     *,
     weather_method: holmes.data.weather.WeatherMethod = "ministry_grid",
     n_stations: int = 3,
-):
-    # only the nearest-stations product depends on the station count, so
-    # only its cache name carries it
-    suffix = f"_{n_stations}" if weather_method == "nearest_stations" else ""
-    path = data_dir / "raw" / f"data_{weather_method}{suffix}.ipc"
-    if path.exists():
-        return pl.read_ipc(path)
-    else:
-        stations = await holmes.data.hydro.get_station_data()
-        weather = holmes.data.weather.read_weather_data(
-            stations, method=weather_method, n_stations=n_stations
-        ).with_columns(pl.col("datetime").dt.date())
-        streamflow = pl.concat(
-            await asyncio.gather(
-                *(
-                    holmes.data.hydro.get_streamflow_data(id)
-                    for id in stations["id"]
-                )
-            )
-        )
-        data = (
-            stations.select(
-                "id", "name", "lat", "lon", "area", "elevation_layers"
-            )
-            # weather-left so days outside the observed record are kept
-            # (streamflow null there), letting simulation reconstruct
-            # unobserved periods; weather availability is the real limit
-            .join(
-                weather.join(streamflow, on=["id", "datetime"], how="left"),
-                on="id",
-            )
-            .fill_nan(None)
-        )
-        data.write_ipc(path)
-        return data
+) -> pl.DataFrame:
+    # the joined products are prebuilt by `holmes download` and shipped in
+    # the data archive; experiments never build anything themselves
+    return holmes.data.joined.read_joined_data(
+        method=weather_method, n_stations=n_stations
+    )
 
 
 ###########
@@ -227,7 +198,6 @@ async def _run_subexperiment(
         )
 
         if params_path.exists():
-            load_print("Reading cached calibration_params...")
             with open(params_path) as f:
                 params = json.load(f)
                 hydro_params = np.array(params["hydro"])
@@ -354,16 +324,20 @@ def _update_experiment_list(experiment: Experiment) -> tuple[Path, str]:
 
 def _create_timeseries_figs(data: pl.DataFrame) -> None:
     path = results_dir / "catchments"
-    for _data in load_progress(
-        data.partition_by("id"), "Creating timeseries figures..."
-    ):
-        _path = (
-            path
-            / f"{_data[0, 'id']}_{_data[0, 'name'].lower().replace(' ', '_')}.svg"
-        )
-        if not _path.exists():
-            _create_timeseries_fig(_data, _path)
-    done_print("Created timeseries figures.")
+    partitions = data.partition_by("id")
+    with progress_task(
+        "Creating timeseries figures...",
+        "Created timeseries figures.",
+        total=len(partitions),
+    ) as current:
+        for _data in partitions:
+            _path = (
+                path
+                / f"{_data[0, 'id']}_{_data[0, 'name'].lower().replace(' ', '_')}.svg"
+            )
+            if not _path.exists():
+                _create_timeseries_fig(_data, _path)
+            current.increment()
 
 
 def _create_timeseries_fig(data: pl.DataFrame, path: Path) -> None:

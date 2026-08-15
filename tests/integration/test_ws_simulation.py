@@ -1,9 +1,8 @@
-import asyncio
 import threading
 
 import holmes_rs
 
-import holmes.experiment
+import holmes.data.joined
 
 from tests.integration.conftest import recv_until
 
@@ -62,11 +61,14 @@ class TestSimulation:
     ):
         release = threading.Event()
 
-        async def gated_read_data(**kwargs):
-            await asyncio.to_thread(release.wait)
+        def gated_read_joined_data(**kwargs):
+            # runs in the api's to_thread worker, so a plain wait blocks it
+            release.wait()
             return joined_df
 
-        monkeypatch.setattr(holmes.experiment, "read_data", gated_read_data)
+        monkeypatch.setattr(
+            holmes.data.joined, "read_joined_data", gated_read_joined_data
+        )
         try:
             with client.websocket_connect("/ws") as ws:
                 ws.send_json(simulation_message(requestId=1))

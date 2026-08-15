@@ -4,6 +4,7 @@ import uvicorn
 from starlette.applications import Starlette
 
 from . import api, config
+from .data import archive
 from .utils.print import done_print
 
 ##########
@@ -12,6 +13,12 @@ from .utils.print import done_print
 
 
 def create_app() -> Starlette:
+    # the server never builds data: it refreshes the local products from the
+    # published archive once at startup, and raises `MissingDataError` when
+    # there is no local data and no reachable release
+    if not config.SKIP_DATA_SYNC:
+        archive.sync_data()
+
     app = Starlette(
         debug=config.DEBUG,
         routes=api.get_routes(),

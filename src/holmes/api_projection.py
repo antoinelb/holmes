@@ -203,11 +203,11 @@ async def _load_projection(
         else None
     )
     try:
-        stations = (await holmes.data.hydro.get_station_data()).filter(
-            pl.col("id") == station
-        )
-        # a cold cache means a ~40 minute download; refuse rather than hang
-        # the socket on it
+        stations = (
+            await asyncio.to_thread(holmes.data.hydro.get_station_data)
+        ).filter(pl.col("id") == station)
+        # the server never builds data; refuse with a pointer to the build
+        # path rather than raising on the read below
         if not holmes.data.projection.has_projection_data(stations):
             await _send_error(
                 ws,
@@ -320,9 +320,9 @@ async def _get_projection_data(
 ) -> pl.DataFrame:
     async with _projection_lock:
         if station not in _projection_cache:
-            _projection_cache[
-                station
-            ] = await holmes.data.projection.read_projection_data(stations)
+            _projection_cache[station] = await asyncio.to_thread(
+                holmes.data.projection.read_projection_data, stations
+            )
         return _projection_cache[station]
 
 
