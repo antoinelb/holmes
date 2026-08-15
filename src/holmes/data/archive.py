@@ -1,0 +1,213 @@
+"""Server-side sync of the published data archive.
+
+The server never builds data: a daily GitHub Actions cron publishes one
+dated zip of everything (`data-YYYY-MM-DD.zip`) on the repo's rolling
+`data` release, and `sync_data` (called once at startup) downloads and
+extracts it when a newer one exists.
+"""
+
+import os
+import re
+import shutil
+import zipfile
+from datetime import date
+from pathlib import Path
+
+import httpx
+import polars as pl
+
+# paths is imported as a module (not `from ... import data_dir`) so tests
+# patching `holmes.utils.paths.data_dir` reach this module too
+from holmes.utils import paths
+from holmes.utils.print import done_print, load_print
+
+#############
+# constants #
+#############
+
+release_api_url = (
+    "https://api.github.com/repos/antoinelb/holmes/releases/tags/data"
+)
+
+asset_pattern = re.compile(r"^data-(\d{4}-\d{2}-\d{2})\.zip$")
+
+# records the date of the archive currently extracted, at
+# `data_dir / marker_name`
+marker_name = "archive_date.txt"
+
+# a file every real archive contains; its absence means an extraction is
+# truncated or not a holmes data archive at all
+sentinel = Path("raw/hydro/station_data.ipc")
+
+missing_data_help = (
+    "The server never builds data: run `holmes download` (maintainers, "
+    "needs credentials) or restart with network access so the startup "
+    "sync can fetch the archive from the `data` release."
+)
+
+##########
+# public #
+##########
+
+
+class MissingDataError(RuntimeError):
+    """Raised when a data product is absent locally and cannot be
+    obtained."""
+
+
+def sync_data() -> None:
+    """Download and extract the latest data archive if newer than local.
+
+    Called once at server startup. A failed sync never corrupts existing
+    data: every download and extraction happens in a staging directory
+    under `data_dir` and files are swapped in with atomic renames.
+    """
+    local = local_archive_date()
+
+    try:
+        remote_date, url = _find_latest_asset()
+    except Exception as exc:
+        _handle_sync_failure(f"check the data release ({exc})")
+        return
+
+    if local is not None and local >= remote_date:
+        return
+
+    staging = paths.data_dir / "tmp"
+    try:
+        archive = _download_archive(url, remote_date, staging)
+        extract_dir = _extract_archive(archive, staging)
+    except Exception as exc:
+        # staging holds only this failed attempt; dropping it keeps a
+        # persistent failure from stranding a partial archive on disk
+        shutil.rmtree(staging, ignore_errors=True)
+        _handle_sync_failure(f"download the data archive ({exc})")
+        return
+
+    _install_extracted(extract_dir)
+    _write_marker(remote_date)
+    shutil.rmtree(staging)
+    done_print(f"Downloaded data archive ({remote_date.isoformat()}).")
+
+
+def read_product(path: Path) -> pl.DataFrame:
+    """Read one data product, raising `MissingDataError` if absent."""
+    if path.exists():
+        # the archives hold compressed IPC files; mapping is unavailable on
+        # them and polars warns loudly about it
+        return pl.read_ipc(path, memory_map=False)
+    raise MissingDataError(f"Missing data product {path}. {missing_data_help}")
+
+
+def local_archive_date() -> date | None:
+    """Parse the archive marker, returning None if absent or garbled."""
+    marker = paths.data_dir / marker_name
+    try:
+        return date.fromisoformat(marker.read_text().strip())
+    except (OSError, ValueError):
+        return None
+
+
+###########
+# private #
+###########
+
+
+def _find_latest_asset() -> tuple[date, str]:
+    """Return the date and download url of the newest dated archive."""
+    response = httpx.get(
+        release_api_url,
+        timeout=30,
+        follow_redirects=True,
+        headers={"Accept": "application/vnd.github+json"},
+    )
+    response.raise_for_status()
+
+    assets: dict[date, str] = {}
+    for asset in response.json().get("assets", []):
+        match = asset_pattern.match(asset.get("name", ""))
+        if match is not None:
+            assets[date.fromisoformat(match.group(1))] = asset[
+                "browser_download_url"
+            ]
+    if not assets:
+        raise ValueError("no data-YYYY-MM-DD.zip asset on the data release")
+
+    latest = max(assets)
+    return latest, assets[latest]
+
+
+def _handle_sync_failure(action: str) -> None:
+    """Warn if existing local data keeps the server usable, raise
+    otherwise."""
+    if (paths.data_dir / sentinel).exists():
+        load_print(f"Could not {action}; using existing local data.", end="\n")
+        return
+    raise MissingDataError(
+        f"No local data found and could not {action}. {missing_data_help}"
+    )
+
+
+def _download_archive(url: str, remote_date: date, staging: Path) -> Path:
+    """Stream the archive to staging, only renaming a complete download."""
+    staging.mkdir(parents=True, exist_ok=True)
+    archive = staging / f"data-{remote_date.isoformat()}.zip"
+    staged = staging / f"{archive.name}.part"
+
+    # the archive is hundreds of MB, so it is streamed to disk rather than
+    # buffered in memory
+    with httpx.stream(
+        "GET", url, timeout=300, follow_redirects=True
+    ) as response:
+        response.raise_for_status()
+        with staged.open("wb") as file:
+            for chunk in response.iter_bytes():
+                file.write(chunk)
+
+    staged.replace(archive)
+    return archive
+
+
+def _extract_archive(archive: Path, staging: Path) -> Path:
+    """Extract the archive under staging, validating members and content."""
+    extract_dir = staging / "extract"
+    if extract_dir.exists():
+        shutil.rmtree(extract_dir)
+    extract_dir.mkdir(parents=True)
+
+    root = extract_dir.resolve()
+    with zipfile.ZipFile(archive) as file:
+        for member in file.namelist():
+            # zip-slip guard: a member must never escape the extract dir
+            if not (extract_dir / member).resolve().is_relative_to(root):
+                raise ValueError(f"unsafe member path {member} in archive")
+            file.extract(member, extract_dir)
+
+    # a truncated or wrong zip would otherwise replace real data
+    if not (extract_dir / sentinel).exists():
+        raise ValueError(
+            f"archive is missing {sentinel}; it is truncated or not a "
+            "data archive"
+        )
+    return extract_dir
+
+
+def _install_extracted(extract_dir: Path) -> None:
+    """Move every extracted file into place with atomic renames.
+
+    Staging lives under `data_dir`, so source and destination share a
+    filesystem and concurrent readers always see a valid file.
+    """
+    for src in sorted(extract_dir.rglob("*")):
+        if not src.is_file():
+            continue
+        dest = paths.data_dir / src.relative_to(extract_dir)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(src, dest)
+
+
+def _write_marker(remote_date: date) -> None:
+    marker = paths.data_dir / marker_name
+    staged = marker.parent / f"{marker.name}.part"
+    staged.write_text(remote_date.isoformat() + "\n")
+    staged.replace(marker)

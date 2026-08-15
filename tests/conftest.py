@@ -6,7 +6,9 @@ directory.
 """
 
 import io
+import zipfile
 from datetime import date
+from typing import Any
 
 import numpy as np
 import polars as pl
@@ -161,6 +163,42 @@ def ipc_bytes():
         return buffer.getvalue()
 
     return _ipc_bytes
+
+
+@pytest.fixture
+def zip_bytes():
+    def _zip_bytes(files: dict[str, pl.DataFrame | bytes]) -> bytes:
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            for name, content in files.items():
+                if isinstance(content, pl.DataFrame):
+                    inner = io.BytesIO()
+                    content.write_ipc(inner)
+                    content = inner.getvalue()
+                archive.writestr(name, content)
+        return buffer.getvalue()
+
+    return _zip_bytes
+
+
+@pytest.fixture
+def release_json():
+    def _release_json(
+        date_str: str, extra_assets: list[str] | None = None
+    ) -> dict[str, Any]:
+        names = [f"data-{date_str}.zip", *(extra_assets or [])]
+        return {
+            "tag_name": "data",
+            "assets": [
+                {
+                    "name": name,
+                    "browser_download_url": f"https://example.com/{name}",
+                }
+                for name in names
+            ],
+        }
+
+    return _release_json
 
 
 def make_forcing(ids: list[str], start: date, end: date) -> pl.DataFrame:
