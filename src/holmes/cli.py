@@ -26,7 +26,9 @@ def _init_cli() -> typer.Typer:
         context_settings={"help_option_names": ["-h", "--help"]},
         pretty_exceptions_enable=False,
         pretty_exceptions_show_locals=False,
+        invoke_without_command=True,
     )
+    cli.callback()(_default)
     cli.command("run")(_run)
     cli.command("r", hidden=True)(_run)
     cli.command("download")(_download)
@@ -34,6 +36,11 @@ def _init_cli() -> typer.Typer:
     cli.command("experiment")(_run_experiments)
     cli.command("e", hidden=True)(_run_experiments)
     return cli
+
+
+def _default(ctx: typer.Context) -> None:
+    if ctx.invoked_subcommand is None:
+        _run()
 
 
 def _run() -> None:
