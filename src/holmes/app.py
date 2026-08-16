@@ -13,12 +13,6 @@ from .utils.print import done_print
 
 
 def create_app() -> Starlette:
-    # the server never builds data: it refreshes the local products from the
-    # published archive once at startup, and raises `MissingDataError` when
-    # there is no local data and no reachable release
-    if not config.SKIP_DATA_SYNC:
-        archive.sync_data()
-
     app = Starlette(
         debug=config.DEBUG,
         routes=api.get_routes(),
@@ -32,6 +26,12 @@ def create_app() -> Starlette:
 
 
 def run_server() -> None:
+    # the sync runs here rather than in `create_app`: uvicorn installs its
+    # own SIGINT handler before calling the factory, and that handler only
+    # sets a flag, so a Ctrl-C during the download would be ignored
+    if not config.SKIP_DATA_SYNC:
+        archive.sync_data()
+
     url = f"http://{config.HOST}:{config.PORT}"
     done_print(
         f"Starting app in {'debug' if config.DEBUG else 'production'} mode "

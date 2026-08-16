@@ -13,7 +13,8 @@ holmes run
 ```
 
 Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
-On the first launch the server downloads the prebuilt dataset — one archive from the repository's `data` release — so starting can take a few minutes; afterwards it only re-downloads when a newer archive is published, and keeps serving the current data in the meantime.
+On the first launch the server downloads the prebuilt dataset — one archive from the repository's `data` release — so starting can take a few minutes; the terminal shows the download progress, and the application starts as soon as it finishes.
+Afterwards it only re-downloads when a newer archive is published, and keeps serving the current data in the meantime.
 No credentials are needed to run the application.
 The data lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows); set the `HOLMES_DATA_DIR` environment variable to use another location, and `HOLMES_SKIP_DATA_SYNC=True` to skip the startup check entirely.
 

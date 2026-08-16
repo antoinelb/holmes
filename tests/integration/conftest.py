@@ -8,7 +8,6 @@ import polars as pl
 import pytest
 from starlette.testclient import TestClient
 
-import holmes.data.archive
 import holmes.data.hydro
 import holmes.data.joined
 import holmes.data.projection
@@ -20,13 +19,6 @@ from tests.unit.conftest import (  # noqa: F401  (autouse re-registration)
     no_network,
     tmp_data_dir,
 )
-
-
-@pytest.fixture(autouse=True)
-def no_data_sync(monkeypatch) -> None:
-    # create_app syncs the data archive at startup; integration tests run on
-    # synthetic frames and must never touch the release
-    monkeypatch.setattr(holmes.data.archive, "sync_data", lambda: None)
 
 
 @pytest.fixture

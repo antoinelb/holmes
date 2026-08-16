@@ -10,6 +10,7 @@ import os
 import re
 import shutil
 import zipfile
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
@@ -19,7 +20,7 @@ import polars as pl
 # paths is imported as a module (not `from ... import data_dir`) so tests
 # patching `holmes.utils.paths.data_dir` reach this module too
 from holmes.utils import paths
-from holmes.utils.print import done_print, warn_print
+from holmes.utils.print import Task, progress_task, task, warn_print
 
 #############
 # constants #
@@ -38,6 +39,10 @@ marker_name = "archive_date.txt"
 # a file every real archive contains; its absence means an extraction is
 # truncated or not a holmes data archive at all
 sentinel = Path("raw/hydro/station_data.ipc")
+
+# the download counter is reported in whole megabytes, decimal ones so it
+# matches the archive size the release page advertises
+mb = 1_000_000
 
 missing_data_help = (
     "The server never builds data: run `holmes download` (maintainers, "
@@ -75,19 +80,27 @@ def sync_data() -> None:
 
     staging = paths.data_dir / "tmp"
     try:
-        archive = _download_archive(url, remote_date, staging)
-        extract_dir = _extract_archive(archive, staging)
+        with task(
+            _sync_message(local),
+            f"Downloaded data archive ({remote_date.isoformat()}).",
+        ):
+            archive = _download_archive(url, remote_date, staging)
+            extract_dir = _extract_archive(archive, staging)
     except Exception as exc:
         # staging holds only this failed attempt; dropping it keeps a
         # persistent failure from stranding a partial archive on disk
         shutil.rmtree(staging, ignore_errors=True)
         _handle_sync_failure(f"download the data archive ({exc})")
         return
+    except BaseException:
+        # a Ctrl-C mid-download would otherwise strand hundreds of
+        # megabytes of partial archive on disk
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
 
     _install_extracted(extract_dir)
     _write_marker(remote_date)
     shutil.rmtree(staging)
-    done_print(f"Downloaded data archive ({remote_date.isoformat()}).")
 
 
 def read_product(path: Path) -> pl.DataFrame:
@@ -148,6 +161,20 @@ def _handle_sync_failure(action: str) -> None:
     )
 
 
+def _sync_message(local: date | None) -> str:
+    """Say what the wait is for, and that a first run only waits once.
+
+    A garbled marker also reads as no local date, so the promise of a
+    one-time wait is made on the data itself being absent.
+    """
+    if local is None and not (paths.data_dir / sentinel).exists():
+        return (
+            "Downloading the data (first run only, a few minutes); the "
+            "app starts as soon as it is done"
+        )
+    return "Updating the data to the latest archive"
+
+
 def _download_archive(url: str, remote_date: date, staging: Path) -> Path:
     """Stream the archive to staging, only renaming a complete download."""
     staging.mkdir(parents=True, exist_ok=True)
@@ -160,12 +187,42 @@ def _download_archive(url: str, remote_date: date, staging: Path) -> Path:
         "GET", url, timeout=300, follow_redirects=True
     ) as response:
         response.raise_for_status()
-        with staged.open("wb") as file:
-            for chunk in response.iter_bytes():
-                file.write(chunk)
+        total = _declared_megabytes(response.headers)
+        with _download_task(total) as progress:
+            written = 0
+            reported = 0
+            with staged.open("wb") as file:
+                for chunk in response.iter_bytes():
+                    file.write(chunk)
+                    written += len(chunk)
+                    # one tick per whole megabyte, clamped so a server
+                    # undercounting content-length cannot overrun the total
+                    while reported < min(written // mb, total):
+                        reported += 1
+                        progress.increment()
 
     staged.replace(archive)
     return archive
+
+
+def _declared_megabytes(headers: Mapping[str, str]) -> int:
+    """Size the counter, returning 0 for an absent or unparsable header.
+
+    The counter is display only: a server sending a junk content-length
+    must cost the progress bar, never the download.
+    """
+    try:
+        return int(headers.get("content-length", 0)) // mb
+    except (TypeError, ValueError):
+        return 0
+
+
+def _download_task(total: int) -> Task:
+    """Count megabytes when the server declares a size, else just wait."""
+    done = "Downloaded the archive."
+    if total > 0:
+        return progress_task("MB downloaded", done, total)
+    return task("Downloading the archive", done)
 
 
 def _extract_archive(archive: Path, staging: Path) -> Path:
@@ -176,19 +233,22 @@ def _extract_archive(archive: Path, staging: Path) -> Path:
     extract_dir.mkdir(parents=True)
 
     root = extract_dir.resolve()
-    with zipfile.ZipFile(archive) as file:
+    with (
+        task("Extracting the archive", "Extracted the archive."),
+        zipfile.ZipFile(archive) as file,
+    ):
         for member in file.namelist():
             # zip-slip guard: a member must never escape the extract dir
             if not (extract_dir / member).resolve().is_relative_to(root):
                 raise ValueError(f"unsafe member path {member} in archive")
             file.extract(member, extract_dir)
 
-    # a truncated or wrong zip would otherwise replace real data
-    if not (extract_dir / sentinel).exists():
-        raise ValueError(
-            f"archive is missing {sentinel}; it is truncated or not a "
-            "data archive"
-        )
+        # a truncated or wrong zip would otherwise replace real data
+        if not (extract_dir / sentinel).exists():
+            raise ValueError(
+                f"archive is missing {sentinel}; it is truncated or not a "
+                "data archive"
+            )
     return extract_dir
 
 

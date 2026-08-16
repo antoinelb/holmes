@@ -44,7 +44,7 @@ holmes package      # maintainers: zip the built products into data-YYYY-MM-DD.z
 ### Data
 
 The server never builds data.
-At startup it compares the newest `data-YYYY-MM-DD.zip` asset on the repo's rolling [`data` release](https://github.com/antoinelb/holmes/releases/tag/data) against its local copy, and downloads and extracts the archive if it is newer — old data keeps being served during the swap, and no credentials are ever needed to run the app.
+Starting it with `holmes run` compares the newest `data-YYYY-MM-DD.zip` asset on the repo's rolling [`data` release](https://github.com/antoinelb/holmes/releases/tag/data) against its local copy, and downloads and extracts the archive if it is newer — the terminal shows the progress, old data keeps being served during the swap, and no credentials are ever needed to run the app.
 Data lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows), overridable with `HOLMES_DATA_DIR`; map tiles are the one exception, still fetched lazily from CartoDB.
 
 Rebuilding the archive is the maintainer path.

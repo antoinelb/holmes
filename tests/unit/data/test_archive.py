@@ -21,8 +21,15 @@ def make_api_response(payload: Any) -> MagicMock:
 
 
 class FakeStreamResponse:
-    def __init__(self, content: bytes) -> None:
-        self._content = content
+    def __init__(
+        self,
+        content: bytes,
+        *,
+        chunks: list[bytes] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
+        self._chunks = [content] if chunks is None else chunks
+        self.headers = {} if headers is None else headers
 
     def __enter__(self) -> "FakeStreamResponse":
         return self
@@ -34,7 +41,7 @@ class FakeStreamResponse:
         return None
 
     def iter_bytes(self):
-        yield self._content
+        yield from self._chunks
 
 
 def patch_release(monkeypatch, payload: Any) -> None:
@@ -45,12 +52,14 @@ def patch_release(monkeypatch, payload: Any) -> None:
     )
 
 
-def patch_stream(monkeypatch, content: bytes) -> list[str]:
+def patch_stream(
+    monkeypatch, content: bytes, headers: dict[str, str] | None = None
+) -> list[str]:
     calls: list[str] = []
 
     def fake_stream(method: str, url: str, **kwargs: Any):
         calls.append(url)
-        return FakeStreamResponse(content)
+        return FakeStreamResponse(content, headers=headers)
 
     monkeypatch.setattr(archive.httpx, "stream", fake_stream)
     return calls
@@ -87,9 +96,12 @@ class TestSyncData:
         ).equals(era5_df)
         assert not (tmp_data_dir / "tmp").exists()
         assert not list(tmp_data_dir.rglob("*.part"))
-        assert (
-            "Downloaded data archive (2026-08-15)." in capsys.readouterr().out
-        )
+        out = capsys.readouterr().out
+        assert "Downloaded data archive (2026-08-15)." in out
+        # an existing archive is an update, not a first run
+        assert "Updating the data" in out
+        assert "first run" not in out
+        assert "Extracted the archive." in out
 
     def test_equal_local_skips_download(
         self, tmp_data_dir, monkeypatch, release_json
@@ -160,6 +172,50 @@ class TestSyncData:
         with pytest.raises(archive.MissingDataError, match="holmes download"):
             archive.sync_data()
 
+    def test_first_run_announces_the_one_time_wait(
+        self, tmp_data_dir, monkeypatch, zip_bytes, release_json, capsys
+    ):
+        patch_release(monkeypatch, release_json("2026-08-15"))
+        patch_stream(monkeypatch, zip_bytes({sentinel_name: new_df}))
+
+        archive.sync_data()
+
+        out = capsys.readouterr().out
+        assert "first run only" in out
+        assert "the app starts as soon as it is done" in out
+
+    def test_garbled_marker_over_real_data_is_not_a_first_run(
+        self, tmp_data_dir, monkeypatch, zip_bytes, release_json, capsys
+    ):
+        local_sentinel = tmp_data_dir / sentinel_name
+        local_sentinel.parent.mkdir(parents=True)
+        old_df.write_ipc(local_sentinel)
+        (tmp_data_dir / archive.marker_name).write_text("not-a-date")
+
+        patch_release(monkeypatch, release_json("2026-08-15"))
+        patch_stream(monkeypatch, zip_bytes({sentinel_name: new_df}))
+
+        archive.sync_data()
+
+        assert "first run" not in capsys.readouterr().out
+
+    def test_interrupt_clears_staging_and_propagates(
+        self, tmp_data_dir, monkeypatch, release_json
+    ):
+        patch_release(monkeypatch, release_json("2026-08-15"))
+
+        def interrupt(method: str, url: str, **kwargs: Any):
+            (tmp_data_dir / "tmp").mkdir(parents=True, exist_ok=True)
+            (tmp_data_dir / "tmp" / "partial.part").write_bytes(b"partial")
+            raise KeyboardInterrupt
+
+        monkeypatch.setattr(archive.httpx, "stream", interrupt)
+
+        with pytest.raises(KeyboardInterrupt):
+            archive.sync_data()
+
+        assert not (tmp_data_dir / "tmp").exists()
+
     def test_max_dated_asset_chosen(
         self, tmp_data_dir, monkeypatch, zip_bytes, release_json
     ):
@@ -223,6 +279,60 @@ class TestSyncData:
             archive.sync_data()
 
         assert not list(tmp_data_dir.parent.rglob("evil.txt"))
+
+
+class TestDownloadArchive:
+    def test_counts_one_tick_per_megabyte(self, tmp_data_dir, monkeypatch):
+        tracker = MagicMock()
+        tracker.__enter__.return_value = tracker
+        made = MagicMock(return_value=tracker)
+        monkeypatch.setattr(archive, "progress_task", made)
+        # 3 MB streamed in half-megabyte chunks
+        monkeypatch.setattr(
+            archive.httpx,
+            "stream",
+            lambda method, url, **kwargs: FakeStreamResponse(
+                b"",
+                chunks=[b"x" * (archive.mb // 2)] * 6,
+                headers={"content-length": str(3 * archive.mb)},
+            ),
+        )
+
+        path = archive._download_archive(
+            "url", date(2026, 8, 15), tmp_data_dir / "tmp"
+        )
+
+        made.assert_called_once_with(
+            "MB downloaded", "Downloaded the archive.", 3
+        )
+        assert tracker.increment.call_count == 3
+        assert path.stat().st_size == 3 * archive.mb
+
+    def test_undeclared_size_falls_back_to_a_plain_task(
+        self, tmp_data_dir, monkeypatch
+    ):
+        made = MagicMock()
+        monkeypatch.setattr(archive, "progress_task", made)
+        patch_stream(monkeypatch, b"body")
+
+        path = archive._download_archive(
+            "url", date(2026, 8, 15), tmp_data_dir / "tmp"
+        )
+
+        made.assert_not_called()
+        assert path.read_bytes() == b"body"
+
+    # the counter is display only: a junk header must not cost the download
+    def test_unparsable_size_still_downloads(self, tmp_data_dir, monkeypatch):
+        patch_stream(
+            monkeypatch, b"body", headers={"content-length": "garbage"}
+        )
+
+        path = archive._download_archive(
+            "url", date(2026, 8, 15), tmp_data_dir / "tmp"
+        )
+
+        assert path.read_bytes() == b"body"
 
 
 class TestReadProduct:

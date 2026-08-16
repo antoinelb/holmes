@@ -9,6 +9,12 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Fixed
+- The startup data sync now reports what it is doing: a first run says so explicitly and that the application starts right after, and the download shows a live megabyte counter instead of an unexplained multi-minute silence
+- Ctrl-C during the startup data sync now stops the application: the sync moved out of the uvicorn app factory, whose signal handler only sets an exit flag and so ignored the interrupt for the whole download; an interrupted download also clears its staging directory instead of stranding a partial archive
+
 ## [4.3.0] - 2026-08-15
 
 ### Added
