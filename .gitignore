@@ -27,4 +27,12 @@ changements_tp2.md
 /notebooks/
 
 # data comes from the rolling `data` release archive (see `holmes download`)
-/data/
+# — except the MELCC station csvs, the one input no source can rebuild
+# (`scripts/convert_stations.py` converts hand-obtained fixed-width files).
+# git needs every parent re-included: it will not descend into an
+# excluded directory to reach a negated pattern.
+/data/**
+!/data/raw/
+!/data/raw/weather/
+!/data/raw/weather/stations/
+!/data/raw/weather/stations/*.csv
