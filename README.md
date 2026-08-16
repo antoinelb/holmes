@@ -31,7 +31,7 @@ After installation, start the dashboard with:
 holmes run
 ```
 
-The web interface will be available at http://127.0.0.1:8000.
+The web interface opens in your browser by itself, at http://127.0.0.1:8000 (debug mode does not open it).
 
 Other commands:
 

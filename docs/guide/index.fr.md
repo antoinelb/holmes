@@ -12,7 +12,7 @@ pip install holmes-hydro
 holmes run
 ```
 
-Ouvrez ensuite [http://127.0.0.1:8000](http://127.0.0.1:8000) dans votre navigateur.
+Votre navigateur s'ouvre de lui-même sur [http://127.0.0.1:8000](http://127.0.0.1:8000); ouvrez cette adresse manuellement si ce n'est pas le cas.
 Au premier lancement, le serveur télécharge le jeu de données préconstruit — une archive depuis la release `data` du dépôt — donc le démarrage peut prendre quelques minutes; le terminal affiche la progression du téléchargement et l'application démarre dès qu'il est terminé.
 Ensuite, il ne retélécharge que lorsqu'une archive plus récente est publiée, et continue de servir les données courantes entre-temps.
 Aucun identifiant n'est nécessaire pour utiliser l'application.

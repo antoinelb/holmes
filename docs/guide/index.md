@@ -12,7 +12,7 @@ pip install holmes-hydro
 holmes run
 ```
 
-Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+Your browser opens on [http://127.0.0.1:8000](http://127.0.0.1:8000) by itself; open that address manually if it does not.
 On the first launch the server downloads the prebuilt dataset — one archive from the repository's `data` release — so starting can take a few minutes; the terminal shows the download progress, and the application starts as soon as it finishes.
 Afterwards it only re-downloads when a newer archive is published, and keeps serving the current data in the meantime.
 No credentials are needed to run the application.
