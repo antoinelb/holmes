@@ -56,7 +56,9 @@ jobs:
           if [ -n "$latest" ]; then
             gh release download data --pattern "$latest" --output "$latest"
             mkdir -p data
-            unzip -q "$latest" -d data
+            # -o: the checkout ships some of these products, and a prompt
+            # on an existing file would hang, then fail on empty stdin
+            unzip -oq "$latest" -d data
             rm "$latest"
           else
             echo "no previous archive; cold build"

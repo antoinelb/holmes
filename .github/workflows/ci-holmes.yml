@@ -135,7 +135,9 @@ jobs:
           fi
           gh release download data --pattern "$latest" --output "$latest"
           mkdir -p data
-          unzip -q "$latest" -d data
+          # -o: the checkout ships some of these products, and a prompt on
+          # an existing file would hang, then fail on empty stdin
+          unzip -oq "$latest" -d data
           stamp="${latest#data-}"
           echo "${stamp%.zip}" > data/archive_date.txt
           rm "$latest"
