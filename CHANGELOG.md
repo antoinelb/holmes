@@ -9,7 +9,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [4.4.0] - 2026-08-16
 
 ### Changed
 - A freshly built data archive is roughly 190 MB instead of 418 MB: the climate projections, which were 83% of it, are stored at the float32 precision their source already carries and rounded to 0.01 mm/°C — finer than any observation — taking each station's product from 45 MB to 16.5 MB
