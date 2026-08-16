@@ -6,8 +6,10 @@ precipitation, tmax, tmin, temperature. Stations missing a parameter entirely
 (no temperature or no precipitation gauge) are skipped: the nearest-stations
 method needs both.
 
-The produced CSVs are no longer committed: they ship only inside the data
-release archive built by `holmes package`.
+The produced CSVs are committed: the MELCC `.txt` files they come from have
+no public source, so unlike every other input these cannot be refetched, and
+`rebuild_completed_stations` needs them on a cold build. They also ship
+inside the data release archive built by `holmes package`.
 
 Run as `python scripts/convert_stations.py`.
 """
