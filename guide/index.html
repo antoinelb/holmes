@@ -1781,7 +1781,8 @@ This guide covers every feature of the interface, step by step; the <a href="wor
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>holmes<span class="w"> </span>run
 </span></code></pre></div>
 <p>Then open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> in your browser.
-On the first launch the server downloads the prebuilt dataset — one archive from the repository's <code>data</code> release — so starting can take a few minutes; afterwards it only re-downloads when a newer archive is published, and keeps serving the current data in the meantime.
+On the first launch the server downloads the prebuilt dataset — one archive from the repository's <code>data</code> release — so starting can take a few minutes; the terminal shows the download progress, and the application starts as soon as it finishes.
+Afterwards it only re-downloads when a newer archive is published, and keeps serving the current data in the meantime.
 No credentials are needed to run the application.
 The data lives in the per-user data directory (<code>~/.local/share/holmes</code> on Linux, <code>~/Library/Application Support/holmes</code> on macOS, <code>%LOCALAPPDATA%\holmes\holmes</code> on Windows); set the <code>HOLMES_DATA_DIR</code> environment variable to use another location, and <code>HOLMES_SKIP_DATA_SYNC=True</code> to skip the startup check entirely.</p>
 <p><img alt="The application on first load" src="../assets/images/screenshots/app-start-dark.png#only-dark" />
@@ -1852,7 +1853,7 @@ This is deliberate: downstream results must never silently reflect an outdated c
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 15, 2026 22:14:05 UTC">August 15, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 16, 2026 16:43:49 UTC">August 16, 2026</span>
   </span>
 
     
