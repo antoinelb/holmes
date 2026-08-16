@@ -9,10 +9,10 @@ import shapely
 from starlette.requests import Request
 from starlette.routing import Mount, Route, WebSocketRoute
 
-import holmes.api as api
-import holmes.api_calibration
-import holmes.api_projection
-import holmes.api_simulation
+import holmes.api.api as api
+import holmes.api.calibration
+import holmes.api.projection
+import holmes.api.simulation
 import holmes.data.hydro
 import holmes.data.weather
 
@@ -121,22 +121,22 @@ class TestHandleMessage:
         [
             (
                 "calibration_info",
-                holmes.api_calibration,
+                holmes.api.calibration,
                 "handle_calibration_message",
             ),
             (
                 "calibration_stop",
-                holmes.api_calibration,
+                holmes.api.calibration,
                 "handle_calibration_message",
             ),
             (
                 "simulation_data",
-                holmes.api_simulation,
+                holmes.api.simulation,
                 "handle_simulation_message",
             ),
             (
                 "projection_data",
-                holmes.api_projection,
+                holmes.api.projection,
                 "handle_projection_message",
             ),
         ],
@@ -169,16 +169,28 @@ class TestHandleStationsMessage:
         assert reply["type"] == "stations"
         row = reply["data"][0]
         assert "centroid_lat" in row
-        # the WKB column is dropped and the geojson takes its name
+        # the stored wkb reaches the client as the geojson the map parses
         assert isinstance(row["geometry"], str)
-        assert "wkb" not in row
+        assert shapely.from_geojson(row["geometry"]).is_valid
 
 
-class TestWithCentroids:
+class TestForMap:
+    def test_geometry_is_the_stored_wkb_as_geojson(self, stations_df):
+        data = api._for_map(stations_df)
+        stored = shapely.from_wkb(stations_df[0, "geometry"])
+        assert shapely.from_geojson(data[0, "geometry"]).equals(stored)
+
+    # archives built before the column was dropped still carry it
+    def test_stored_geojson_never_reaches_the_client(self, stations_df):
+        legacy = stations_df.with_columns(
+            pl.lit("stale geojson").alias("geometry_geojson")
+        )
+        assert "geometry_geojson" not in api._for_map(legacy).columns
+
     def test_planar_centroid(self, stations_df):
-        data = api._with_centroids(stations_df)
+        data = api._for_map(stations_df)
         row = data.filter(pl.col("id") == "061004").row(0, named=True)
-        polygon = shapely.from_wkb(row["geometry"])
+        polygon = shapely.from_geojson(row["geometry"])
         # the projected centroid of a small box stays within metres of the
         # geographic one
         assert row["centroid_lat"] == pytest.approx(

@@ -225,6 +225,9 @@ class TestBuildProducts:
                 "ClimEx",
                 "ESPO-G6-R2",
             }
+            # stored at the precision the source carries, not float64
+            assert product.schema["precipitation"] == pl.Float32
+            assert product.schema["temperature"] == pl.Float32
             assert (
                 product.filter(pl.col("ensemble") == "ClimEx")["member"]
                 .sort()

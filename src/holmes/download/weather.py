@@ -10,6 +10,7 @@ local transforms recomputed in full every run.
 
 import concurrent.futures
 import tempfile
+import threading
 import zipfile
 from datetime import date, datetime
 from pathlib import Path
@@ -84,6 +85,15 @@ ministry_grid_base_url = (
 
 # the grids start in 1940, like era5; earlier years simply do not exist
 ministry_grid_start_year = 1940
+
+# grid downloads are network-bound and independent, so a cold cache
+# fetches them concurrently; eight is polite to the ministry's blob store
+ministry_grid_max_workers = 8
+
+# the HDF5 library underneath netCDF4 is not thread-safe: concurrent
+# opens corrupt its global state and crash the interpreter, so the pool
+# above parallelizes the transfers but never the NetCDF validation
+_hdf5_lock = threading.Lock()
 
 # nearest-station picks are bounded by the UI slider
 min_n_stations = 1
@@ -433,9 +443,11 @@ def _ensure_era5_cells(
     if refetch:
         for latitude, longitude in cells:
             for year in years:
-                _era5_cell_year_path(latitude, longitude, year).unlink(
-                    missing_ok=True
-                )
+                cell_path = _era5_cell_year_path(latitude, longitude, year)
+                # a cell already refetched today would come back
+                # identical, so it is kept and the fetch below skips it
+                if not paths.fetched_today(cell_path):
+                    cell_path.unlink(missing_ok=True)
 
     needed = [
         (latitude, longitude, missing)
@@ -810,15 +822,18 @@ def _refresh_ministry_years(
     failed: list[int] = []
     for year in years:
         # the current year's file changes at the source as days accrue, so
-        # the cached copy is dropped and downloaded fresh
+        # the cached copy is dropped and downloaded fresh — unless it is
+        # already today's, which the source has not changed since
         for parameter in ("PREC", "TMOY"):
-            (
+            grid_path = (
                 paths.data_dir
                 / "raw"
                 / "weather"
                 / "ministry_grid"
                 / f"{parameter}_{year}.nc"
-            ).unlink(missing_ok=True)
+            )
+            if not paths.fetched_today(grid_path):
+                grid_path.unlink(missing_ok=True)
         weather = _read_year_ministry_grid_weather_data(year)
         if weather is None:
             warn_print(
@@ -934,7 +949,7 @@ def _download_ministry_grid_files(names: list[str]) -> None:
         total=len(missing),
     ) as current:
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=len(missing)
+            max_workers=ministry_grid_max_workers
         ) as pool:
             for _ in pool.map(_ministry_grid_file, missing):
                 current.increment()
@@ -954,9 +969,8 @@ def _ministry_grid_file(name: str) -> Path | None:
     staged = path.with_suffix(".part")
     try:
         path.parent.mkdir(exist_ok=True, parents=True)
-        # streamed to disk rather than buffered: every missing grid is
-        # fetched at once, and a cold cache holding one whole NetCDF in
-        # memory per thread would not fit
+        # streamed to disk rather than buffered: the pool would otherwise
+        # hold one whole grid-year NetCDF in memory per worker
         with httpx.stream(
             "GET",
             ministry_grid_base_url + name,
@@ -971,7 +985,8 @@ def _ministry_grid_file(name: str) -> Path | None:
         # a truncated body, or an error page served in place of the file,
         # would otherwise be cached as if it were data and fail on every
         # later read
-        xr.open_dataset(staged).close()
+        with _hdf5_lock:
+            xr.open_dataset(staged).close()
         staged.replace(path)
 
         return path

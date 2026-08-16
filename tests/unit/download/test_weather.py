@@ -1,5 +1,6 @@
+import os
 import zipfile
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -116,6 +117,13 @@ def make_processed_dataset(
     return data.rio.write_crs(crs)
 
 
+def backdate(path: Path) -> None:
+    # a file written by a test is today's, which the refresh paths now
+    # keep; ageing it by a day restores the "must refetch" case
+    stamp = (datetime.now() - timedelta(days=1)).timestamp()
+    os.utime(path, (stamp, stamp))
+
+
 def make_response(content: bytes) -> MagicMock:
     # doubles as its own context manager, since the grids are streamed
     resp = MagicMock()
@@ -217,6 +225,7 @@ class TestUpdateEra5:
                 "longitude": [-71.25],
             }
         ).write_ipc(stale)
+        backdate(stale)
 
         def fake_range(latitude, longitude, start, end):
             assert (start, end) == (2025, 2025)
@@ -353,6 +362,7 @@ class TestUpdateMinistryGrid:
         )
         stale.parent.mkdir(exist_ok=True, parents=True)
         stale.write_bytes(b"stale")
+        backdate(stale)
 
         processed = make_processed_dataset(polygons, 2016)
         monkeypatch.setattr(
@@ -370,6 +380,29 @@ class TestUpdateMinistryGrid:
         )
         new_rows = product.filter(pl.col("datetime") >= cutoff)
         assert new_rows["precipitation"].to_list() == pytest.approx([2.0] * 6)
+
+    def test_incremental_keeps_grids_already_fetched_today(
+        self, tmp_data_dir, monkeypatch, stations_df, era5_product, polygons
+    ):
+        monkeypatch.setattr(weather, "_years_to_refresh", lambda today: [2016])
+        path = tmp_data_dir / "raw" / "weather" / "ministry_grid.ipc"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        make_product(["061004", "061020"], [2015, 2016]).write_ipc(path)
+        cached = (
+            tmp_data_dir / "raw" / "weather" / "ministry_grid" / "PREC_2016.nc"
+        )
+        cached.parent.mkdir(exist_ok=True, parents=True)
+        cached.write_bytes(b"today")
+
+        processed = make_processed_dataset(polygons, 2016)
+        monkeypatch.setattr(
+            weather,
+            "_read_year_ministry_grid_weather_data",
+            lambda year: processed if year == 2016 else None,
+        )
+        weather.update_ministry_grid(stations_df)
+
+        assert cached.read_bytes() == b"today"
 
     def test_incremental_failed_year_keeps_old_rows(
         self, tmp_data_dir, monkeypatch, stations_df, era5_product
@@ -764,6 +797,7 @@ class TestEnsureEra5Cells:
         path = weather._era5_cell_year_path(47.75, -71.25, 2015)
         path.parent.mkdir(exist_ok=True, parents=True)
         path.write_bytes(b"stale")
+        backdate(path)
         monkeypatch.setattr(weather, "_check_era5_credentials", MagicMock())
         fetch = MagicMock()
         monkeypatch.setattr(weather, "_fetch_era5_cell_years", fetch)
@@ -773,6 +807,21 @@ class TestEnsureEra5Cells:
         assert fetched == 1
         assert not path.exists()
         fetch.assert_called_once_with(47.75, -71.25, [2015])
+
+    def test_refetch_keeps_cells_already_fetched_today(
+        self, tmp_data_dir, monkeypatch
+    ):
+        path = weather._era5_cell_year_path(47.75, -71.25, 2015)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_bytes(b"today")
+        fetch = MagicMock()
+        monkeypatch.setattr(weather, "_fetch_era5_cell_years", fetch)
+        fetched = weather._ensure_era5_cells(
+            [(47.75, -71.25)], [2015], refetch=True
+        )
+        assert fetched == 0
+        assert path.read_bytes() == b"today"
+        fetch.assert_not_called()
 
 
 class TestFetchEra5CellYears:

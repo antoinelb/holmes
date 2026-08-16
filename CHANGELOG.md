@@ -11,6 +11,12 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 ## [Unreleased]
 
+### Changed
+- A freshly built data archive is roughly 190 MB instead of 418 MB: the climate projections, which were 83% of it, are stored at the float32 precision their source already carries and rounded to 0.01 mm/°C — finer than any observation — taking each station's product from 45 MB to 16.5 MB
+- Watershed outlines are stored once, as the WKB the server already parses for its centroids; the GeoJSON the map draws is derived per request (52 ms, once per session) instead of shipping a second copy of every polygon in the archive
+- `holmes download` skips the sources it already refetched today unless `--force`, so a second run on the same day no longer redownloads identical bytes
+- The websocket API moved from four `api_*.py` modules to a single `holmes.api` package (`api.py`, `calibration.py`, `projection.py`, `simulation.py`, `utils.py`)
+
 ### Fixed
 - The startup data sync now reports what it is doing: a first run says so explicitly and that the application starts right after, and the download shows a live megabyte counter instead of an unexplained multi-minute silence
 - Ctrl-C during the startup data sync now stops the application: the sync moved out of the uvicorn app factory, whose signal handler only sets an exit flag and so ignored the interrupt for the whole download; an interrupted download also clears its staging directory instead of stranding a partial archive

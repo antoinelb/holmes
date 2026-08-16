@@ -1,6 +1,7 @@
 import io
+import os
 import zipfile
-from datetime import date
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -44,6 +45,13 @@ def make_sync_client(monkeypatch, responses: list) -> MagicMock:
     client.__exit__ = MagicMock(return_value=False)
     monkeypatch.setattr(hydro.httpx, "Client", MagicMock(return_value=client))
     return client
+
+
+def backdate(path: Path) -> None:
+    # a file written by a test is today's, which fetch_streamflow now
+    # skips; ageing it by a day restores the "must refetch" case
+    stamp = (datetime.now() - timedelta(days=1)).timestamp()
+    os.utime(path, (stamp, stamp))
 
 
 def streamflow_body(id: str) -> str:
@@ -213,11 +221,10 @@ class TestGetWatersheds:
         data = hydro._get_watersheds(raw_stations, force=False)
         assert data.height == 3
         row = data.filter(pl.col("id") == "061004")
-        assert shapely.from_geojson(row[0, "geometry_geojson"]).equals(polygon)
-        assert (
-            data.filter(pl.col("id") == "061022")[0, "geometry_geojson"]
-            is None
-        )
+        assert shapely.from_wkb(row[0, "geometry"]).equals(polygon)
+        assert data.filter(pl.col("id") == "061022")[0, "geometry"] is None
+        # the geojson copy is derived by the server, never stored
+        assert "geometry_geojson" not in data.columns
         assert row[0, "elevation_layers"].to_list() == [300.0, 400.0]
         assert (
             tmp_data_dir / "raw" / "hydro" / "watersheds" / "watersheds.ipc"
@@ -521,8 +528,7 @@ class TestFetchStreamflow:
             MagicMock(text=streamflow_body(id)) for id in stations_df["id"]
         ]
         make_sync_client(monkeypatch, responses)
-        # force changes nothing; passed here to cover the uniform signature
-        hydro.fetch_streamflow(stations_df, force=True)
+        hydro.fetch_streamflow(stations_df)
         directory = tmp_data_dir / "raw" / "hydro" / "streamflow"
         for id in stations_df["id"]:
             data = pl.read_ipc(directory / f"{id}.ipc", memory_map=False)
@@ -539,6 +545,34 @@ class TestFetchStreamflow:
         # the staged writes leave no partial file behind
         assert not list(directory.glob("*.part"))
 
+    def test_skips_files_already_fetched_today(
+        self, tmp_data_dir, monkeypatch, stations_df
+    ):
+        directory = tmp_data_dir / "raw" / "hydro" / "streamflow"
+        directory.mkdir(parents=True)
+        for id in stations_df["id"]:
+            (directory / f"{id}.ipc").write_bytes(b"today")
+        client = make_sync_client(monkeypatch, [])
+        hydro.fetch_streamflow(stations_df)
+        client.get.assert_not_called()
+        for id in stations_df["id"]:
+            assert (directory / f"{id}.ipc").read_bytes() == b"today"
+
+    def test_force_refetches_a_file_from_today(
+        self, tmp_data_dir, monkeypatch, stations_df
+    ):
+        directory = tmp_data_dir / "raw" / "hydro" / "streamflow"
+        directory.mkdir(parents=True)
+        for id in stations_df["id"]:
+            (directory / f"{id}.ipc").write_bytes(b"today")
+        make_sync_client(
+            monkeypatch,
+            [MagicMock(text=streamflow_body(id)) for id in stations_df["id"]],
+        )
+        hydro.fetch_streamflow(stations_df, force=True)
+        for id in stations_df["id"]:
+            assert (directory / f"{id}.ipc").read_bytes() != b"today"
+
     def test_failure_with_previous_file_warns_and_keeps_it(
         self, tmp_data_dir, monkeypatch, stations_df
     ):
@@ -552,6 +586,7 @@ class TestFetchStreamflow:
             }
         )
         old.write_ipc(directory / "061004.ipc")
+        backdate(directory / "061004.ipc")
         make_sync_client(
             monkeypatch,
             [
@@ -584,6 +619,7 @@ class TestFetchStreamflow:
             }
         )
         old.write_ipc(directory / "061004.ipc")
+        backdate(directory / "061004.ipc")
         # the row matches the regex but is not a real date, so the failure
         # surfaces as a polars error rather than a ValueError
         bad_body = "Bassin versant: 500,5 km²\n061004 2020/13/45 1.5\n"

@@ -8,7 +8,7 @@ import numpy as np
 import polars as pl
 import pytest
 
-import holmes.api_projection as projection
+import holmes.api.projection as projection
 import holmes.data.hydro
 import holmes.data.projection
 import holmes.model

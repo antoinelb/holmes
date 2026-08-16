@@ -92,12 +92,11 @@ def fetch_streamflow(stations: pl.DataFrame, *, force: bool = False) -> None:
     """Refetch the full CEHQ streamflow file of every station.
 
     The source updates continuously and the files stay small (≤ ~1.2 MB),
-    so whole files are the accepted refetch granularity. A failed fetch
-    keeps a previous file with a warning, but raises when no previous file
+    so whole files are the accepted refetch granularity. A file already
+    fetched today is left alone unless `force`. A failed fetch keeps a
+    previous file with a warning, but raises when no previous file
     exists: the archive would otherwise miss a product.
     """
-    # force changes nothing (every run refetches); kept for uniformity
-    del force
     if "id" not in stations.columns or stations.height == 0:
         raise ValueError("No stations to fetch streamflow for.")
 
@@ -112,6 +111,9 @@ def fetch_streamflow(stations: pl.DataFrame, *, force: bool = False) -> None:
             path = (
                 paths.data_dir / "raw" / "hydro" / "streamflow" / f"{id}.ipc"
             )
+            if not force and paths.fetched_today(path):
+                progress.increment()
+                continue
             try:
                 data = _fetch_station_streamflow(client, id)
             # PolarsError covers parse failures past the regexes, e.g. a
@@ -183,18 +185,9 @@ def _get_watersheds(stations: pl.DataFrame, *, force: bool) -> pl.DataFrame:
         return pl.read_ipc(path, memory_map=False)
     watersheds = _download_watersheds(force=force)
     data = stations.select("id").join(watersheds, on="id", how="left")
-    data = data.with_columns(
-        pl.col("geometry")
-        .map_elements(
-            lambda wkb: (
-                shapely.to_geojson(shapely.from_wkb(wkb))
-                if wkb is not None
-                else None
-            ),
-            return_dtype=pl.String,
-        )
-        .alias("geometry_geojson"),
-    )
+    # the wkb is the only stored form: a second geojson copy of the same
+    # polygons cost more of the archive than every weather product
+    # combined, and the server already parses the wkb for its centroids
     dem = _get_dem_data(data, force=force)
     data = data.join(dem, on="id", how="left")
     _write_ipc(data, path)

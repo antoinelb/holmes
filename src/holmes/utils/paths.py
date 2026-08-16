@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import platformdirs
@@ -15,3 +16,17 @@ data_dir = (
     else Path(platformdirs.user_data_dir("holmes"))
 )
 results_dir = data_dir / "results"
+
+
+def fetched_today(path: Path) -> bool:
+    """True when `path` exists and was last written today, local time.
+
+    The sources that are refetched every run only grow as days accrue, so
+    a second run on the same day would download identical bytes. mtime is
+    trusted: every writer here stages a `.part` and renames it, which
+    carries the staged file's own mtime.
+    """
+    return (
+        path.exists()
+        and date.fromtimestamp(path.stat().st_mtime) == date.today()
+    )

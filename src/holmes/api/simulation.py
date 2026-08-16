@@ -9,9 +9,9 @@ from starlette.websockets import WebSocket
 import holmes.data.hydro
 import holmes.model
 
-# the coercers are api_calibration privates by convention, but shared here so
+# the coercers are calibration privates by convention, but shared here so
 # the two websocket APIs validate their common fields identically
-from holmes.api_calibration import (
+from holmes.api.calibration import (
     _coerce_floats,
     _coerce_int,
     _coerce_n_stations,
@@ -24,7 +24,7 @@ from holmes.api_calibration import (
 )
 from holmes.data.weather import WeatherMethod
 from holmes.model import HydroModel, SnowModel
-from holmes.utils.api import send
+from holmes.api.utils import send
 
 ##########
 # public #

@@ -21,7 +21,7 @@ from holmes.model import (
     Transformation,
 )
 from holmes.model_info import get_calibration_info
-from holmes.utils.api import send
+from holmes.api.utils import send
 
 #########
 # state #
@@ -63,7 +63,7 @@ def cleanup_calibration(ws: WebSocket) -> None:
             event.set()
 
 
-# the data/serialisation helpers below are public because api_simulation
+# the data/serialisation helpers below are public because simulation
 # shares them (and, through get_data, the memoised join)
 
 

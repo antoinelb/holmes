@@ -12,9 +12,9 @@ import httpx
 import pytest
 from starlette.websockets import WebSocketState
 
-import holmes.api
-import holmes.api_calibration
-import holmes.api_projection
+import holmes.api.api
+import holmes.api.calibration
+import holmes.api.projection
 import holmes.experiment
 import holmes.utils.paths
 
@@ -43,7 +43,7 @@ def tmp_data_dir(tmp_path, monkeypatch):
     results_dir.mkdir(parents=True)
     for module in (
         holmes.utils.paths,
-        holmes.api,
+        holmes.api.api,
     ):
         monkeypatch.setattr(module, "data_dir", data_dir)
     monkeypatch.setattr(holmes.utils.paths, "results_dir", results_dir)
@@ -71,13 +71,13 @@ def no_network(monkeypatch):
 def _reset_api_state(monkeypatch):
     # module-level caches leak between tests, and the asyncio locks remember
     # the first event loop that acquired them, so both get fresh replacements
-    monkeypatch.setattr(holmes.api_calibration, "_data_cache", {})
-    monkeypatch.setattr(holmes.api_calibration, "_data_lock", asyncio.Lock())
-    monkeypatch.setattr(holmes.api_projection, "_projection_cache", {})
+    monkeypatch.setattr(holmes.api.calibration, "_data_cache", {})
+    monkeypatch.setattr(holmes.api.calibration, "_data_lock", asyncio.Lock())
+    monkeypatch.setattr(holmes.api.projection, "_projection_cache", {})
     monkeypatch.setattr(
-        holmes.api_projection, "_projection_lock", asyncio.Lock()
+        holmes.api.projection, "_projection_lock", asyncio.Lock()
     )
-    monkeypatch.setattr(holmes.api_projection, "_simulation_cache", {})
+    monkeypatch.setattr(holmes.api.projection, "_simulation_cache", {})
 
 
 @pytest.fixture

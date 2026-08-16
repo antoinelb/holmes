@@ -12,9 +12,9 @@ import holmes.data.hydro
 import holmes.data.projection
 import holmes.model
 
-# the coercers are api_calibration privates by convention, but shared here so
+# the coercers are calibration privates by convention, but shared here so
 # the websocket APIs validate their common fields identically
-from holmes.api_calibration import (
+from holmes.api.calibration import (
     _coerce_floats,
     _coerce_int,
     _coerce_n_stations,
@@ -26,14 +26,14 @@ from holmes.api_calibration import (
 )
 from holmes.data.weather import WeatherMethod
 from holmes.model import HydroModel, SnowModel
-from holmes.utils.api import send
+from holmes.api.utils import send
 
 #########
 # state #
 #########
 
 # the per-station product is ~2.8M rows; the read is cheap ipc but not free,
-# so it is memoised like api_calibration._data_cache
+# so it is memoised like calibration._data_cache
 _projection_cache: dict[str, pl.DataFrame] = {}
 _projection_lock = asyncio.Lock()
 

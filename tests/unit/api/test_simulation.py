@@ -7,7 +7,7 @@ import holmes_rs
 import numpy as np
 import pytest
 
-import holmes.api_simulation as simulation
+import holmes.api.simulation as simulation
 import holmes.data.joined
 
 gr4j_defaults = list(holmes_rs.hydro.gr4j.init()[0])

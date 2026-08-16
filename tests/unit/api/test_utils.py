@@ -7,7 +7,7 @@ from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 from starlette.websockets import WebSocketState
 
-from holmes.utils.api import (
+from holmes.api.utils import (
     JSONResponse,
     convert_for_json,
     get_headers,

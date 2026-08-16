@@ -237,8 +237,12 @@ async def _build_products(stations: pl.DataFrame, *, rebuild: bool) -> None:
                 "scenario",
                 "member",
                 "datetime",
-                "precipitation",
-                "temperature",
+                # the values arrive as float32 off the wire and are mm/day
+                # and °C, where 0.01 is already finer than any observation:
+                # float64 would spend two thirds of the archive on noise
+                pl.col("precipitation", "temperature")
+                .round(2)
+                .cast(pl.Float32),
             )
             _write_ipc(data, _product_path(id_))
             progress.increment()

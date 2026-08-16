@@ -3,7 +3,8 @@ from pathlib import Path
 import uvicorn
 from starlette.applications import Starlette
 
-from . import api, config
+from . import config
+from .api import api
 from .data import archive
 from .utils.print import done_print
 

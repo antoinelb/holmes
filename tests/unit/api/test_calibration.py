@@ -8,7 +8,7 @@ import numpy as np
 import polars as pl
 import pytest
 
-import holmes.api_calibration as calibration
+import holmes.api.calibration as calibration
 import holmes.data.joined
 
 gr4j_defaults = list(holmes_rs.hydro.gr4j.init()[0])

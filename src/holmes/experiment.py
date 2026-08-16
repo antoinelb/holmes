@@ -10,7 +10,7 @@ import polars as pl
 
 import holmes.data
 import holmes.model
-import holmes.utils.api
+import holmes.api.utils
 import holmes.utils.config
 from holmes.utils.paths import results_dir
 from holmes.utils.plotting import named_colours
@@ -283,7 +283,7 @@ def _filter_with_warmup(
     warmup_years: int,
 ) -> tuple[pl.DataFrame, int]:
     # experiments key on the friendly name, unlike the websocket API's id, so
-    # this mirrors `api_calibration.filter_data_with_warmup` rather than
+    # this mirrors `calibration.filter_data_with_warmup` rather than
     # reusing it. the step count is the actual lead height, so a lead that
     # runs past the start of the record simply gets shorter
     start, end = period
@@ -312,7 +312,7 @@ def _update_experiment_list(experiment: Experiment) -> tuple[Path, str]:
         experiments = {}
 
     if hash_ not in experiments:
-        experiments[hash_] = holmes.utils.api.convert_for_json(
+        experiments[hash_] = holmes.api.utils.convert_for_json(
             experiment._asdict(), dates_as_str=True
         )
         experiments = dict(sorted(experiments.items()))

@@ -41,7 +41,6 @@ def stations_df() -> pl.DataFrame:
                 "area": 500.0,
                 "open": True,
                 "geometry": shapely.to_wkb(polygon),
-                "geometry_geojson": shapely.to_geojson(polygon),
                 "elevation_layers": [300.0, 400.0, 500.0, 600.0, 700.0],
             }
         )
@@ -59,7 +58,6 @@ def stations_df() -> pl.DataFrame:
             "area": pl.Float64,
             "open": pl.Boolean,
             "geometry": pl.Binary,
-            "geometry_geojson": pl.String,
             "elevation_layers": pl.List(pl.Float64),
         },
     )

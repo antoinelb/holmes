@@ -18,14 +18,12 @@ from starlette.routing import BaseRoute, Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-import holmes.api_calibration
-import holmes.api_projection
-import holmes.api_simulation
 import holmes.data.hydro
 import holmes.data.weather
+from holmes.api import calibration, projection, simulation
+from holmes.api.utils import send as _send
+from holmes.api.utils import with_path_params
 from holmes.model_info import get_model_info
-from holmes.utils.api import send as _send
-from holmes.utils.api import with_path_params
 from holmes.utils.paths import data_dir, static_dir
 from holmes.utils.print import done_print, warn_print
 
@@ -125,42 +123,40 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
             | "calibration_start"
             | "calibration_stop"
         ):
-            await holmes.api_calibration.handle_calibration_message(ws, msg)
+            await calibration.handle_calibration_message(ws, msg)
         case "simulation_data":
-            await holmes.api_simulation.handle_simulation_message(ws, msg)
+            await simulation.handle_simulation_message(ws, msg)
         case "projection_data":
-            await holmes.api_projection.handle_projection_message(ws, msg)
+            await projection.handle_projection_message(ws, msg)
         case _:
             await _send(ws, "error", f"Unknown message type {msg_type}.")
 
 
 async def _handle_stations_message(ws: WebSocket) -> None:
-    data = (
-        _with_centroids(
-            await asyncio.to_thread(holmes.data.hydro.get_station_data)
-        )
-        .drop("geometry")
-        .rename({"geometry_geojson": "geometry"})
+    data = _for_map(
+        await asyncio.to_thread(holmes.data.hydro.get_station_data)
     )
     await _send(ws, "stations", data)
 
 
-def _with_centroids(data: pl.DataFrame) -> pl.DataFrame:
-    """Watershed centroids, added for the map.
+def _for_map(data: pl.DataFrame) -> pl.DataFrame:
+    """Watershed outlines and centroids, both derived from the stored wkb.
 
-    Computed as the planar EPSG:32198 centroid — the same point the
+    Centroids are the planar EPSG:32198 centroid — the same point the
     nearest-stations selection measures distances to — so the markers and
     link lines anchor exactly where the picks were ranked from.
+    The geojson the map draws is derived here rather than stored: one
+    parse of the wkb serves both, and the archive carries one copy of
+    every polygon instead of two. Archives built before that still carry
+    the stored copy, dropped here so it never reaches the client.
     """
-    centroids = (
-        gpd.GeoSeries(
-            [shapely.from_wkb(geometry) for geometry in data["geometry"]],
-            crs="EPSG:4326",
-        )
-        .to_crs("EPSG:32198")
-        .centroid.to_crs("EPSG:4326")
+    shapes = gpd.GeoSeries(
+        [shapely.from_wkb(geometry) for geometry in data["geometry"]],
+        crs="EPSG:4326",
     )
-    return data.with_columns(
+    centroids = shapes.to_crs("EPSG:32198").centroid.to_crs("EPSG:4326")
+    return data.drop("geometry_geojson", strict=False).with_columns(
+        pl.Series("geometry", [shapely.to_geojson(shape) for shape in shapes]),
         pl.Series("centroid_lat", [point.y for point in centroids]),
         pl.Series("centroid_lon", [point.x for point in centroids]),
     )
@@ -315,7 +311,7 @@ async def _cleanup_websocket(ws: WebSocket) -> None:
     # cancelling an asyncio.to_thread task does not stop its worker thread; the
     # stop events are what actually terminate the running SCE loops, so set them
     # before awaiting the task cancellations below
-    holmes.api_calibration.cleanup_calibration(ws)
+    calibration.cleanup_calibration(ws)
 
     # cancel any pending tasks
     if hasattr(ws.state, "tasks"):

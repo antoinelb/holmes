@@ -1,7 +1,7 @@
 import base64
 from unittest.mock import AsyncMock, MagicMock
 
-import holmes.api
+import holmes.api.api
 
 black_tile = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
@@ -42,7 +42,7 @@ class TestMapTiles:
         http.__aenter__ = AsyncMock(return_value=http)
         http.__aexit__ = AsyncMock(return_value=False)
         monkeypatch.setattr(
-            holmes.api.httpx, "AsyncClient", MagicMock(return_value=http)
+            holmes.api.api.httpx, "AsyncClient", MagicMock(return_value=http)
         )
         resp = client.get("/map/3/1/2.png")
         assert resp.status_code == 200
@@ -51,7 +51,7 @@ class TestMapTiles:
 
     def test_failure_returns_black_pixel(self, client, monkeypatch):
         monkeypatch.setattr(
-            holmes.api, "_download_map_tile", AsyncMock(return_value=False)
+            holmes.api.api, "_download_map_tile", AsyncMock(return_value=False)
         )
         resp = client.get("/map/3/1/2.png")
         assert resp.status_code == 200
