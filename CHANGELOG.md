@@ -9,7 +9,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
-## [Unreleased]
+## [4.5.0] - 2026-08-16
 
 ### Added
 - `holmes run` opens the dashboard in the default browser once the server is up, as it did in 3.x; debug mode still leaves the browser alone so a reload does not reopen a tab, and a machine without a browser only warns and keeps serving
