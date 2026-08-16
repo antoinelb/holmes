@@ -117,8 +117,11 @@ def make_processed_dataset(
 
 
 def make_response(content: bytes) -> MagicMock:
+    # doubles as its own context manager, since the grids are streamed
     resp = MagicMock()
     resp.content = content
+    resp.iter_bytes.return_value = [content]
+    resp.__enter__.return_value = resp
     return resp
 
 
@@ -1139,8 +1142,8 @@ class TestMinistryGridFile:
         body = source_path.read_bytes()
         monkeypatch.setattr(
             weather.httpx,
-            "get",
-            lambda url, **kwargs: make_response(body),
+            "stream",
+            lambda method, url, **kwargs: make_response(body),
         )
         path = weather._ministry_grid_file("PREC_2015.nc")
         assert path is not None
@@ -1150,14 +1153,16 @@ class TestMinistryGridFile:
     def test_http_error_returns_none(self, tmp_data_dir, monkeypatch):
         resp = make_response(b"")
         resp.raise_for_status.side_effect = RuntimeError("503")
-        monkeypatch.setattr(weather.httpx, "get", lambda url, **kwargs: resp)
+        monkeypatch.setattr(
+            weather.httpx, "stream", lambda method, url, **kwargs: resp
+        )
         assert weather._ministry_grid_file("PREC_2015.nc") is None
 
     def test_corrupt_body_returns_none(self, tmp_data_dir, monkeypatch):
         monkeypatch.setattr(
             weather.httpx,
-            "get",
-            lambda url, **kwargs: make_response(b"<html>error</html>"),
+            "stream",
+            lambda method, url, **kwargs: make_response(b"<html>error</html>"),
         )
         assert weather._ministry_grid_file("PREC_2015.nc") is None
         directory = tmp_data_dir / "raw" / "weather" / "ministry_grid"

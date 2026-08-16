@@ -48,10 +48,6 @@ era5_resolution = 0.25
 # converted before the daily reduction rather than after
 local_timezone = "America/Montreal"
 
-# CDS throttles concurrent requests per user; four keeps a cold cache
-# moving without tripping the limit
-era5_max_workers = 4
-
 # ERA5 begins in 1940, but station 061004 records from 1910; asking for
 # the earlier years errors, so requests are clamped. CDS clips the recent
 # end on its own, following the few-day reanalysis lag.
@@ -88,10 +84,6 @@ ministry_grid_base_url = (
 
 # the grids start in 1940, like era5; earlier years simply do not exist
 ministry_grid_start_year = 1940
-
-# grid downloads are network-bound and independent, so a cold cache
-# fetches them concurrently; four is polite to the ministry's blob store
-ministry_grid_max_workers = 4
 
 # nearest-station picks are bounded by the UI slider
 min_n_stations = 1
@@ -464,15 +456,16 @@ def _ensure_era5_cells(
     # what to do about it
     _check_era5_credentials()
 
-    # requests are network-bound and independent, so they overlap; the pool
-    # is bounded because CDS rejects too many concurrent jobs
+    # requests are network-bound and independent, so every cell is
+    # submitted at once; CDS queues what it will not run concurrently and
+    # cdsapi polls until each job comes up
     with progress_task(
         "Fetching ERA5 cells...",
         f"Fetched {len(needed)} ERA5 cells.",
         total=len(needed),
     ) as current:
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=era5_max_workers
+            max_workers=len(needed)
         ) as pool:
             futures = [
                 pool.submit(
@@ -520,7 +513,9 @@ def _download_era5_cell_range(
     The timeseries dataset returns a small csv per point rather than a
     gridded field, so decades of hourly data cost a few MB per cell.
     """
-    client = cdsapi.Client()
+    # quiet: CDS logs a request id and every queue status change per cell,
+    # which drowns the download's own progress output
+    client = cdsapi.Client(quiet=True)
 
     with tempfile.TemporaryDirectory() as directory:
         archive = Path(directory) / "cell.zip"
@@ -646,7 +641,9 @@ def _compute_era5_means(
 
 def _check_era5_credentials() -> None:
     try:
-        cdsapi.Client()
+        # quiet here too: the logger is shared class state, so a single
+        # loud client leaves an INFO handler behind for every later one
+        cdsapi.Client(quiet=True)
     except Exception as exc:
         raise RuntimeError(
             "Missing ERA5 cell data has to be fetched from Copernicus. "
@@ -937,7 +934,7 @@ def _download_ministry_grid_files(names: list[str]) -> None:
         total=len(missing),
     ) as current:
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=ministry_grid_max_workers
+            max_workers=len(missing)
         ) as pool:
             for _ in pool.map(_ministry_grid_file, missing):
                 current.increment()
@@ -956,18 +953,24 @@ def _ministry_grid_file(name: str) -> Path | None:
 
     staged = path.with_suffix(".part")
     try:
-        response = httpx.get(
+        path.parent.mkdir(exist_ok=True, parents=True)
+        # streamed to disk rather than buffered: every missing grid is
+        # fetched at once, and a cold cache holding one whole NetCDF in
+        # memory per thread would not fit
+        with httpx.stream(
+            "GET",
             ministry_grid_base_url + name,
             timeout=300.0,
             follow_redirects=True,
-        )
-        response.raise_for_status()
+        ) as response:
+            response.raise_for_status()
+            with staged.open("wb") as file:
+                for chunk in response.iter_bytes():
+                    file.write(chunk)
 
-        path.parent.mkdir(exist_ok=True, parents=True)
         # a truncated body, or an error page served in place of the file,
         # would otherwise be cached as if it were data and fail on every
         # later read
-        staged.write_bytes(response.content)
         xr.open_dataset(staged).close()
         staged.replace(path)
 

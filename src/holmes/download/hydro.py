@@ -250,59 +250,67 @@ def _download_watersheds(*, force: bool) -> pl.DataFrame:
                     if _path.is_dir():
                         _path.rmdir()
 
-        shapes = gpd.read_file(path)
-        watersheds_ = pl.DataFrame(
-            {
-                column: shapes[column].to_list()
-                for column in shapes.columns
-                if column != "geometry"
-            }
-        ).with_columns(
-            # .to_list(): polars needs pyarrow (not a dependency here) to
-            # ingest a pandas series, but takes a plain list of bytes as is
-            pl.Series(
-                "geometry",
-                shapes.geometry.to_wkb().to_list(),
-                dtype=pl.Binary,
+        # every vertex goes through pyproj one geometry at a time, which
+        # is seconds of silence per shapefile without a task around it
+        with task(
+            f"Reprojecting {name} watersheds...",
+            f"Reprojected {name} watersheds.",
+        ):
+            shapes = gpd.read_file(path)
+            watersheds_ = pl.DataFrame(
+                {
+                    column: shapes[column].to_list()
+                    for column in shapes.columns
+                    if column != "geometry"
+                }
+            ).with_columns(
+                # .to_list(): polars needs pyarrow (not a dependency here)
+                # to ingest a pandas series, but takes a plain list of
+                # bytes as is
+                pl.Series(
+                    "geometry",
+                    shapes.geometry.to_wkb().to_list(),
+                    dtype=pl.Binary,
+                )
             )
-        )
-        if name == "closed":
-            watersheds_ = (
-                watersheds_.rename({"tp": "id"})
-                .sort("Sup_Km", descending=True)
-                .group_by("id")
-                .first()
-            )
-        else:
-            watersheds_ = (
-                watersheds_.rename({"Station": "id"})
-                .sort("Sup_Diffus", descending=True)
-                .group_by("id")
-                .first()
-            )
+            if name == "closed":
+                watersheds_ = (
+                    watersheds_.rename({"tp": "id"})
+                    .sort("Sup_Km", descending=True)
+                    .group_by("id")
+                    .first()
+                )
+            else:
+                watersheds_ = (
+                    watersheds_.rename({"Station": "id"})
+                    .sort("Sup_Diffus", descending=True)
+                    .group_by("id")
+                    .first()
+                )
 
-        # open watersheds ship in EPSG:4269, closed in EPSG:32198; both are
-        # reprojected to lat/lon so downstream code sees one CRS
-        from_crs = "EPSG:4269" if name == "open" else "EPSG:32198"
-        transformer = pyproj.Transformer.from_crs(
-            from_crs, "EPSG:4326", always_xy=True
-        ).transform
-        watersheds_ = watersheds_.with_columns(
-            pl.col("geometry").map_elements(
-                lambda wkb: (
-                    shapely.to_wkb(
-                        shapely.ops.transform(
-                            transformer, shapely.from_wkb(wkb)
+            # open watersheds ship in EPSG:4269, closed in EPSG:32198;
+            # both are reprojected to lat/lon so downstream code sees one
+            # CRS
+            from_crs = "EPSG:4269" if name == "open" else "EPSG:32198"
+            transformer = pyproj.Transformer.from_crs(
+                from_crs, "EPSG:4326", always_xy=True
+            ).transform
+            watersheds_ = watersheds_.with_columns(
+                pl.col("geometry").map_elements(
+                    lambda wkb: (
+                        shapely.to_wkb(
+                            shapely.ops.transform(
+                                transformer, shapely.from_wkb(wkb)
+                            )
                         )
-                    )
-                    if wkb
-                    else None
-                ),
-                return_dtype=pl.Binary,
+                        if wkb
+                        else None
+                    ),
+                    return_dtype=pl.Binary,
+                )
             )
-        )
 
-        _watersheds.append(watersheds_.select("id", "geometry"))
+            _watersheds.append(watersheds_.select("id", "geometry"))
 
     return pl.concat(_watersheds)
 
