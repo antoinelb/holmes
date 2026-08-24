@@ -15,8 +15,6 @@ v2
 
 target/
 
-CLAUDE.md
-.claude
 site/
 .playwright-mcp/
 perrin
