@@ -14,6 +14,7 @@ expected_order = [
     "rebuild_grids",
     "build_projection_data",
     "build_joined_data",
+    "download_tiles",
 ]
 
 
@@ -55,6 +56,9 @@ def download_world(monkeypatch, stations_df: pl.DataFrame):
         "build_joined_data",
         record("build_joined_data"),
     )
+    monkeypatch.setattr(
+        holmes.download.tiles, "download_tiles", record("download_tiles")
+    )
     return calls
 
 
@@ -84,6 +88,7 @@ class TestRunDownload:
             "build_station_data",
             "update_stations_backfill",
             "rebuild_completed_stations",
+            "download_tiles",
         ):
             args, _ = by_name[name]
             assert args == ()
@@ -100,6 +105,7 @@ class TestRunDownload:
             "update_ministry_grid": False,
             "update_stations_backfill": False,
             "build_projection_data": False,
+            "download_tiles": False,
         }
         for name in (
             "rebuild_completed_stations",
@@ -119,4 +125,4 @@ class TestRunDownload:
             for _, _, kwargs in download_world
             if "force" in kwargs
         ]
-        assert forced == [True] * 6
+        assert forced == [True] * 7

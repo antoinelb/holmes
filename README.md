@@ -45,7 +45,7 @@ holmes package      # maintainers: zip the built products into data-YYYY-MM-DD.z
 
 The server never builds data.
 Starting it with `holmes run` compares the newest `data-YYYY-MM-DD.zip` asset on the repo's rolling [`data` release](https://github.com/antoinelb/holmes/releases/tag/data) against its local copy, and downloads and extracts the archive if it is newer — the terminal shows the progress, old data keeps being served during the swap, and no credentials are ever needed to run the app.
-Data lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows), overridable with `HOLMES_DATA_DIR`; map tiles are the one exception, still fetched lazily from CartoDB.
+Data lives in the per-user data directory (`~/.local/share/holmes` on Linux, `~/Library/Application Support/holmes` on macOS, `%LOCALAPPDATA%\holmes\holmes` on Windows), overridable with `HOLMES_DATA_DIR`; the map tiles ship in the archive too, so nothing is fetched after the sync.
 
 Rebuilding the archive is the maintainer path.
 `holmes download` builds every product incrementally from its true source: daily re-runs only fetch the current year (plus the previous year in January) for ERA5 and the ministry grid, always refresh the small streamflow files, recompute the cheap derived products, and skip the static ones (station data, projections).

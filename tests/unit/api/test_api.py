@@ -87,23 +87,7 @@ class TestGetMapTile:
         resp = await api._get_map_tile(make_request({"x": 1, "y": 2, "z": 3}))
         assert resp.status_code == 200
 
-    async def test_downloads_on_miss(self, tmp_data_dir, monkeypatch):
-        async def download(x, y, z):
-            path = tmp_data_dir / "map" / f"tile_{z}_{x}_{y}.png"
-            path.parent.mkdir(exist_ok=True, parents=True)
-            path.write_bytes(b"png")
-            return True
-
-        monkeypatch.setattr(api, "_download_map_tile", download)
-        resp = await api._get_map_tile(make_request({"x": 1, "y": 2, "z": 3}))
-        assert resp.status_code == 200
-
-    async def test_failure_returns_black_pixel(
-        self, tmp_data_dir, monkeypatch
-    ):
-        monkeypatch.setattr(
-            api, "_download_map_tile", AsyncMock(return_value=False)
-        )
+    async def test_missing_tile_returns_black_pixel(self, tmp_data_dir):
         resp = await api._get_map_tile(make_request({"x": 1, "y": 2, "z": 3}))
         assert resp.body == black_tile
         assert resp.headers["content-type"] == "image/png"
@@ -314,37 +298,6 @@ class TestLoadStreamflow:
         )
         await api._load_streamflow(fake_ws, "061004")
         assert fake_ws.sent[0]["type"] == "error"
-
-
-class TestDownloadMapTile:
-    @staticmethod
-    def make_client(resp=None, error=None) -> MagicMock:
-        client = MagicMock()
-        client.get = AsyncMock(return_value=resp, side_effect=error)
-        client.__aenter__ = AsyncMock(return_value=client)
-        client.__aexit__ = AsyncMock(return_value=False)
-        return MagicMock(return_value=client)
-
-    async def test_success_caches_tile(self, tmp_data_dir, monkeypatch):
-        resp = MagicMock(status_code=200, content=b"png")
-        monkeypatch.setattr(api.httpx, "AsyncClient", self.make_client(resp))
-        assert await api._download_map_tile(1, 2, 3)
-        assert (tmp_data_dir / "map" / "tile_3_1_2.png").read_bytes() == (
-            b"png"
-        )
-
-    async def test_http_error_returns_false(self, tmp_data_dir, monkeypatch):
-        resp = MagicMock(status_code=404)
-        monkeypatch.setattr(api.httpx, "AsyncClient", self.make_client(resp))
-        assert not await api._download_map_tile(1, 2, 3)
-
-    async def test_exception_returns_false(self, tmp_data_dir, monkeypatch):
-        monkeypatch.setattr(
-            api.httpx,
-            "AsyncClient",
-            self.make_client(error=RuntimeError("no network")),
-        )
-        assert not await api._download_map_tile(1, 2, 3)
 
 
 class TestCleanupWebsocket:

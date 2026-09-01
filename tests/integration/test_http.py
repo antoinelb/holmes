@@ -1,7 +1,4 @@
 import base64
-from unittest.mock import AsyncMock, MagicMock
-
-import holmes.api.api
 
 black_tile = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
@@ -32,27 +29,7 @@ class TestMapTiles:
         assert resp.status_code == 200
         assert resp.content == b"cached png"
 
-    def test_miss_downloads_and_caches(
-        self, client, tmp_data_dir, monkeypatch
-    ):
-        http = MagicMock()
-        http.get = AsyncMock(
-            return_value=MagicMock(status_code=200, content=b"fresh png")
-        )
-        http.__aenter__ = AsyncMock(return_value=http)
-        http.__aexit__ = AsyncMock(return_value=False)
-        monkeypatch.setattr(
-            holmes.api.api.httpx, "AsyncClient", MagicMock(return_value=http)
-        )
-        resp = client.get("/map/3/1/2.png")
-        assert resp.status_code == 200
-        assert resp.content == b"fresh png"
-        assert (tmp_data_dir / "map" / "tile_3_1_2.png").exists()
-
-    def test_failure_returns_black_pixel(self, client, monkeypatch):
-        monkeypatch.setattr(
-            holmes.api.api, "_download_map_tile", AsyncMock(return_value=False)
-        )
+    def test_missing_tile_returns_black_pixel(self, client):
         resp = client.get("/map/3/1/2.png")
         assert resp.status_code == 200
         assert resp.content == black_tile

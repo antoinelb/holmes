@@ -4,7 +4,6 @@ import importlib.metadata
 from typing import Any, cast, get_args
 
 import geopandas as gpd
-import httpx
 import polars as pl
 import shapely
 from starlette.requests import Request
@@ -81,21 +80,19 @@ async def _websocket(ws: WebSocket) -> None:
 
 @with_path_params(args=["x", "y", "z"])
 async def _get_map_tile(_: Request, x: int, y: int, z: int) -> Response:
+    # read-only: the tiles ship in the data archive (Carto needs an API
+    # key now, so the server can no longer fetch them lazily)
     path = data_dir / "map" / f"tile_{z}_{x}_{y}.png"
     if path.exists():
         return FileResponse(str(path))
+    # return a black tile if the tile isn't available
     else:
-        # download the tile before sending the cached version
-        if await _download_map_tile(x, y, z):
-            return FileResponse(str(path))
-        # return a black tile if the tile isn't available
-        else:
-            return Response(
-                base64.b64decode(
-                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
-                ),
-                media_type="image/png",
-            )
+        return Response(
+            base64.b64decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+            ),
+            media_type="image/png",
+        )
 
 
 ###########
@@ -283,28 +280,6 @@ async def _load_streamflow(ws: WebSocket, station: str) -> None:
 async def _handle_model_info_message(ws: WebSocket) -> None:
     # descriptions are static and instant, so no task tracking is needed
     await _send(ws, "model_info", get_model_info())
-
-
-async def _download_map_tile(x: int, y: int, z: int) -> bool:
-    url = "https://{s}.basemaps.cartocdn.com/{style}/{z}/{x}/{y}.png"
-    subdomains = ["a", "b", "c", "d"]
-    style = "dark_all"
-    path = data_dir / "map" / f"tile_{z}_{x}_{y}.png"
-
-    subdomain = subdomains[(int(x) + int(y)) % len(subdomains)]
-    url = url.format(s=subdomain, style=style, z=z, x=x, y=y)
-
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.get(url)
-            if resp.status_code == 200:
-                path.parent.mkdir(exist_ok=True, parents=True)
-                path.write_bytes(resp.content)
-                return True
-            else:
-                return False
-    except Exception:
-        return False
 
 
 async def _cleanup_websocket(ws: WebSocket) -> None:

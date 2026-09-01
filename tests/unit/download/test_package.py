@@ -24,8 +24,9 @@ class TestArchiveManifest:
     def test_lists_every_product_relative_to_data_dir(self):
         manifest = package.archive_manifest()
 
-        assert len(manifest) == 45
-        assert len(set(manifest)) == 45
+        # 45 data products + the 3400-tile basemap pyramid
+        assert len(manifest) == 3445
+        assert len(set(manifest)) == 3445
         assert all(not entry.is_absolute() for entry in manifest)
 
         names = {entry.as_posix() for entry in manifest}
@@ -46,6 +47,8 @@ class TestArchiveManifest:
         assert "raw/weather/stations_completed/7060225.ipc" in names
         assert "raw/data_era5.ipc" in names
         assert "raw/data_ministry_grid.ipc" in names
+        assert "map/tile_9_150_176.png" in names
+        assert "map/tile_12_1263_1447.png" in names
 
 
 class TestBuildArchive:
@@ -74,7 +77,7 @@ class TestBuildArchive:
         assert output.exists()
         assert not output.with_suffix(".part").exists()
         with zipfile.ZipFile(output) as archive:
-            assert len(archive.namelist()) == 45
+            assert len(archive.namelist()) == 3445
 
     def test_missing_products_are_all_reported(
         self, seeded_data_dir, tmp_path

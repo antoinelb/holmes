@@ -12,6 +12,7 @@ from pathlib import Path
 from holmes.data.archive import MissingDataError
 from holmes.data.hydro import STATIONS
 from holmes.data.weather import stations_backfill_file, stations_files
+from holmes.download.tiles import tile_paths
 from holmes.download.weather import max_n_stations, min_n_stations
 
 # paths is imported as a module (not `from ... import data_dir`) so tests
@@ -53,6 +54,7 @@ def archive_manifest() -> list[Path]:
         raw / "data_era5.ipc",
         raw / "data_ministry_grid.ipc",
         *(raw / f"data_nearest_stations_{n}.ipc" for n in n_range),
+        *tile_paths(),
     ]
 
 

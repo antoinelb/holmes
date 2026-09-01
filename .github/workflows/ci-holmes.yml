@@ -120,9 +120,9 @@ jobs:
       - name: Restore data archive
         # e2e boots the real server, which never builds data: extract the
         # latest dated zip from the rolling `data` release. The marker
-        # keeps the data dir in the state a synced install is in. Map
-        # tiles are not pre-seeded; the server fetches them lazily from
-        # CartoDB.
+        # keeps the data dir in the state a synced install is in. The
+        # archive includes the pre-rendered map tiles, so the run needs
+        # no Carto access.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -23,6 +23,7 @@ jobs:
       HOLMES_DATA_DIR: data
       CDSAPI_URL: https://cds.climate.copernicus.eu/api
       CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
+      CARTO_KEY: ${{ secrets.CARTO_KEY }}
     steps:
       - uses: actions/checkout@v4
 

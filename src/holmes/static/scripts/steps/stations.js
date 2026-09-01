@@ -714,7 +714,14 @@ function hoverRole(element) {
 
 function initMapView(map) {
   if (Object.keys(map._layers).length == 0) {
-    map.setView([48.25, -71.35], 10);
+    map.setView([48.25, -71.35], 9);
+    // mirrors the pre-downloaded tile rectangle in download/tiles.py:
+    // the tiles ship in the data archive, so panning past them would
+    // only show blank tiles
+    map.setMaxBounds([
+      [46.558, -74.531],
+      [48.922, -68.906],
+    ]);
     L.tileLayer("/map/{z}/{x}/{y}.png", {
       minZoom: 9,
       maxZoom: 12,

@@ -9,6 +9,12 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 
 <!-- changelog-start -->
 
+## [Unreleased]
+
+### Changed
+- Carto now requires an API key for its basemap tiles, so the server no longer fetches them lazily: `holmes download` fetches the fixed Saguenay pyramid (zooms 9–12, 3400 tiles) with the maintainer's `CARTO_KEY`, the data archive ships the tiles like every other product, and the tile route serves them read-only — the app is fully offline after the startup sync
+- The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
+
 ## [4.5.0] - 2026-08-16
 
 ### Added
