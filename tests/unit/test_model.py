@@ -206,6 +206,21 @@ class TestSimulate:
         assert simulation.shape == (model_data.height,)
         assert np.all(np.isfinite(simulation))
 
+    # regression: the projection products store float32 forcing (archive
+    # size), and rust-numpy refuses to cast a float32 borrow to f64
+    def test_float32_forcing(self, model_data):
+        simulation = simulate(
+            model_data.drop("streamflow").with_columns(
+                pl.col("precipitation", "temperature").cast(pl.Float32)
+            ),
+            "gr4j",
+            "cemaneige",
+            hydro_params=gr4j_defaults,
+            snow_params=np.array([0.25, 3.74, 300.0]),
+        )
+        assert simulation.shape == (model_data.height,)
+        assert np.all(np.isfinite(simulation))
+
 
 class TestEvaluateSimulationMetrics:
     def test_nominal(self):

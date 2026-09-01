@@ -15,6 +15,9 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - Carto now requires an API key for its basemap tiles, so the server no longer fetches them lazily: `holmes download` fetches the fixed Saguenay pyramid (zooms 9–12, 3400 tiles) with the maintainer's `CARTO_KEY`, the data archive ships the tiles like every other product, and the tile route serves them read-only — the app is fully offline after the startup sync
 - The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
 
+### Fixed
+- The projection step failed on the float32 forcing the products store since 4.5.0 (`'ndarray' object cannot be cast as 'ndarray'`): the model layer now casts to float64 at the Rust boundary
+
 ## [4.5.0] - 2026-08-16
 
 ### Added

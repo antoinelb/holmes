@@ -802,7 +802,10 @@ def _prepare_data(
 def _fill_missing(
     data: npt.NDArray[np.float64], variable: str
 ) -> npt.NDArray[np.float64]:
-    data = data.copy()
+    # astype both casts and copies: the rust boundary is f64-only, but the
+    # projection products store float32 (archive size), and rust-numpy
+    # refuses to cast on a readonly borrow
+    data = data.astype(np.float64)
     is_nan = np.isnan(data)
     if (is_nan & (np.r_[True, is_nan[:-1]] | np.r_[is_nan[1:], True])).any():
         raise RuntimeError(
