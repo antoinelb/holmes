@@ -28,7 +28,9 @@ dependencies = [
     "polars>=1.41.0",
     "starlette>=1.0.0",
     "typer>=0.26.3",
-    "uvicorn>=0.47.0",
+    # [standard] for watchfiles (without it the reloader stat-polls every
+    # .py under src/ four times a second) plus uvloop and httptools
+    "uvicorn[standard]>=0.47.0",
     "vl-convert-python>=1.9.0",
     "websockets>=16.0",
 ]
