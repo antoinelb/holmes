@@ -1,12 +1,19 @@
-"""E2E coverage of the projection step's indicators chart.
+"""E2E coverage of the projection step's two charts.
 
-The chart is the only one whose reference ticks are raised after every
-draw, which is how its legend swatches once ended up outside the SVG:
-they carry the same `series-tick` class as the data ticks. The legend
-assertion below is the regression guard for that.
+The indicators chart is the only one whose reference ticks are raised
+after every draw, which is how its legend swatches once ended up outside
+the SVG: they carry the same `series-tick` class as the data ticks. The
+legend assertion below is the regression guard for that.
+
+Its y scale is also broken into two segments, and the guard for that is
+`test_indicators_split_scale`: the previous scale broke the *domain* but
+gave both segments the same slope, so it rendered as one linear axis and
+the low-flow columns kept no visible spread.
 """
 
-from playwright.sync_api import Page, expect
+import re
+
+from playwright.sync_api import Locator, Page, expect
 
 from tests.e2e.drivers import (
     digit_re,
@@ -53,7 +60,89 @@ def test_indicators_chart(page: Page, base_url: str) -> None:
     assert page.locator("#projection__indicators figcaption").count() == 0
 
 
+def test_indicators_split_scale(page: Page, base_url: str) -> None:
+    goto_projection(page)
+
+    svg = page.locator("#projection__indicators-svg")
+    # the glyph marks the break; everything else is read relative to it
+    breaks = svg.locator("line.axis-break")
+    assert breaks.count() == 2
+    middle = sum(attribute_values(breaks, "y1")) / 2
+
+    ticks = axis_ticks(svg.locator("g.y-axis"))
+    low = [tick for tick in ticks if tick[1] > middle]
+    high = [tick for tick in ticks if tick[1] < middle]
+    assert len(low) >= 2, ticks
+    assert len(high) >= 2, ticks
+
+    # the point of the break: the two halves must not share a slope, or the
+    # minima stay crushed under the freshet as they were before
+    assert band_slope(low) > 2 * band_slope(high), (low, high)
+
+    # and the break is a band of whitespace, not a hairline: nothing is drawn
+    # within 5 px either side of it
+    for selector, attribute in (
+        ("line.grid-horizontal", "y1"),
+        ("circle.series-point--member", "cy"),
+        (":scope > line.series-tick", "y1"),
+        ("g.y-axis g.tick text", None),
+    ):
+        marks = (
+            [tick[1] for tick in ticks]
+            if attribute is None
+            else attribute_values(svg.locator(selector), attribute)
+        )
+        for value in marks:
+            assert abs(value - middle) >= 5, (selector, value, middle)
+
+
+def test_regime_month_labels_clear_the_y_axis(
+    page: Page, base_url: str
+) -> None:
+    goto_projection(page)
+
+    svg = page.locator("#projection__regime-svg")
+    # "Jan" is centred on the y axis, where the 0 tick is pinned to the
+    # baseline; the month row has to sit below it rather than through it
+    jan_text = svg.locator("g.x-axis g.tick text").first
+    zero_text = svg.locator("g.y-axis g.tick text").first
+    assert zero_text.text_content() == "0"
+    jan = jan_text.bounding_box()
+    zero = zero_text.bounding_box()
+    assert jan is not None and zero is not None
+    assert jan["y"] >= zero["y"] + zero["height"], (jan, zero)
+    # and the labels stay inside the SVG rather than clipping on the descender
+    plot = svg.bounding_box()
+    assert plot is not None
+    assert jan["y"] + jan["height"] <= plot["y"] + plot["height"], (jan, plot)
+
+
 #### helpers ####
+
+
+# [(value, y)] sorted by value; d3 positions each tick group with a
+# translate, which keeps everything in the SVG's own units
+def axis_ticks(axis: Locator) -> list[tuple[float, float]]:
+    ticks = []
+    for tick in axis.locator("g.tick").all():
+        transform = tick.get_attribute("transform") or ""
+        match = re.search(r"translate\(([^,]+),\s*([^)]+)\)", transform)
+        assert match, transform
+        text = tick.locator("text").text_content()
+        assert text
+        ticks.append((float(text), float(match.group(2))))
+    return sorted(ticks)
+
+
+def band_slope(band: list[tuple[float, float]]) -> float:
+    return (band[0][1] - band[-1][1]) / (band[-1][0] - band[0][0])
+
+
+def attribute_values(locator: Locator, attribute: str) -> list[float]:
+    return [
+        float(element.get_attribute(attribute) or "nan")
+        for element in locator.all()
+    ]
 
 
 def goto_projection(page: Page) -> None:

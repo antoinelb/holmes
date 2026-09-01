@@ -24,6 +24,8 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - Websocket problems were undiagnosable from the silent server console: it now narrates connects and disconnects, logs every reply with its payload size and elapsed time, times each model's calibration, mirrors every error sent to the client, and runs uvicorn at the warning level so dev-reload restarts are visible
 - The projection step failed on the float32 forcing the products store since 4.5.0 (`'ndarray' object cannot be cast as 'ndarray'`): the model layer now casts to float64 at the Rust boundary
 - The projection indicators legend showed its two labels with no line beside either: the hover highlight raised every `.series-tick` to the SVG root, which caught the legend swatches too and moved them out of the translated group that positions them
+- The projection indicators chart drew its broken y axis with the same slope on both sides of the break — the low segment carried 2 mm/day over 58 % of the height and the high segment about as much over the rest — so it read as one linear axis and the two minima columns kept no visible spread. The seasonal minima and maxima now get a scale each, separated by a band of whitespace: the low one is floored at 0 and reaches the minima's own maximum, the high one spans the maxima alone, and each column declares which band it belongs to (the two maxima can sit further apart than either sits from the minima, so the split cannot be inferred from the values)
+- The regime chart's month labels overlapped the `0` of its y axis, which is pinned to the baseline directly under `Jan`; the month row now sits clear of it
 
 ## [4.5.0] - 2026-08-16
 

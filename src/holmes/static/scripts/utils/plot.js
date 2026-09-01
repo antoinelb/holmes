@@ -292,11 +292,13 @@ export function regimeView(_svg, series, { label = null } = {}) {
   svg.selectAll("*").remove();
   svg.attr("viewBox", `0 0 ${width} ${height}`);
 
+  // deeper bottom margin than the other views: regimeXAxis pads its month
+  // labels away from the 0 tick, and the descenders still have to fit
   const boundaries = {
     l: label ? 62 : 32,
     r: width - 25,
     t: 5,
-    b: height - 20,
+    b: height - 30,
   };
 
   const xScale = d3
@@ -336,18 +338,17 @@ export function regimeView(_svg, series, { label = null } = {}) {
   regimeBrushView(svg, xScale, boundaries, line);
 }
 
-// all indicators on one figure: five categorical columns sharing a split
-// (polylinear) y scale broken at `breakValue`, so the low-flow indicators
-// keep `lowFraction` of the height instead of being crushed by the freshet;
-// dots are one per (hydro model, member), the ticks the ensemble median and
-// the historical reference
-// columns: [{key, label, dots: [{model, value}], median, historical}]
+// all indicators on one figure: four categorical columns sharing a split
+// (polylinear) y scale, so the low-flow indicators keep `lowFraction` of the
+// height instead of being crushed by the freshet; dots are one per (hydro
+// model, member), the ticks the ensemble median and the historical reference
+// columns: [{key, label, band, dots: [{model, value}], median, historical}]
 export function splitColumnView(
   _svg,
   columns,
   {
-    breakValue = 2,
-    lowFraction = 0.58,
+    lowFraction = 0.5,
+    gap = 24,
     historicalLabel = t("historical", "historique"),
     label = null,
   } = {},
@@ -366,21 +367,11 @@ export function splitColumnView(
     b: height - 20,
   };
 
-  const finite = columns
-    .flatMap((c) => [...c.dots.map((d) => d.value), c.median, c.historical])
-    .filter((v) => Number.isFinite(v));
-  // dots have no slope to distort, which is why the break is safe here; the
-  // top of the high segment is niced so its ticks land on round values
-  const [, yMax] = d3.nice(breakValue, Math.max(d3.max(finite), breakValue), 4);
-  const yBreak = boundaries.b - lowFraction * (boundaries.b - boundaries.t);
-  const yScale = d3
-    .scaleLinear()
-    .domain([0, breakValue, yMax])
-    .range([boundaries.b, yBreak, boundaries.t]);
-  const yTickValues = [
-    ...d3.ticks(0, breakValue, 4),
-    ...d3.ticks(breakValue, yMax, 3).filter((v) => v > breakValue),
-  ];
+  const {
+    scale: yScale,
+    ticks: yTickValues,
+    yGap,
+  } = splitScale(columns, boundaries, lowFraction, gap);
 
   svg
     .selectAll(".grid-horizontal")
@@ -403,7 +394,9 @@ export function splitColumnView(
         .tickFormat((x) => formatNumber(x)),
     )
     .call((g) => g.select(".domain").remove());
-  breakGlyphView(svg, boundaries, yBreak);
+  if (yGap) {
+    breakGlyphView(svg, boundaries, yGap);
+  }
   if (label) {
     titleView(svg, boundaries, label);
   }
@@ -472,6 +465,71 @@ export function splitColumnView(
     .attr("y2", (d) => yScale(d.value));
 
   splitLegendView(svg, boundaries, historicalLabel);
+}
+
+// which columns share a segment is declared by the caller, not inferred from
+// the values: the two maxima can sit further apart than either sits from the
+// minima, so the widest gap in the data is not the meaningful split. each
+// segment gets its own domain, which is what lets both halves show their own
+// spread; the low one keeps 0 as its floor because these are magnitudes.
+// bands that would overlap get one plain scale rather than a break that lies
+// about the order
+function splitScale(columns, boundaries, lowFraction, gap) {
+  const low = bandValues(columns, "low");
+  const high = bandValues(columns, "high");
+
+  if (low.length && high.length) {
+    // padded rather than niced: nicing a high band whose tick step is coarse
+    // floors its domain to 0 and swallows the break. the pad is what keeps a
+    // dot off the edge of the whitespace; the ticks are round either way
+    const [, lowMax] = paddedRange(0, d3.max(low));
+    const [highMin, highMax] = paddedRange(d3.min(high), d3.max(high));
+    if (lowMax > 0 && highMin > lowMax) {
+      const yLow =
+        boundaries.b - lowFraction * (boundaries.b - boundaries.t - gap);
+      const yHigh = yLow - gap;
+      return {
+        scale: d3
+          .scaleLinear()
+          .domain([0, lowMax, highMin, highMax])
+          .range([boundaries.b, yLow, yHigh, boundaries.t]),
+        // per segment, so no tick and no gridline ever lands in the gap
+        ticks: [...d3.ticks(0, lowMax, 3), ...d3.ticks(highMin, highMax, 3)],
+        yGap: [yHigh, yLow],
+      };
+    }
+  }
+
+  // an empty or all-zero frame must still draw a readable axis rather than a
+  // NaN one or a domain nothing can be ticked over
+  const all = bandValues(columns, null);
+  const max = all.length && d3.max(all) > 0 ? d3.max(all) : 1;
+  const [, yMax] = d3.nice(0, max, 5);
+  return {
+    scale: d3
+      .scaleLinear()
+      .domain([0, yMax])
+      .range([boundaries.b, boundaries.t]),
+    ticks: d3.ticks(0, yMax, 5),
+    yGap: null,
+  };
+}
+
+// 5 % of the span either side, with a floor so a band of identical values
+// still gets a domain d3 can scale over
+function paddedRange(min, max) {
+  const pad = Math.max(max - min, Math.abs(max) * 0.1, 1e-6) * 0.05;
+  // the low band's 0 floor is deliberate: these are magnitudes
+  return [min === 0 ? 0 : min - pad, max + pad];
+}
+
+// every finite value of the columns in `band`, or of all of them for a null
+// band; the references count, so a historical line cannot fall off the axis
+function bandValues(columns, band) {
+  return columns
+    .filter((c) => band === null || c.band === band)
+    .flatMap((c) => [...c.dots.map((d) => d.value), c.median, c.historical])
+    .filter((v) => Number.isFinite(v));
 }
 
 // d3 treats a tick count as a hint and can return half again as many, which
@@ -978,7 +1036,9 @@ const monthNames = t(
 function regimeXAxis(xScale) {
   const [d0, d1] = xScale.domain();
   const visible = monthStarts.filter((d) => d >= d0 && d <= d1);
-  const axis = d3.axisBottom(xScale).tickSize(0);
+  // wider than d3's default padding: the first month sits on the y axis, so
+  // its label would otherwise collide with the 0 tick pinned to the baseline
+  const axis = d3.axisBottom(xScale).tickSize(0).tickPadding(14);
   if (visible.length < 2) {
     return axis.ticks(5).tickFormat((x) => formatNumber(x));
   }
@@ -1122,27 +1182,21 @@ function updateRegimeChart(svg, xScale, line) {
     .attr("d", (s) => line(s.points));
 }
 
-// the scale-break marker: a bg-filled gap in the axis edge crossed by two
-// slanted strokes, plus a faint dashed hairline across the plot so the break
-// is visible far from the axis
-function breakGlyphView(svg, boundaries, yBreak) {
-  svg
-    .append("line")
-    .attr("class", "grid-horizontal")
-    .attr("stroke-dasharray", "3 4")
-    .attr("x1", boundaries.l)
-    .attr("x2", boundaries.r)
-    .attr("y1", yBreak)
-    .attr("y2", yBreak);
+// the scale-break marker: two slanted strokes centred in the empty band the
+// split scale leaves between its segments. the band itself carries no tick,
+// gridline or dot, so it reads as a break across the whole width and the
+// strokes only need to name it at the axis
+function breakGlyphView(svg, boundaries, [yHigh, yLow]) {
+  const middle = (yHigh + yLow) / 2;
   svg
     .selectAll(".axis-break")
-    .data([-2, 3])
+    .data([-3, 3])
     .join("line")
     .attr("class", "axis-break")
-    .attr("x1", boundaries.l - 6)
-    .attr("x2", boundaries.l + 6)
-    .attr("y1", (d) => yBreak + d + 3)
-    .attr("y2", (d) => yBreak + d - 3);
+    .attr("x1", boundaries.l - 5)
+    .attr("x2", boundaries.l + 5)
+    .attr("y1", (d) => middle + d + 4)
+    .attr("y2", (d) => middle + d - 4);
 }
 
 // the ticks are the only marks needing explanation; the dots are described

@@ -29,11 +29,18 @@ const scenarioLabels = {
 const horizons = ["2020-2049", "2040-2069", "2070-2099"];
 
 // column order of the indicators figure; keys match the server payload
+// `band` groups the columns onto the two segments of the chart's split y
+// scale: the minima are two orders of magnitude below the freshet maxima and
+// show no spread at all when they share a scale with them
 const indicatorColumns = [
-  { key: "winter_min", label: t("Winter min", "Min hiver") },
-  { key: "spring_max", label: t("Spring max", "Max printemps") },
-  { key: "summer_min", label: t("Summer min", "Min été") },
-  { key: "autumn_max", label: t("Autumn max", "Max automne") },
+  { key: "winter_min", label: t("Winter min", "Min hiver"), band: "low" },
+  {
+    key: "spring_max",
+    label: t("Spring max", "Max printemps"),
+    band: "high",
+  },
+  { key: "summer_min", label: t("Summer min", "Min été"), band: "low" },
+  { key: "autumn_max", label: t("Autumn max", "Max automne"), band: "high" },
 ];
 
 const defaultSettings = {
@@ -614,9 +621,10 @@ function indicatorsChartView(model, current) {
   const models = (model.config.hydroModels ?? []).filter(
     (m) => current.results[m],
   );
-  const columns = indicatorColumns.map(({ key, label }) => ({
+  const columns = indicatorColumns.map(({ key, label, band }) => ({
     key,
     label,
+    band,
     dots: models.flatMap((m) =>
       Object.values(current.results[m].members).map((member) => ({
         model: m,
