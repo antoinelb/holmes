@@ -3,7 +3,7 @@ export const WS_CONFIG = {
   maxDelay: 30000, // Cap at 30 seconds
   maxRetries: 10, // Circuit breaker after 10 failures
   backoffFactor: 2, // Double delay each retry
-  connectionTimeout: 10000, // 10 second connection timeout
+  connectionTimeout: 20000, // 20 second connection timeout
 };
 
 const reconnectState = new Map();

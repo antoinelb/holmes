@@ -15,6 +15,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - Carto now requires an API key for its basemap tiles, so the server no longer fetches them lazily: `holmes download` fetches the fixed Saguenay pyramid (zooms 9–12, 3400 tiles) with the maintainer's `CARTO_KEY`, the data archive ships the tiles like every other product, and the tile route serves them read-only — the app is fully offline after the startup sync
 - The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
 - `uvicorn` is now installed with its `[standard]` extras: `watchfiles` replaces the stat-polling dev reloader, and `uvloop`/`httptools` speed up the event loop and HTTP parsing
+- The client now waits 20 seconds instead of 10 for the websocket connection to open, so a slow first load or a dev-server reload no longer surfaces as a spurious connection timeout
 
 ### Fixed
 - Websocket problems were undiagnosable from the silent server console: it now narrates connects and disconnects, logs every reply with its payload size and elapsed time, times each model's calibration, mirrors every error sent to the client, and runs uvicorn at the warning level so dev-reload restarts are visible
