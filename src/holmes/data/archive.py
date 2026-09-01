@@ -70,12 +70,17 @@ def sync_data() -> None:
     local = local_archive_date()
 
     try:
-        remote_date, url = _find_latest_asset()
+        with task(
+            "Checking the data release...", "Checked the data release."
+        ) as check:
+            remote_date, url = _find_latest_asset()
+            if local is not None and local >= remote_date:
+                check.done_with(
+                    f"Data is up to date (local archive {local.isoformat()})."
+                )
+                return
     except Exception as exc:
         _handle_sync_failure(f"check the data release ({exc})")
-        return
-
-    if local is not None and local >= remote_date:
         return
 
     staging = paths.data_dir / "tmp"

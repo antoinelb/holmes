@@ -24,7 +24,7 @@ from holmes.api.utils import send as _send
 from holmes.api.utils import with_path_params
 from holmes.model_info import get_model_info
 from holmes.utils.paths import data_dir, static_dir
-from holmes.utils.print import done_print, warn_print
+from holmes.utils.print import done_print, fail_print, warn_print
 
 ##########
 # public #
@@ -68,12 +68,13 @@ async def _index(_: Request) -> Response:
 
 async def _websocket(ws: WebSocket) -> None:
     await ws.accept()
+    done_print("WebSocket client connected.")
     try:
         while True:
             msg = await ws.receive_json()
             await _handle_message(ws, msg)
     except WebSocketDisconnect:
-        warn_print("Calibration WebSocket client disconnected")
+        warn_print("WebSocket client disconnected.")
     finally:
         await _cleanup_websocket(ws)
 
@@ -102,7 +103,7 @@ async def _get_map_tile(_: Request, x: int, y: int, z: int) -> Response:
 
 async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
     msg_type = msg.get("type")
-    done_print(f"Websocket {msg_type} message")
+    done_print(f"Received {msg_type} request.")
 
     match msg_type:
         case "stations":
@@ -225,7 +226,9 @@ async def _load_weather(
             method=method,
         )
     except Exception as exc:
-        await _send(ws, "error", f"Failed to load weather data: {exc}")
+        message = f"Failed to load weather data: {exc}"
+        fail_print(message)
+        await _send(ws, "error", message)
         return
 
     data = weather.filter(pl.col("id").is_in(stations)).with_columns(
@@ -269,7 +272,9 @@ async def _load_streamflow(ws: WebSocket, station: str) -> None:
             holmes.data.hydro.get_streamflow_data, station
         )
     except Exception as exc:
-        await _send(ws, "error", f"Failed to load streamflow data: {exc}")
+        message = f"Failed to load streamflow data: {exc}"
+        fail_print(message)
+        await _send(ws, "error", message)
         return
 
     # echo the station so the client can key its cache without inspecting

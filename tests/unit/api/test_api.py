@@ -100,6 +100,10 @@ class TestHandleMessage:
             {"type": "error", "data": "Unknown message type bogus."}
         ]
 
+    async def test_prints_arrival_line(self, fake_ws, capsys):
+        await api._handle_message(fake_ws, {"type": "model_info"})
+        assert "Received model_info request." in capsys.readouterr().out
+
     @pytest.mark.parametrize(
         ["type_", "module", "handler"],
         [
@@ -250,7 +254,7 @@ class TestLoadWeather:
         assert reply["data"]["n_stations"] == 3
         assert all(row["id"] == "061004" for row in reply["data"]["data"])
 
-    async def test_failure_sends_error(self, monkeypatch, fake_ws):
+    async def test_failure_sends_error(self, monkeypatch, fake_ws, capsys):
         monkeypatch.setattr(
             holmes.data.weather,
             "read_weather_data",
@@ -259,6 +263,7 @@ class TestLoadWeather:
         await api._load_weather(fake_ws, "era5", ["061004"], 3)
         assert fake_ws.sent[0]["type"] == "error"
         assert "Failed to load weather data" in fake_ws.sent[0]["data"]
+        assert "Failed to load weather data" in capsys.readouterr().out
 
 
 class TestHandleStreamflowMessage:
@@ -290,7 +295,7 @@ class TestLoadStreamflow:
         assert reply["type"] == "streamflow"
         assert reply["data"]["station"] == "061004"
 
-    async def test_failure_sends_error(self, monkeypatch, fake_ws):
+    async def test_failure_sends_error(self, monkeypatch, fake_ws, capsys):
         monkeypatch.setattr(
             holmes.data.hydro,
             "get_streamflow_data",
@@ -298,6 +303,7 @@ class TestLoadStreamflow:
         )
         await api._load_streamflow(fake_ws, "061004")
         assert fake_ws.sent[0]["type"] == "error"
+        assert "Failed to load streamflow data" in capsys.readouterr().out
 
 
 class TestCleanupWebsocket:

@@ -155,7 +155,9 @@ class TestLoadProjection:
         assert reply["type"] == "projection_error"
         assert "No projection data" in reply["data"]["message"]
 
-    async def test_failure_sends_error(self, monkeypatch, fake_ws, stations):
+    async def test_failure_sends_error(
+        self, monkeypatch, fake_ws, stations, capsys
+    ):
         monkeypatch.setattr(
             holmes.data.projection, "has_projection_data", lambda s: True
         )
@@ -168,10 +170,13 @@ class TestLoadProjection:
         reply = fake_ws.sent[0]
         assert reply["type"] == "projection_error"
         assert "Failed to run projection" in reply["data"]["message"]
+        assert "Failed to run projection" in capsys.readouterr().out
 
 
 class TestGetProjectionData:
-    async def test_memoises_per_station(self, monkeypatch, projection_df):
+    async def test_memoises_per_station(
+        self, monkeypatch, projection_df, capsys
+    ):
         read = MagicMock(return_value=projection_df)
         monkeypatch.setattr(
             holmes.data.projection, "read_projection_data", read
@@ -181,6 +186,10 @@ class TestGetProjectionData:
         second = await projection._get_projection_data("061004", stations)
         assert first is second
         read.assert_called_once()
+        out = capsys.readouterr().out
+        # the first (uncached) load is the ~24 MB read worth its own line;
+        # the memoised second call must not print again
+        assert out.count("Loaded projection data for 061004 in") == 1
 
 
 class TestRunEnsemble:

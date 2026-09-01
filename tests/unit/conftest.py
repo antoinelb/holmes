@@ -5,6 +5,7 @@ the e2e suite must never see them (it needs real network and data).
 """
 
 import asyncio
+import json
 from types import SimpleNamespace
 from typing import Any
 
@@ -27,8 +28,8 @@ class FakeWebSocket:
         self.client_state = WebSocketState.CONNECTED
         self.sent: list[dict[str, Any]] = []
 
-    async def send_json(self, payload: dict[str, Any]) -> None:
-        self.sent.append(payload)
+    async def send_text(self, text: str) -> None:
+        self.sent.append(json.loads(text))
 
 
 @pytest.fixture(autouse=True)

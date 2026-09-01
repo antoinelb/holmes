@@ -1,4 +1,5 @@
 import asyncio
+import time
 import warnings
 from typing import Any, cast, get_args
 
@@ -25,6 +26,7 @@ from holmes.api.calibration import (
 from holmes.data.weather import WeatherMethod
 from holmes.model import HydroModel, SnowModel
 from holmes.api.utils import send
+from holmes.utils.print import done_print, fail_print
 
 ##########
 # public #
@@ -147,6 +149,7 @@ async def _load_simulation(
         if snow_params is not None
         else None
     )
+    started = time.monotonic()
     try:
         data = await get_data(method, n_stations)
         filtered, warmup_steps = filter_data_with_warmup(
@@ -195,6 +198,11 @@ async def _load_simulation(
         )
         return
 
+    elapsed = time.monotonic() - started
+    done_print(
+        f"Simulated {station} ({', '.join(hydro_models)}) in {elapsed:.1f}s."
+    )
+
     # every request field is echoed so the client can match the reply to the
     # request that produced it
     await send(
@@ -241,6 +249,7 @@ def _evaluate_median(
 async def _send_error(
     ws: WebSocket, *, request_id: int | None = None, message: str
 ) -> None:
+    fail_print(message)
     await send(
         ws,
         "simulation_error",

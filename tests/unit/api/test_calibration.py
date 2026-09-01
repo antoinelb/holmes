@@ -421,7 +421,7 @@ class TestRunModelCalibration:
         )
 
     async def test_streams_frames_with_throttled_simulation(
-        self, monkeypatch, fake_ws, joined_data
+        self, monkeypatch, fake_ws, joined_data, capsys
     ):
         def fake_stream(data, *args, callback, stop_event, **kwargs):
             callback(*self.frame_args(0, False))
@@ -442,9 +442,14 @@ class TestRunModelCalibration:
         assert frames[2]["simulation"] is not None
         assert frames[2]["done"] is True
         assert not frames[2]["stopped"]
+        out = capsys.readouterr().out
+        assert "Calibrating gr4j..." in out
+        assert "Calibrated gr4j in" in out
+        # the streamed frames must stay quiet: many are sent per second
+        assert "Sent calibration_step" not in out
 
     async def test_stop_synthesises_final_frame(
-        self, monkeypatch, fake_ws, joined_data
+        self, monkeypatch, fake_ws, joined_data, capsys
     ):
         stop = threading.Event()
 
@@ -461,6 +466,7 @@ class TestRunModelCalibration:
         assert final["stopped"] is True
         assert final["done"] is True
         assert final["step"] == 0
+        assert "Stopped calibrating gr4j after" in capsys.readouterr().out
 
     async def test_stop_after_done_frame_adds_nothing(
         self, monkeypatch, fake_ws, joined_data
@@ -494,7 +500,7 @@ class TestRunModelCalibration:
         assert fake_ws.sent == []
 
     async def test_stream_failure_sends_calibration_error(
-        self, monkeypatch, fake_ws, joined_data
+        self, monkeypatch, fake_ws, joined_data, capsys
     ):
         def fake_stream(data, *args, **kwargs):
             raise RuntimeError("sce blew up")
@@ -506,9 +512,10 @@ class TestRunModelCalibration:
         reply = fake_ws.sent[0]
         assert reply["type"] == "calibration_error"
         assert reply["data"]["runId"] == 3
+        assert "sce blew up" in capsys.readouterr().out
 
     async def test_data_failure_sends_calibration_error(
-        self, monkeypatch, fake_ws
+        self, monkeypatch, fake_ws, capsys
     ):
         monkeypatch.setattr(
             calibration,
@@ -517,6 +524,7 @@ class TestRunModelCalibration:
         )
         await self.run(fake_ws)
         assert fake_ws.sent[0]["type"] == "calibration_error"
+        assert "no data" in capsys.readouterr().out
 
 
 class TestValidDates:

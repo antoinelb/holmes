@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import date, datetime, timezone
 from typing import Any, Awaitable, Callable
 
@@ -8,11 +9,15 @@ from starlette.responses import JSONResponse as _JSONResponse
 from starlette.responses import PlainTextResponse, Response
 from starlette.websockets import WebSocket, WebSocketState
 
-from holmes.utils.print import warn_print
+from holmes.utils.print import done_print, warn_print
 
 #########
 # types #
 #########
+
+# decimal, matching the archive download counter's convention
+_kb_bytes = 1_000
+_mb_bytes = 1_000_000
 
 
 NumericType = [
@@ -281,17 +286,37 @@ def convert_for_json(data: Any, *, dates_as_str: bool = False) -> Any:
         return data
 
 
-async def send(ws: WebSocket, event: str, data: Any) -> bool:
+async def send(
+    ws: WebSocket, event: str, data: Any, *, quiet: bool = False
+) -> bool:
+    # quiet skips only the success line: calibration streams many frames a
+    # second, and printing one line per frame would flood the console
     if ws.client_state != WebSocketState.CONNECTED:
         warn_print(f"Cannot send '{event}': WebSocket not connected")
         return False
 
+    started = time.monotonic()
+    payload = {"type": event, "data": convert_for_json(data)}
+    # serialized once, both to send and to measure: send_json would dump it
+    # again internally (same compact separators as starlette's)
+    text = json.dumps(payload, separators=(",", ":"))
     try:
-        await ws.send_json({"type": event, "data": convert_for_json(data)})
-        return True
+        await ws.send_text(text)
     except RuntimeError as exc:
         warn_print(f"Failed to send '{event}': {exc}")
         return False
     except Exception as exc:  # pragma: no cover
         warn_print(f"Unexpected error sending '{event}': {exc}")
         return False
+
+    if not quiet:
+        elapsed = time.monotonic() - started
+        size = _format_payload_size(len(text.encode()))
+        done_print(f"Sent {event} ({size}) in {elapsed:.2f}s.")
+    return True
+
+
+def _format_payload_size(n_bytes: int) -> str:
+    if n_bytes < _mb_bytes:
+        return f"{n_bytes / _kb_bytes:.1f} KB"
+    return f"{n_bytes / _mb_bytes:.1f} MB"

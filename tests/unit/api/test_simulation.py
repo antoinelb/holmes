@@ -114,7 +114,7 @@ class TestLoadSimulation:
         await simulation._load_simulation(fake_ws, **args)
 
     async def test_simulates_every_model_and_median(
-        self, fake_ws, joined_data
+        self, fake_ws, joined_data, capsys
     ):
         await self.run(fake_ws)
         reply = fake_ws.sent[0]
@@ -123,6 +123,8 @@ class TestLoadSimulation:
         assert set(reply["data"]["results"]) == {"gr4j", "bucket"}
         assert len(reply["data"]["median"]["simulation"]) == 366 + 365
         assert reply["data"]["median"]["metrics"]["kge"] is not None
+        out = capsys.readouterr().out
+        assert "Simulated 061004 (gr4j, bucket) in" in out
 
     async def test_with_snow(self, fake_ws, joined_data):
         await self.run(
@@ -140,11 +142,12 @@ class TestLoadSimulation:
         assert reply["type"] == "simulation_error"
         assert "No data for station" in reply["data"]["message"]
 
-    async def test_failure_sends_error(self, fake_ws, joined_data):
+    async def test_failure_sends_error(self, fake_ws, joined_data, capsys):
         await self.run(fake_ws, hydro_params={"gr4j": [1.0], "bucket": [1.0]})
         reply = fake_ws.sent[0]
         assert reply["type"] == "simulation_error"
         assert "Failed to run simulation" in reply["data"]["message"]
+        assert "Failed to run simulation" in capsys.readouterr().out
 
 
 class TestEvaluateMedian:

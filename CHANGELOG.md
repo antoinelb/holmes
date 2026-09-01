@@ -16,6 +16,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
 
 ### Fixed
+- Websocket problems were undiagnosable from the silent server console: it now narrates connects and disconnects, logs every reply with its payload size and elapsed time, times each model's calibration, mirrors every error sent to the client, and runs uvicorn at the warning level so dev-reload restarts are visible
 - The projection step failed on the float32 forcing the products store since 4.5.0 (`'ndarray' object cannot be cast as 'ndarray'`): the model layer now casts to float64 at the Rust boundary
 
 ## [4.5.0] - 2026-08-16

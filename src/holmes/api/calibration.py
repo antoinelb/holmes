@@ -22,6 +22,7 @@ from holmes.model import (
 )
 from holmes.model_info import get_calibration_info
 from holmes.api.utils import send
+from holmes.utils.print import done_print, fail_print, warn_print
 
 #########
 # state #
@@ -532,10 +533,12 @@ async def _run_model_calibration(
         # block the worker until the send completes: gives ordering and
         # backpressure so a fast SCE loop cannot flood the socket
         future = asyncio.run_coroutine_threadsafe(
-            send(ws, "calibration_step", frame), loop
+            send(ws, "calibration_step", frame, quiet=True), loop
         )
         future.result(timeout=10)
 
+    done_print(f"Calibrating {hydro_model}...")
+    started = time.monotonic()
     try:
         await asyncio.to_thread(
             holmes.model.calibrate_stream,
@@ -555,6 +558,12 @@ async def _run_model_calibration(
             ws, hydro_model=hydro_model, run_id=run_id, message=str(exc)
         )
         return
+
+    elapsed = time.monotonic() - started
+    if stop_event.is_set():
+        warn_print(f"Stopped calibrating {hydro_model} after {elapsed:.1f}s.")
+    else:
+        done_print(f"Calibrated {hydro_model} in {elapsed:.1f}s.")
 
     # calibrate_stream does not re-invoke the callback after a stop-break, so if
     # the run ended on a stop the final done/stopped frame is emitted here from
@@ -674,6 +683,7 @@ async def _send_error(
     request_id: int | None = None,
     message: str,
 ) -> None:
+    fail_print(message)
     await send(
         ws,
         "calibration_error",

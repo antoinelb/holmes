@@ -263,5 +263,26 @@ class TestSend:
         assert fake_ws.sent == []
 
     async def test_runtime_error_returns_false(self, fake_ws):
-        fake_ws.send_json = AsyncMock(side_effect=RuntimeError("closed"))
+        fake_ws.send_text = AsyncMock(side_effect=RuntimeError("closed"))
         assert not await send(fake_ws, "event", {})
+
+    async def test_prints_event_size_and_elapsed(self, fake_ws, capsys):
+        await send(fake_ws, "stations", {"a": 1})
+        out = capsys.readouterr().out
+        assert "Sent stations (" in out
+        assert " KB) in " in out
+        assert "s." in out
+
+    async def test_large_payload_prints_megabytes(self, fake_ws, capsys):
+        await send(fake_ws, "weather", {"a": "x" * 2_000_000})
+        out = capsys.readouterr().out
+        assert " MB) in " in out
+
+    async def test_quiet_skips_the_success_line(self, fake_ws, capsys):
+        assert await send(fake_ws, "calibration_step", {}, quiet=True)
+        assert "Sent" not in capsys.readouterr().out
+
+    async def test_quiet_still_prints_on_failure(self, fake_ws, capsys):
+        fake_ws.client_state = WebSocketState.DISCONNECTED
+        assert not await send(fake_ws, "event", {}, quiet=True)
+        assert "Cannot send" in capsys.readouterr().out

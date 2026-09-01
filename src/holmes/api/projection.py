@@ -1,4 +1,5 @@
 import asyncio
+import time
 import warnings
 from datetime import date
 from typing import Any, cast, get_args
@@ -27,6 +28,7 @@ from holmes.api.calibration import (
 from holmes.data.weather import WeatherMethod
 from holmes.model import HydroModel, SnowModel
 from holmes.api.utils import send
+from holmes.utils.print import done_print, fail_print
 
 #########
 # state #
@@ -249,6 +251,12 @@ async def _load_projection(
             start_year,
             holmes.data.projection.projection_start_year + warmup_years,
         )
+
+        done_print(
+            f"Running projection for {station} ({climate_model}, "
+            f"{scenario}, {len(hydro_models)} hydro models)..."
+        )
+        started = time.monotonic()
         results, median = await asyncio.to_thread(
             _run_ensemble,
             filtered,
@@ -280,6 +288,11 @@ async def _load_projection(
             snow,
             date.fromisoformat(start),
             date.fromisoformat(end),
+        )
+        elapsed = time.monotonic() - started
+        done_print(
+            f"Ran projection for {station} ({climate_model}, {scenario}) "
+            f"in {elapsed:.1f}s."
         )
     except Exception as exc:
         await _send_error(
@@ -320,8 +333,14 @@ async def _get_projection_data(
 ) -> pl.DataFrame:
     async with _projection_lock:
         if station not in _projection_cache:
+            # the per-station product is ~24 MB of IPC, worth its own line
+            started = time.monotonic()
             _projection_cache[station] = await asyncio.to_thread(
                 holmes.data.projection.read_projection_data, stations
+            )
+            elapsed = time.monotonic() - started
+            done_print(
+                f"Loaded projection data for {station} in {elapsed:.1f}s."
             )
         return _projection_cache[station]
 
@@ -582,6 +601,7 @@ def _round_indicators(indicators: dict[str, float]) -> dict[str, Any]:
 async def _send_error(
     ws: WebSocket, *, request_id: int | None = None, message: str
 ) -> None:
+    fail_print(message)
     await send(
         ws,
         "projection_error",

@@ -63,7 +63,9 @@ def run_server() -> None:
         port=config.PORT,
         reload=config.RELOAD,
         reload_dirs=str(Path(__file__).parent.parent.absolute()),
-        log_level="error",
+        # "error" silenced reload restarts too (StatReload logs at WARNING),
+        # so a reload killing every live websocket was invisible on console
+        log_level="warning",
         access_log=False,
     )
 
