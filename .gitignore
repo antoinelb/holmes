@@ -23,6 +23,7 @@ i18n.md
 tp2.pdf
 changements_tp2.md
 /notebooks/
+docs/ux
 
 # data comes from the rolling `data` release archive (see `holmes download`)
 # — except the MELCC station csvs, the one input no source can rebuild
