@@ -1,5 +1,6 @@
 import threading
 
+import holmes.data.hydro
 import holmes.data.weather
 
 from tests.integration.conftest import recv_until
@@ -14,6 +15,30 @@ class TestStations:
             assert row["id"] in ["061004", "061020"]
             assert "centroid_lat" in row
             assert isinstance(row["geometry"], str)
+
+    def test_does_not_hold_later_replies(
+        self, client, monkeypatch, stations_df
+    ):
+        release = threading.Event()
+
+        def gated_get_station_data():
+            # parks the stations load on its to_thread worker so the
+            # streamflow request queued behind it must be served first
+            release.wait()
+            return stations_df
+
+        monkeypatch.setattr(
+            holmes.data.hydro, "get_station_data", gated_get_station_data
+        )
+        try:
+            with client.websocket_connect("/ws") as ws:
+                ws.send_json({"type": "stations"})
+                ws.send_json({"type": "streamflow", "station": "061004"})
+                assert ws.receive_json()["type"] == "streamflow"
+                release.set()
+                assert recv_until(ws, "stations")["type"] == "stations"
+        finally:
+            release.set()
 
 
 class TestWeather:

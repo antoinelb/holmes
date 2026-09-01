@@ -16,6 +16,7 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
 - `uvicorn` is now installed with its `[standard]` extras: `watchfiles` replaces the stat-polling dev reloader, and `uvloop`/`httptools` speed up the event loop and HTTP parsing
 - The client now waits 20 seconds instead of 10 for the websocket connection to open, so a slow first load or a dev-server reload no longer surfaces as a spurious connection timeout
+- The hydrographs no longer wait for the station list: the persisted stations' streamflow is requested at connect, in parallel with the 8 MB stations reply, which the server now builds and sends as a background task (its watershed-to-GeoJSON pass ran on the event loop) without holding the requests queued behind it; per-message deflate is off since compressing that reply blocked the loop for nothing on localhost
 - The projection indicators chart drops the "Mean" column and carries its unit in a rotated y-axis title (`Indicators (mm/day)`) instead of a figure caption, matching the regime chart above it; the exported `_indicators.csv` loses its `mean` column with it
 - The simulation metrics chart restores the parentheticals the old holmes showed, so the plotted quantity is named: "Water balance (Mean bias)" and "Flow variability (Deviation bias)"
 

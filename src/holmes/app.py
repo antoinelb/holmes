@@ -67,6 +67,11 @@ def run_server() -> None:
         # so a reload killing every live websocket was invisible on console
         log_level="warning",
         access_log=False,
+        # uvicorn deflates every frame synchronously on the event loop, which
+        # held the loop ~0.15 s per 8 MB stations reply while every other
+        # reply waited; the app is served on localhost, where the bytes saved
+        # on the wire buy nothing
+        ws_per_message_deflate=False,
     )
 
 

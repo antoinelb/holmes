@@ -131,10 +131,33 @@ async def _handle_message(ws: WebSocket, msg: dict[str, Any]) -> None:
 
 
 async def _handle_stations_message(ws: WebSocket) -> None:
-    data = _for_map(
-        await asyncio.to_thread(holmes.data.hydro.get_station_data)
-    )
+    # a task, like streamflow's: this reply is by far the largest, and the
+    # receive loop must read the requests queued behind it rather than hold
+    # them until it is written
+    _track(ws, asyncio.create_task(_load_stations(ws)))
+
+
+async def _load_stations(ws: WebSocket) -> None:
+    try:
+        # the read and the wkb -> geojson pass both stay off the event loop
+        data = await asyncio.to_thread(
+            lambda: _for_map(holmes.data.hydro.get_station_data())
+        )
+    except Exception as exc:
+        message = f"Failed to load station data: {exc}"
+        fail_print(message)
+        await _send(ws, "error", message)
+        return
+
     await _send(ws, "stations", data)
+
+
+def _track(ws: WebSocket, task: asyncio.Task[None]) -> None:
+    """Register a load task so `_cleanup_websocket` can cancel it."""
+    if not hasattr(ws.state, "tasks"):
+        ws.state.tasks = set()
+    ws.state.tasks.add(task)
+    task.add_done_callback(ws.state.tasks.discard)
 
 
 def _for_map(data: pl.DataFrame) -> pl.DataFrame:
@@ -200,10 +223,7 @@ async def _handle_weather_message(ws: WebSocket, msg: dict[str, Any]) -> None:
         )
     )
     ws.state.weather_task = task
-    if not hasattr(ws.state, "tasks"):
-        ws.state.tasks = set()
-    ws.state.tasks.add(task)
-    task.add_done_callback(ws.state.tasks.discard)
+    _track(ws, task)
 
 
 async def _load_weather(
@@ -259,11 +279,7 @@ async def _handle_streamflow_message(
 
     # unlike weather, requests are independent (one per role) and cheap, so
     # none supersedes another
-    task = asyncio.create_task(_load_streamflow(ws, station))
-    if not hasattr(ws.state, "tasks"):
-        ws.state.tasks = set()
-    ws.state.tasks.add(task)
-    task.add_done_callback(ws.state.tasks.discard)
+    _track(ws, asyncio.create_task(_load_streamflow(ws, station)))
 
 
 async def _load_streamflow(ws: WebSocket, station: str) -> None:

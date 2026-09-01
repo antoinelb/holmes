@@ -63,6 +63,8 @@ class TestRunServer:
         assert no_uvicorn.call_args.args == ("holmes.app:create_app",)
         assert no_uvicorn.call_args.kwargs["port"] == 1234
         assert no_uvicorn.call_args.kwargs["factory"] is True
+        # deflating the 8 MB stations reply blocked the event loop
+        assert no_uvicorn.call_args.kwargs["ws_per_message_deflate"] is False
 
     def test_syncs_data_before_serving(
         self, monkeypatch, no_sync, no_uvicorn, no_browser

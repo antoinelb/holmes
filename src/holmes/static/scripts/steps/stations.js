@@ -35,14 +35,8 @@ export function update(model, msg, dispatch) {
       }
       return { ...model, loading: true };
     case "stations/GotStations":
-      // restore hydrographs for persisted selections; re-fires on every
-      // reconnect, retrying anything lost while disconnected
-      for (const role of ["calibration", "simulation"]) {
-        const id = model.config[`${role}Station`];
-        if (id) {
-          dispatch({ type: "stations/GetStreamflow", data: id });
-        }
-      }
+      // the persisted selections' streamflow is requested at Connected, not
+      // here: the hydrographs would otherwise wait for this reply
       return { ...model, loading: false, stations: msg.data };
     case "stations/GetStreamflow":
       if (

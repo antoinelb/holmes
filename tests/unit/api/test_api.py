@@ -144,6 +144,17 @@ class TestHandleMessage:
 
 
 class TestHandleStationsMessage:
+    async def test_tracks_task(self, monkeypatch, fake_ws):
+        monkeypatch.setattr(api, "_load_stations", AsyncMock())
+        await api._handle_message(fake_ws, {"type": "stations"})
+        # the reply is a tracked task, so the receive loop is free again
+        # before it is written
+        assert len(fake_ws.state.tasks) == 1
+        await asyncio.sleep(0.01)
+        assert len(fake_ws.state.tasks) == 0
+
+
+class TestLoadStations:
     async def test_sends_stations_with_centroids(
         self, monkeypatch, fake_ws, stations_df
     ):
@@ -152,7 +163,7 @@ class TestHandleStationsMessage:
             "get_station_data",
             MagicMock(return_value=stations_df),
         )
-        await api._handle_message(fake_ws, {"type": "stations"})
+        await api._load_stations(fake_ws)
         reply = fake_ws.sent[0]
         assert reply["type"] == "stations"
         row = reply["data"][0]
@@ -160,6 +171,16 @@ class TestHandleStationsMessage:
         # the stored wkb reaches the client as the geojson the map parses
         assert isinstance(row["geometry"], str)
         assert shapely.from_geojson(row["geometry"]).is_valid
+
+    async def test_failure_sends_error(self, monkeypatch, fake_ws, capsys):
+        monkeypatch.setattr(
+            holmes.data.hydro,
+            "get_station_data",
+            MagicMock(side_effect=RuntimeError("boom")),
+        )
+        await api._load_stations(fake_ws)
+        assert fake_ws.sent[0]["type"] == "error"
+        assert "Failed to load station data" in capsys.readouterr().out
 
 
 class TestForMap:

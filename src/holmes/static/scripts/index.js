@@ -121,17 +121,32 @@ async function update(model, msg, dispatch) {
     case "Connect":
       connect(wsUrl, handleMessage, dispatch, dispatch);
       return { ...model, loading: true };
-    case "Connected":
+    case "Connected": {
+      // the persisted stations' series go first: the hydrographs need only
+      // the ids from the config, so their small replies must not queue
+      // behind the station list, by far the largest one. pending (null)
+      // entries are dropped so a request lost with the old socket is re-sent
+      // instead of deduped away by GetStreamflow
+      const streamflow = Object.fromEntries(
+        Object.entries(model.streamflow).filter(([, data]) => data !== null),
+      );
+      for (const role of ["calibration", "simulation"]) {
+        const id = model.config[`${role}Station`];
+        if (id) {
+          dispatch({ type: "stations/GetStreamflow", data: id });
+        }
+      }
       if (model.stations === null) {
         dispatch({ type: "stations/GetStations" });
       }
       // drop the weather cache so the weather view refetches, retrying a
-      // request lost while disconnected (streamflow retries via GotStations);
-      // clear a model_info request lost mid-flight so the model step refetches
+      // request lost while disconnected; clear a model_info request lost
+      // mid-flight so the model step refetches
       return {
         ...model,
         loading: false,
         ws: msg.data,
+        streamflow,
         weather: null,
         modelInfo: model.modelInfo === "pending" ? null : model.modelInfo,
         // retry calibration requests lost with the old socket: clear a pending
@@ -168,6 +183,7 @@ async function update(model, msg, dispatch) {
               : null,
         },
       };
+    }
     case "Disconnected": {
       if (isCircuitBreakerOpen(wsUrl)) {
         console.error("Connection lost.");
