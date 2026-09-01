@@ -34,7 +34,6 @@ const indicatorColumns = [
   { key: "spring_max", label: t("Spring max", "Max printemps") },
   { key: "summer_min", label: t("Summer min", "Min été") },
   { key: "autumn_max", label: t("Autumn max", "Max automne") },
-  { key: "mean", label: t("Mean", "Moyenne") },
 ];
 
 const defaultSettings = {
@@ -485,9 +484,11 @@ export function canvasView(model, dispatch) {
   chartsView(model);
 }
 
+// only the regime figure is captioned; the indicators chart says what it
+// plots in its y-axis title, and an empty figcaption would still eat a line
 function chartFigure(name) {
   return create("figure", { id: `projection__${name}` }, [
-    create("figcaption", {}),
+    ...(name === "regime" ? [create("figcaption", {})] : []),
     create("div", { class: "hydrographs__loading" }, [createLoading()]),
     create("svg", { class: "plot", id: `projection__${name}-svg` }),
   ]);
@@ -539,12 +540,6 @@ function captionsView(model) {
     .getElementById("projection__regime")
     .querySelector("figcaption").textContent =
     `${station ? station.name : id} — ${scenarioLabels[scenario]} ${horizon.replace("-", "–")}`;
-  document
-    .getElementById("projection__indicators")
-    .querySelector("figcaption").textContent = t(
-    "Indicators (mm/day)",
-    "Indicateurs (mm/jour)",
-  );
 }
 
 function regimeChartView(model, current) {
@@ -633,6 +628,7 @@ function indicatorsChartView(model, current) {
   }));
   splitColumnView(svg, columns, {
     historicalLabel: historicalLabel(model.config.simulationPeriod),
+    label: t("Indicators (mm/day)", "Indicateurs (mm/jour)"),
   });
 }
 
@@ -665,8 +661,10 @@ function hoverHighlightView(hover) {
       .querySelectorAll(`circle[data-model="${hover}"]`)
       .forEach((c) => dots.appendChild(c));
   }
+  // scoped to direct children: the legend swatches are .series-tick as well,
+  // and appending them here would move them out of their translated group
   dots
-    .querySelectorAll(".series-tick")
+    .querySelectorAll(":scope > .series-tick")
     .forEach((tick) => dots.appendChild(tick));
 }
 

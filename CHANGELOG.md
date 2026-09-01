@@ -16,10 +16,13 @@ For changes to the Rust extension, see [src/holmes-rs/CHANGELOG.md](src/holmes-r
 - The map opens one zoom level wider (9 instead of 10) and clamps panning to the pre-downloaded tile rectangle
 - `uvicorn` is now installed with its `[standard]` extras: `watchfiles` replaces the stat-polling dev reloader, and `uvloop`/`httptools` speed up the event loop and HTTP parsing
 - The client now waits 20 seconds instead of 10 for the websocket connection to open, so a slow first load or a dev-server reload no longer surfaces as a spurious connection timeout
+- The projection indicators chart drops the "Mean" column and carries its unit in a rotated y-axis title (`Indicators (mm/day)`) instead of a figure caption, matching the regime chart above it; the exported `_indicators.csv` loses its `mean` column with it
+- The simulation metrics chart restores the parentheticals the old holmes showed, so the plotted quantity is named: "Water balance (Mean bias)" and "Flow variability (Deviation bias)"
 
 ### Fixed
 - Websocket problems were undiagnosable from the silent server console: it now narrates connects and disconnects, logs every reply with its payload size and elapsed time, times each model's calibration, mirrors every error sent to the client, and runs uvicorn at the warning level so dev-reload restarts are visible
 - The projection step failed on the float32 forcing the products store since 4.5.0 (`'ndarray' object cannot be cast as 'ndarray'`): the model layer now casts to float64 at the Rust boundary
+- The projection indicators legend showed its two labels with no line beside either: the hover highlight raised every `.series-tick` to the SVG root, which caught the legend swatches too and moved them out of the translated group that positions them
 
 ## [4.5.0] - 2026-08-16
 

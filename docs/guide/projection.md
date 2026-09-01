@@ -36,5 +36,5 @@ The top chart is the **annual flow regime**: mean streamflow (mm/day) per day of
 
 ## The indicators chart
 
-The bottom chart condenses each member's regime into five indicators — **"Winter min"**, **"Spring max"**, **"Summer min"**, **"Autumn max"** and **"Mean"** — with one dot per model and member, a solid median tick, and a dashed historical tick per column (the axis breaks so small and large indicators stay readable).
-It answers the operational questions directly: how much the spring flood shifts, how low the winter and summer low flows get, and how the mean balance changes.
+The bottom chart condenses each member's regime into four indicators — **"Winter min"**, **"Spring max"**, **"Summer min"** and **"Autumn max"**, all in mm/day — with one dot per model and member, a solid median tick, and a dashed historical tick per column (the axis breaks so small and large indicators stay readable).
+It answers the operational questions directly: how much the spring flood shifts, how low the winter and summer low flows get, and how the autumn peak moves.

@@ -24,8 +24,8 @@ Rather than a single score, the top chart profiles each model's behavior over si
 - **"High flows (KGE)"** — KGE on untransformed flows, dominated by floods;
 - **"Medium flows (KGE-sqrt)"** — KGE on square-root-transformed flows;
 - **"Low flows (KGE-log)"** — KGE on log-transformed flows, dominated by recessions and baseflow;
-- **"Water balance"** — ratio of simulated to observed mean flow (bias);
-- **"Flow variability"** — ratio of simulated to observed flow variability;
+- **"Water balance (Mean bias)"** — ratio of simulated to observed mean flow;
+- **"Flow variability (Deviation bias)"** — ratio of the simulated flows' standard deviation to the observed one's;
 - **"Correlation"** — timing of the simulated series against the observations.
 
 A model can score well on floods and still drift on volume or low flows; the profile makes those trade-offs visible at a glance.

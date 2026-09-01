@@ -36,5 +36,5 @@ Le graphique du haut est le **régime annuel d'écoulement** : le débit moyen (
 
 ## Le graphique des indicateurs
 
-Le graphique du bas condense le régime de chaque membre en cinq indicateurs — **"Min hiver"**, **"Max printemps"**, **"Min été"**, **"Max automne"** et **"Moyenne"** — avec un point par modèle et membre, un trait plein pour la médiane et un trait historique en tireté par colonne (l'axe se coupe pour que les petits et les grands indicateurs restent lisibles).
-Il répond directement aux questions opérationnelles : de combien la crue printanière se déplace, jusqu'où descendent les étiages d'hiver et d'été, et comment le bilan moyen change.
+Le graphique du bas condense le régime de chaque membre en quatre indicateurs — **"Min hiver"**, **"Max printemps"**, **"Min été"** et **"Max automne"**, tous en mm/jour — avec un point par modèle et membre, un trait plein pour la médiane et un trait historique en tireté par colonne (l'axe se coupe pour que les petits et les grands indicateurs restent lisibles).
+Il répond directement aux questions opérationnelles : de combien la crue printanière se déplace, jusqu'où descendent les étiages d'hiver et d'été, et comment la pointe automnale se déplace.

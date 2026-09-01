@@ -24,8 +24,8 @@ Plutôt qu'un score unique, le graphique du haut profile le comportement de chaq
 - **"Hauts débits (KGE)"** — le KGE sur les débits non transformés, dominé par les crues;
 - **"Débits moyens (KGE-sqrt)"** — le KGE sur les débits transformés par racine carrée;
 - **"Étiages (KGE-log)"** — le KGE sur les débits transformés par logarithme, dominé par les récessions et le débit de base;
-- **"Bilan hydrique"** — le ratio du débit moyen simulé au débit moyen observé (le biais);
-- **"Variabilité des débits"** — le ratio de la variabilité des débits simulés à celle des observés;
+- **"Bilan hydrique (biais moyen)"** — le ratio du débit moyen simulé au débit moyen observé;
+- **"Variabilité des débits (biais d'écart-type)"** — le ratio de l'écart-type des débits simulés à celui des observés;
 - **"Corrélation"** — la chronologie de la série simulée par rapport aux observations.
 
 Un modèle peut bien noter sur les crues et dériver quand même sur le volume ou les étiages; le profil rend ces compromis visibles d'un coup d'œil.

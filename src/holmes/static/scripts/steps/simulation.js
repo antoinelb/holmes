@@ -18,10 +18,16 @@ const metricRows = [
     label: t("Medium flows (KGE-sqrt)", "Débits moyens (KGE-sqrt)"),
   },
   { key: "kge_log", label: t("Low flows (KGE-log)", "Étiages (KGE-log)") },
-  { key: "mean_bias", label: t("Water balance", "Bilan hydrique") },
+  {
+    key: "mean_bias",
+    label: t("Water balance (Mean bias)", "Bilan hydrique (biais moyen)"),
+  },
   {
     key: "deviation_bias",
-    label: t("Flow variability", "Variabilité des débits"),
+    label: t(
+      "Flow variability (Deviation bias)",
+      "Variabilité des débits (biais d'écart-type)",
+    ),
   },
   { key: "correlation", label: t("Correlation", "Corrélation") },
 ];

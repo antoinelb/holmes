@@ -184,7 +184,10 @@ export function dotProfileView(_svg, rows, { reference = 1 } = {}) {
   svg.attr("viewBox", `0 0 ${width} ${height}`);
 
   // the left margin holds the metric labels rather than a rotated title
-  const boundaries = { l: 170, r: width - 25, t: 5, b: height - 20 };
+  // ponytail: wide enough for the longest label, which is the French
+  // flow-variability row; a longer one should stack its name and
+  // parenthetical on two lines (splitLabel) rather than widen this further
+  const boundaries = { l: 260, r: width - 25, t: 5, b: height - 20 };
 
   const finite = rows
     .flatMap((row) => [...row.dots.map((d) => d.value), row.median])
@@ -346,6 +349,7 @@ export function splitColumnView(
     breakValue = 2,
     lowFraction = 0.58,
     historicalLabel = t("historical", "historique"),
+    label = null,
   } = {},
 ) {
   const width = _svg.clientWidth;
@@ -354,7 +358,13 @@ export function splitColumnView(
   svg.selectAll("*").remove();
   svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-  const boundaries = { l: 40, r: width - 25, t: 8, b: height - 20 };
+  // same labelled margin as the other titled views, so stacked charts align
+  const boundaries = {
+    l: label ? 62 : 40,
+    r: width - 25,
+    t: 8,
+    b: height - 20,
+  };
 
   const finite = columns
     .flatMap((c) => [...c.dots.map((d) => d.value), c.median, c.historical])
@@ -394,6 +404,9 @@ export function splitColumnView(
     )
     .call((g) => g.select(".domain").remove());
   breakGlyphView(svg, boundaries, yBreak);
+  if (label) {
+    titleView(svg, boundaries, label);
+  }
 
   const colWidth = (boundaries.r - boundaries.l) / columns.length;
   const colX = (i) => boundaries.l + (i + 0.5) * colWidth;
