@@ -29,7 +29,14 @@
     display: none;
   }
 
+  /* out of flow under the legend: in flow, its width would widen the
+     centred corner container and shift the legend sideways */
   & #map__notice {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
     background-color: oklch(var(--bg));
     border: 1px solid oklch(var(--error));
     border-radius: 0.5em;

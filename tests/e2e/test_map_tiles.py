@@ -20,6 +20,11 @@ def test_missing_tiles_show_the_notice(page: Page, base_url: str) -> None:
     expect(notice).to_be_visible()
     expect(notice).to_contain_text("data archive")
     expect(notice.locator("code")).to_contain_text("/map/")
+    # the notice shares the legend's centred corner: in flow it would widen
+    # it and push the legend sideways
+    shown = legend_x(page)
+    notice.evaluate("node => { node.hidden = true; }")
+    assert legend_x(page) == shown
 
 
 def test_served_tiles_keep_the_notice_hidden(
@@ -35,3 +40,9 @@ def test_served_tiles_keep_the_notice_hidden(
 
 def fail_tile(route: Route) -> None:
     route.fulfill(status=404, body="missing")
+
+
+def legend_x(page: Page) -> float:
+    box = page.locator("#map__legend").bounding_box()
+    assert box is not None
+    return box["x"]
