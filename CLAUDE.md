@@ -70,7 +70,7 @@ Routes are:
 - `GET /version` — package version from `importlib.metadata` (distribution `holmes-hydro`).
 - `/static` — mounted `StaticFiles`.
 - `/ws` — the single WebSocket endpoint (`_websocket`).
-- `GET /map/{z}/{x}/{y}.png` — map tiles, read-only from `data/map/tile_{z}_{x}_{y}.png` (they ship in the data archive — Carto now requires an API key, so the server never fetches); a missing tile returns a 1×1 black PNG.
+- `GET /map/{z}/{x}/{y}.png` — map tiles, read-only from `data/map/tile_{z}_{x}_{y}.png` (they ship in the data archive — Carto now requires an API key, so the server never fetches); a missing tile inside the shipped pyramid (`data/tiles.py:in_pyramid`) returns 404 — a broken or outdated archive, which `stations.js` reports once in a persistent `#map__notice` (Leaflet swaps in `errorTileUrl` before firing `tileerror`, so the notice names the tile from `e.coords`) — while one outside it returns a 1×1 black PNG so the edges stay quiet.
 
 ### WebSocket protocol (`src/holmes/api/api.py`)
 
@@ -91,6 +91,7 @@ The server **never builds data**. Every reader is sync, delegates to `archive.re
 - `hydro.py` — `STATIONS` (8 hardcoded ids), `get_station_data()` (`raw/hydro/station_data.ipc`), `get_streamflow_data(id)` (`raw/hydro/streamflow/{id}.ipc`).
 - `weather.py` — `WeatherMethod = Literal["nearest_stations", "era5", "ministry_grid"]`, `read_weather_data(method=, n_stations=)` (`weather/nearest_stations_{n}.ipc` or `weather/{method}.ipc`), `read_weather_grid(method=)` (prebuilt `weather/grid_{...}.ipc` map products — the server needs no rasters).
 - `projection.py` — `has_projection_data`, `read_projection_data` (concat of `raw/projection/{id}.ipc`).
+- `tiles.py` — the basemap pyramid geometry (`tile_paths`, `in_pyramid`), shared by the tile route, `download.tiles` and `download.package`; it lives here so the server never imports the build layer.
 - `joined.py` — `read_joined_data(method=, n_stations=)` (`raw/data_{method}[_{n}].ipc`), the calibration warm path (`api/calibration.py` reads it directly; `experiment.read_data` is a thin delegate).
 
 ### Build layer (`src/holmes/download/`)
@@ -105,7 +106,7 @@ Domain knowledge that lives here now:
 - `weather.update_ministry_grid` — *Grilles climatiques du Québec v3*, one NetCDF per parameter-year (PREC/TMOY only); refresh years are deleted + redownloaded (the current year's file changes at the source), reduced via `exactextract` coverage weights in `EPSG:32198` (intersecting in degrees would over-weight northern cells), gap-filled from the fresh era5 product, upserted.
 - `weather.update_stations_backfill` / `rebuild_completed_stations` / `rebuild_nearest_stations` / `rebuild_grids` — the MELCC station CSVs (**the one input that cannot be refetched**: no public source, produced once by `scripts/convert_stations.py` from `.txt` files that no longer exist on disk, so they are committed under `data/raw/weather/stations/*.csv` — the `.gitignore` re-includes exactly that path — as well as shipped in the archive; without them a cold build cannot rebuild the completed stations) are completed column-wise from the backfill (ministry grid at the station's cell, era5 filling what the grids miss — both long-record stations are silent 1994-11→1997-03, so the July 1996 flood weather comes from the backfill); nearest products combine the `n_stations` (1–5) closest stations to each watershed centroid by IDW (`1/d²`); the grid products reuse the exact selection/weighting of the means so map and mean cannot drift. All derived products are always recomputed (cheap).
 - `projection.build_projection_data` — ClimEx rcp8.5 (50 members) + ESPO-G6-R2 ssp2-4.5/ssp3-7.0 from PAVICS as raw DAP2 `.dods` slices over httpx (xarray serializes concurrent OPeNDAP; THREDDS can't serve ClimEx); `_parse_dods` validates three ways and a still-failing window **raises** (partial data would surface as the adjacent nulls `model._fill_missing` rejects). Per-member caches are the resume granularity; 2020→2099-12-30, noleap. Skip when all 8 products exist.
-- `joined.build_joined_data` — the 7 `data_{method}[_{n}].ipc` joins; `tiles.download_tiles` — the fixed Saguenay basemap pyramid (zooms 9–12, 3400 tiles) from Carto, which requires an API key (`CARTO_KEY` env var or `.env`; the key stays with maintainers and the cron, never with users — `stations.js` clamps the map to the matching `maxBounds`); `package.archive_manifest`/`build_archive` — the 3445-product zip.
+- `joined.build_joined_data` — the 7 `data_{method}[_{n}].ipc` joins; `tiles.download_tiles` — fetches the fixed Saguenay basemap pyramid (geometry in `data/tiles.py`) (zooms 9–12, 3400 tiles) from Carto, which requires an API key (`CARTO_KEY` env var or `.env`; the key stays with maintainers and the cron, never with users — `stations.js` clamps the map to the matching `maxBounds`); `package.archive_manifest`/`build_archive` — the 3445-product zip.
 
 All writes (both layers' history): staged `.part` → validate → `replace()`, `compression="zstd"`; reads pass `memory_map=False`.
 

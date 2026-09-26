@@ -7,11 +7,11 @@ archive like every other product.
 """
 
 import concurrent.futures
-from pathlib import Path
 
 import httpx
 
 from holmes.config import config
+from holmes.data.tiles import tile_coords, tile_path
 
 # paths is imported as a module (not `from ... import data_dir`) so tests
 # patching `holmes.utils.paths.data_dir` reach this module too
@@ -22,25 +22,11 @@ from holmes.utils.print import done_print, progress_task
 # constants #
 #############
 
-# the z9 rectangle covering every watershed with margin (lon -74.53 to
-# -68.91, lat 46.56 to 48.92); deeper zooms cover the same ground with
-# 2**(z - base_zoom) times the tiles per axis. stations.js clamps the map
-# to the matching maxBounds so users can never pan onto missing tiles.
-base_zoom = 9
-max_zoom = 12
-base_x = range(150, 158)
-base_y = range(176, 181)
-
 tile_url = "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png"
 
 ##########
 # public #
 ##########
-
-
-def tile_paths() -> list[Path]:
-    """Every tile of the pyramid, relative to `data_dir`."""
-    return [_tile_path(z, x, y) for z, x, y in _tile_coords()]
 
 
 def download_tiles(*, force: bool = False) -> None:
@@ -53,8 +39,8 @@ def download_tiles(*, force: bool = False) -> None:
     """
     missing = [
         coords
-        for coords in _tile_coords()
-        if force or not (paths.data_dir / _tile_path(*coords)).exists()
+        for coords in tile_coords()
+        if force or not (paths.data_dir / tile_path(*coords)).exists()
     ]
     if not missing:
         done_print("Map tiles are up to date.")
@@ -95,24 +81,6 @@ def download_tiles(*, force: bool = False) -> None:
 ###########
 
 
-def _tile_coords() -> list[tuple[int, int, int]]:
-    return [
-        (z, x, y)
-        for z in range(base_zoom, max_zoom + 1)
-        for x in _scaled(base_x, z)
-        for y in _scaled(base_y, z)
-    ]
-
-
-def _scaled(base: range, zoom: int) -> range:
-    factor = 2 ** (zoom - base_zoom)
-    return range(base.start * factor, base.stop * factor)
-
-
-def _tile_path(z: int, x: int, y: int) -> Path:
-    return Path("map") / f"tile_{z}_{x}_{y}.png"
-
-
 def _check_carto_credentials() -> str:
     key = config("CARTO_KEY", default="")
     if not key:
@@ -130,7 +98,7 @@ def _fetch_tile(
 ) -> bool:
     """Staged write: a crash mid-write never leaves a partial tile."""
     z, x, y = coords
-    path = paths.data_dir / _tile_path(z, x, y)
+    path = paths.data_dir / tile_path(z, x, y)
     try:
         resp = client.get(tile_url.format(z=z, x=x, y=y), params={"key": key})
     except httpx.HTTPError:

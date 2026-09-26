@@ -56,6 +56,8 @@ function initModel() {
     // same shape as simulation: settings restored, result refetched on view
     projection: projection.initProjection(saved.projection ?? null),
     map: null,
+    // the first basemap tile the server reported missing (a broken archive)
+    mapTileError: null,
     activeDialogStation: null,
     visibility: { open: true, closed: false },
     step: saved.step ?? "stations",

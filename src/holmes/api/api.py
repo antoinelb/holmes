@@ -19,6 +19,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 import holmes.data.hydro
 import holmes.data.weather
+from holmes.data.tiles import in_pyramid
 from holmes.api import calibration, projection, simulation
 from holmes.api.utils import send as _send
 from holmes.api.utils import with_path_params
@@ -41,7 +42,7 @@ def get_routes() -> list[BaseRoute]:
         ),
         WebSocketRoute("/ws", endpoint=_websocket),
         Route(
-            "/map/{z}/{x}/{y}.png",
+            "/map/{z:int}/{x:int}/{y:int}.png",
             endpoint=_get_map_tile,
             methods=["GET"],
         ),
@@ -86,7 +87,14 @@ async def _get_map_tile(_: Request, x: int, y: int, z: int) -> Response:
     path = data_dir / "map" / f"tile_{z}_{x}_{y}.png"
     if path.exists():
         return FileResponse(str(path))
-    # return a black tile if the tile isn't available
+    # a pyramid tile should always ship: its absence means a broken or
+    # outdated archive, so it fails loudly for the map to report it
+    elif in_pyramid(z, x, y):
+        return Response(
+            f"Map tile {z}/{x}/{y} is missing from the data archive.",
+            status_code=404,
+        )
+    # outside the pyramid a black tile blends with the dark basemap
     else:
         return Response(
             base64.b64decode(

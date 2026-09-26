@@ -33,3 +33,7 @@ class TestMapTiles:
         resp = client.get("/map/3/1/2.png")
         assert resp.status_code == 200
         assert resp.content == black_tile
+
+    def test_missing_pyramid_tile_is_404(self, client):
+        resp = client.get("/map/9/150/176.png")
+        assert resp.status_code == 404

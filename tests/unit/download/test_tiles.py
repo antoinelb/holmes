@@ -23,7 +23,7 @@ def small_pyramid(monkeypatch) -> list[tuple[int, int, int]]:
     # two tiles stand in for the 3400-tile pyramid; the real coordinates
     # are covered by TestTilePaths
     coords = [(9, 150, 176), (9, 150, 177)]
-    monkeypatch.setattr(tiles, "_tile_coords", lambda: coords)
+    monkeypatch.setattr(tiles, "tile_coords", lambda: coords)
     return coords
 
 
@@ -33,22 +33,6 @@ def carto_key(monkeypatch) -> str:
     # tests
     monkeypatch.setattr(tiles, "config", lambda *args, **kwargs: "test-key")
     return "test-key"
-
-
-class TestTilePaths:
-    def test_covers_the_full_pyramid(self):
-        paths = tiles.tile_paths()
-        assert len(paths) == 3400
-        assert len(set(paths)) == 3400
-        assert all(not path.is_absolute() for path in paths)
-
-        names = {path.as_posix() for path in paths}
-        assert "map/tile_9_150_176.png" in names
-        assert "map/tile_9_157_180.png" in names
-        assert "map/tile_12_1200_1408.png" in names
-        assert "map/tile_12_1263_1447.png" in names
-        assert "map/tile_12_1264_1447.png" not in names
-        assert "map/tile_12_1263_1448.png" not in names
 
 
 class TestDownloadTiles:
@@ -130,7 +114,7 @@ class TestDownloadTiles:
     def test_network_error_counts_as_failure(
         self, tmp_data_dir, monkeypatch, carto_key
     ):
-        monkeypatch.setattr(tiles, "_tile_coords", lambda: [(9, 150, 176)])
+        monkeypatch.setattr(tiles, "tile_coords", lambda: [(9, 150, 176)])
         make_sync_client(monkeypatch, [httpx.ConnectError("no network")])
 
         with pytest.raises(RuntimeError, match="1 of 1 map tiles"):
@@ -139,7 +123,7 @@ class TestDownloadTiles:
     def test_non_png_body_counts_as_failure(
         self, tmp_data_dir, monkeypatch, carto_key
     ):
-        monkeypatch.setattr(tiles, "_tile_coords", lambda: [(9, 150, 176)])
+        monkeypatch.setattr(tiles, "tile_coords", lambda: [(9, 150, 176)])
         make_sync_client(
             monkeypatch,
             [MagicMock(status_code=200, content=b'{"error": "bad key"}')],

@@ -53,7 +53,7 @@ class TestGetRoutes:
             "/version",
             "/static",
             "/ws",
-            "/map/{z}/{x}/{y}.png",
+            "/map/{z:int}/{x:int}/{y:int}.png",
         ]
 
 
@@ -91,6 +91,13 @@ class TestGetMapTile:
         resp = await api._get_map_tile(make_request({"x": 1, "y": 2, "z": 3}))
         assert resp.body == black_tile
         assert resp.headers["content-type"] == "image/png"
+
+    async def test_missing_pyramid_tile_is_404(self, tmp_data_dir):
+        resp = await api._get_map_tile(
+            make_request({"x": 150, "y": 176, "z": 9})
+        )
+        assert resp.status_code == 404
+        assert b"9/150/176" in bytes(resp.body)
 
 
 class TestHandleMessage:

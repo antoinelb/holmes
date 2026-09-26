@@ -12,7 +12,7 @@ from pathlib import Path
 from holmes.data.archive import MissingDataError
 from holmes.data.hydro import STATIONS
 from holmes.data.weather import stations_backfill_file, stations_files
-from holmes.download.tiles import tile_paths
+from holmes.data.tiles import tile_paths
 from holmes.download.weather import max_n_stations, min_n_stations
 
 # paths is imported as a module (not `from ... import data_dir`) so tests

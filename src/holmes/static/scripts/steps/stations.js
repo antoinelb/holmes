@@ -1,4 +1,9 @@
-import { clear, create, createLoading } from "../utils/elements.js";
+import {
+  clear,
+  create,
+  createIcon,
+  createLoading,
+} from "../utils/elements.js";
 import { downloadBlob, toCsv } from "../utils/export.js";
 import { formatNumber } from "../utils/misc.js";
 import { hydrographView } from "../utils/plot.js";
@@ -70,6 +75,8 @@ export function update(model, msg, dispatch) {
       return { ...model, loading: true };
     case "stations/CreatedMap":
       return { ...model, loading: false, map: msg.data };
+    case "stations/TileError":
+      return { ...model, mapTileError: msg.data };
     case "stations/SelectStation":
       selectStation(model, msg.data.role, msg.data.id, dispatch);
       return model;
@@ -514,7 +521,8 @@ export function sharedMapView(
     return;
   }
 
-  initMapView(model.map);
+  initMapView(model.map, dispatch);
+  tileNoticeView(model.mapTileError);
   legendView(
     dispatch,
     selectedOnly,
@@ -706,7 +714,12 @@ function hoverRole(element) {
       : null;
 }
 
-function initMapView(map) {
+// the server's black tile for coordinates outside the pyramid; a failed
+// pyramid tile is drawn the same so the notice is the only error signal
+const blackTile =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+function initMapView(map, dispatch) {
   if (Object.keys(map._layers).length == 0) {
     map.setView([48.25, -71.35], 9);
     // mirrors the pre-downloaded tile rectangle in download/tiles.py:
@@ -716,17 +729,62 @@ function initMapView(map) {
       [46.558, -74.531],
       [48.922, -68.906],
     ]);
+    // a pyramid tile 404s only when the data archive lacks it, and that
+    // cannot heal before a restart (which reloads the page): the first
+    // failure is enough, and `once` spares a view pass per failed tile
     L.tileLayer("/map/{z}/{x}/{y}.png", {
       minZoom: 9,
       maxZoom: 12,
-    }).addTo(map);
+      errorTileUrl: blackTile,
+    })
+      // from the coords: Leaflet has already swapped tile.src to errorTileUrl
+      .once("tileerror", ({ coords: { z, x, y } }) =>
+        dispatch({
+          type: "stations/TileError",
+          data: `/map/${z}/${x}/${y}.png`,
+        }),
+      )
+      .addTo(map);
 
     // topleft, recentred by CSS: the corners are taken by the wordmark,
     // settings button and controls card; content is filled by legendView
     const legend = L.control({ position: "topleft" });
     legend.onAdd = () => create("div", { id: "map__legend" });
     legend.addTo(map);
+
+    // stacked under the legend and hidden until a tile fails, so showing
+    // it moves nothing already on screen; filled by tileNoticeView
+    const notice = L.control({ position: "topleft" });
+    notice.onAdd = () => create("div", { id: "map__notice", hidden: true });
+    notice.addTo(map);
   }
+}
+
+// persistent on purpose: the basemap stays broken until the data is fixed
+function tileNoticeView(tileError) {
+  const notice = document.getElementById("map__notice");
+  if (tileError === null || !notice.hidden) {
+    return;
+  }
+  notice.append(
+    createIcon("alert-triangle"),
+    create("div", {}, [
+      create("p", {}, [
+        t(
+          "The map background could not be loaded: the data archive is missing its map tiles.",
+          "Le fond de carte n'a pas pu être chargé : l'archive de données ne contient pas les tuiles de la carte.",
+        ),
+      ]),
+      create("p", {}, [
+        t(
+          "Stations, watersheds and every other step still work. Restart HOLMES to download the latest data archive; if this message persists, report it with the tile below.",
+          "Les stations, les bassins versants et toutes les autres étapes fonctionnent encore. Redémarrez HOLMES pour télécharger la dernière archive de données; si ce message persiste, signalez-le avec la tuile ci-dessous.",
+        ),
+      ]),
+      create("code", {}, [tileError]),
+    ]),
+  );
+  notice.hidden = false;
 }
 
 // the legend adapts to the step: all stations (with visibility toggles) on
